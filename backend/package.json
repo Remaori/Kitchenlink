@@ -1,0 +1,33 @@
+{
+  "name": "kitchenlink-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KitchenLink · API REST (Node.js + Express + PostgreSQL)",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test --test-reporter=spec --test-concurrency=1 test/conectividad.test.js test/autenticacion.test.js",
+    "env:crear": "node scripts/crear-env.js",
+    "db:instalar": "node scripts/instalar-bd.js",
+    "db:conectividad": "node scripts/conectividad.js",
+    "usuario:gerente": "node scripts/usuarios.js crear-gerente",
+    "usuario:restablecer": "node scripts/usuarios.js restablecer"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  }
+}
