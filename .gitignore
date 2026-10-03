@@ -1,0 +1,23 @@
+# Dependencias y compilados
+node_modules/
+frontend/dist/
+
+# Configuración local con contraseñas y secretos: NUNCA se sube
+.env
+.env.*
+!.env.example
+
+# Reportes generados en cada equipo (copia a docs/evidencias/ los que quieras entregar)
+backend/reportes/
+
+# Certificados locales de HTTPS (mkcert)
+infra/nginx/certs/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
