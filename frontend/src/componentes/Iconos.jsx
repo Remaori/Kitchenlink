@@ -1,0 +1,23 @@
+// Íconos en línea (SVG): la app funciona sin internet, no se cargan de ningún CDN.
+const base = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
+const I = (hijos) => (props) => <svg {...base} {...props}>{hijos}</svg>;
+
+export const IconoUsuario = I(<><circle cx="12" cy="8" r="3.6" /><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4" /></>);
+export const IconoOjo = I(<><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="2.8" /></>);
+export const IconoOjoTachado = I(<><path d="M3 3l18 18" /><path d="M10.6 5.6c.5-.1.9-.1 1.4-.1 6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.6 6.6C3.9 8.4 2.5 12 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.2-1" /><path d="M9.9 9.9a2.8 2.8 0 0 0 4 4" /></>);
+export const IconoInfo = I(<><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 7.6v.1" /></>);
+export const IconoAlerta = I(<><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.4v.1" /></>);
+export const IconoLlave = I(<><circle cx="7.5" cy="12" r="3.5" /><path d="M11 12h10M17.5 12v3M20.5 12v2" /></>);
+export const IconoPalomita = I(<path d="M5 12.5l4.2 4.2L19 7" />);
+export const IconoSalir = I(<><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" /><path d="M10 16l-4-4 4-4M6 12h10" /></>);
+export const IconoInicio = I(<><path d="M4 11l8-6.5 8 6.5" /><path d="M6 9.5V19h12V9.5" /></>);
+export const IconoMesa = I(<><path d="M3.5 8h17" /><path d="M6 8v10M18 8v10" /></>);
+export const IconoCalendario = I(<><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></>);
+export const IconoLista = I(<><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4.5 6h.1M4.5 12h.1M4.5 18h.1" /></>);
+export const IconoCocina = I(<><path d="M6 14a4 4 0 1 1 2.3-7.3 4 4 0 0 1 7.4 0A4 4 0 1 1 18 14" /><path d="M7 14v6h10v-6" /></>);
+export const IconoRecibo = I(<><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></>);
+export const IconoCaja = I(<><rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>);
+export const IconoMenu = I(<><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 9h8M8 13h8M8 17h5" /></>);
+export const IconoGrafica = I(<><path d="M5 20V10M12 20V4M19 20v-7" /></>);
+export const IconoPersonas = I(<><circle cx="9" cy="8" r="3.2" /><path d="M3.5 19c.7-3.2 3-4.8 5.5-4.8s4.8 1.6 5.5 4.8" /><path d="M16 5.2a3 3 0 0 1 0 5.6M17.5 14.4c1.6.6 2.7 2 3 4.6" /></>);
+export const IconoServidor = I(<><rect x="4" y="4" width="16" height="7" rx="1.5" /><rect x="4" y="13" width="16" height="7" rx="1.5" /><path d="M8 7.5h.1M8 16.5h.1" /></>);
