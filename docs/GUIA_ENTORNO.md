@@ -212,22 +212,131 @@ máquinas y de que los dos trabajan en el repositorio.
 
 ## 8. Presentación con Nginx y HTTPS (cuando se acerque la entrega final)
 
-No hace falta para el miércoles. Es la forma que describe la pantalla 11.
+No hace falta para el miércoles. Es la forma que describe la pantalla 11: una laptop hace de
+**servidor** (Nginx + API + PostgreSQL) y la otra de **cliente**, que solo necesita un navegador.
 
-1. Descarga Nginx para Windows (nginx.org → "Stable version", zip) y descomprímelo en `C:\nginx`.
-2. Certificado local con mkcert (github.com/FiloSottile/mkcert → Releases → `mkcert-…-windows-amd64.exe`):
+```
+Laptop cliente                      Laptop servidor
+https://TU_IP  ── misma red ──▶  Nginx :443 ─┬─ app compilada (frontend/dist)
+                                             └─ /api → Express 127.0.0.1:3000 → PostgreSQL
+http://TU_IP   ── misma red ──▶  Nginx :80  → redirige a https://
+```
+
+A diferencia de `npm run dev`, aquí no corre Vite: Nginx entrega los archivos ya compilados y reenvía
+`/api` a Express, que sigue escuchando solo en `127.0.0.1`. `TU_IP` es la IPv4 del Wi-Fi de la
+laptop servidor (`ipconfig`; ignora la de "vEthernet (WSL)").
+
+### 8.1 Preparación (una sola vez, en la laptop servidor)
+
+1. **Nginx:** nginx.org → "Stable version" (zip para Windows). Descomprímelo en una ruta sin espacios
+   ni acentos de modo que quede `C:\nginx\nginx.exe` (en esta guía, `C:\nginx`). No muevas la carpeta
+   después: el permiso del firewall queda ligado a esa ruta.
+2. **mkcert:** github.com/FiloSottile/mkcert → Releases → `mkcert-v1.4.4-windows-amd64.exe`. Renómbralo
+   `mkcert.exe` y guárdalo en `C:\herramientas`. Luego, una sola vez:
    ```powershell
-   mkcert -install
-   mkcert -cert-file infra\nginx\certs\kitchenlink.pem -key-file infra\nginx\certs\kitchenlink-key.pem localhost 127.0.0.1 192.168.1.50
+   C:\herramientas\mkcert.exe -install     # crea la autoridad local; acepta el aviso de Windows
    ```
-   (usa la IP real del servidor). En la laptop cliente instala el archivo `rootCA.pem`
-   (`mkcert -CAROOT` dice dónde está) o acepta la advertencia del navegador.
-3. `npm run build` (genera `frontend/dist`).
-4. Copia los dos bloques `server` de `infra/nginx/kitchenlink.conf` dentro de `http { }` en
-   `C:\nginx\conf\nginx.conf` y ajusta las tres rutas marcadas con `AJUSTA`.
-5. En `backend/.env`: `COOKIE_SECURE=true` y `NODE_ENV=production`. Inicia la API con `npm start -w backend`.
-6. `cd C:\nginx` → `start nginx`. Abre `https://192.168.1.50` desde la otra laptop.
-   (Recargar configuración: `nginx -s reload`; detener: `nginx -s stop`.)
+3. **Certificado.** Córrelo **desde la carpeta del repo**: si lo corres en otra carpeta, los archivos
+   se crean ahí y Nginx no los encuentra.
+   ```powershell
+   mkdir infra\nginx\certs                 # solo la primera vez
+   C:\herramientas\mkcert.exe -cert-file infra\nginx\certs\kitchenlink.pem -key-file infra\nginx\certs\kitchenlink-key.pem localhost 127.0.0.1 TU_IP
+   ```
+   Cambia `TU_IP` por la IP real (no la de ejemplo). `infra/nginx/certs/` está en `.gitignore`: no se sube.
+4. **Configura Nginx.** Guarda una copia de `C:\nginx\conf\nginx.conf` (p. ej. `nginx.conf.original`) y,
+   dentro del bloque `http { }`:
+   - **Borra el `server { listen 80; server_name localhost; … }` de ejemplo.** Si se queda, sale
+     "Welcome to nginx!" en vez de la app.
+   - Pega en su lugar los dos bloques `server` de `infra/nginx/kitchenlink.conf`.
+   - Ajusta las tres rutas marcadas con `AJUSTA` a la carpeta de tu repo, con diagonales normales `/`:
+     ```nginx
+     ssl_certificate     C:/Proyectos/kitchenlink/infra/nginx/certs/kitchenlink.pem;
+     ssl_certificate_key C:/Proyectos/kitchenlink/infra/nginx/certs/kitchenlink-key.pem;
+     root                C:/Proyectos/kitchenlink/frontend/dist;
+     ```
+   - Deja el `include mime.types;` que ya viene al inicio de `http`: sin él, el navegador no ejecuta los `.js`.
+
+   Comprueba la configuración (en PowerShell hay que anteponer `.\`):
+   ```powershell
+   cd C:\nginx
+   .\nginx -t        # "syntax is ok" y "test is successful"
+   ```
+5. **Laptop cliente (opcional, una sola vez):** para que no salga "La conexión no es privada", copia
+   `rootCA.pem` de la carpeta que indica `C:\herramientas\mkcert.exe -CAROOT` (por USB, Drive o WhatsApp:
+   no es secreto). En la laptop cliente:
+   ```powershell
+   certutil -user -addstore Root rootCA.pem
+   ```
+   Acepta el aviso y reinicia el navegador. Sigue sirviendo aunque cambie la IP.
+   **Nunca copies `rootCA-key.pem`** (está en la misma carpeta): con esa llave se pueden fabricar
+   certificados falsos de cualquier sitio que la otra laptop aceptaría.
+6. **Ensayen antes** todo el 8.2, en la misma red que van a usar el día de la presentación.
+
+### 8.2 El día de la presentación
+
+**Red:** las dos laptops en la misma red. No hace falta internet (la app no usa nada externo).
+Usen el **hotspot de un celular**: las redes de escuelas y de invitados suelen impedir que los equipos
+se vean entre sí. La laptop servidor, conectada a la corriente y sin que se suspenda.
+
+En la laptop servidor:
+
+1. `ipconfig` → anota la IPv4 del Wi-Fi. **Si es distinta a la del certificado**, repite solo el comando
+   de mkcert del paso 8.1.3 con la IP nueva (no hace falta `-install` ni tocar la laptop cliente).
+2. Si cambió algo del frontend desde la última vez: `npm run build`.
+3. **API en modo producción**: terminal 1, en la carpeta del repo, y déjala abierta:
+   ```powershell
+   $env:NODE_ENV='production'; $env:COOKIE_SECURE='true'; npm start -w backend
+   ```
+   Debe decir `entorno: production` y `Base de datos: kitchenlink como kitchenlink_app ✓`.
+   - `COOKIE_SECURE=true`: la cookie de sesión solo viaja por HTTPS.
+   - `NODE_ENV=production`: los errores no muestran detalles internos.
+   - Esas variables solo valen en esa ventana y tienen prioridad sobre `backend/.env`, así que
+     **no hay que editar el `.env`**. Para volver a programar con `npm run dev`, usa otra terminal.
+   - En "Símbolo del sistema": `set NODE_ENV=production`, `set COOKIE_SECURE=true` (cada uno en su
+     línea) y luego `npm start -w backend`.
+4. **Nginx**, en la terminal 2:
+   ```powershell
+   cd C:\nginx
+   .\nginx -t
+   start .\nginx.exe
+   ```
+   Si Windows pregunta por el Firewall, permite el acceso para el tipo de red que estén usando
+   (una red nueva, como el hotspot, suele quedar como **Pública**).
+5. Comprueba en la laptop servidor: `https://TU_IP/api/salud` → `"estado":"ok"` y `"entorno":"production"`.
+   Usa la IP, no `https://localhost` (ver la tabla de abajo).
+
+En la laptop cliente: abre `https://TU_IP` (si alguien escribe `http://`, Nginx lo manda a `https://`) y
+entra, por ejemplo, con `dbenitez` / `Kitchen2026` (Jefe de cocina) mientras el servidor usa `lsaenz`
+(Gerente): dos dispositivos con roles distintos.
+
+**Plan B:** si la red falla, en la laptop servidor `https://127.0.0.1` funciona siempre (el certificado
+incluye esa dirección).
+
+### 8.3 Al terminar
+
+```powershell
+cd C:\nginx
+.\nginx -s stop        # si falla: taskkill /IM nginx.exe /F
+```
+
+y `Ctrl+C` en la terminal de la API. Nginx **no** se detiene al cerrar la terminal: sigue en segundo
+plano hasta `.\nginx -s stop` o hasta reiniciar la laptop, y mientras corre cualquier equipo de la
+misma red puede abrir la pantalla de inicio de sesión. Tampoco arranca solo al encender la laptop.
+Después de editar `nginx.conf` con Nginx corriendo: `.\nginx -s reload`.
+
+### Problemas con Nginx
+
+| Síntoma | Causa y solución |
+|---|---|
+| `nginx -t`: `cannot load certificate` | Ruta mal escrita o con `\`, o el certificado se creó fuera del repo (mkcert corrido en otra carpeta) |
+| "Welcome to nginx!" | Quedó el `server` de ejemplo en `nginx.conf` |
+| `500 Internal Server Error` | Falta `npm run build` o la ruta `root` está mal |
+| `502 Bad Gateway` / "El servidor de KitchenLink no responde" | La API no está corriendo (8.2.3) |
+| "La conexión no es privada" en la laptop servidor | La IP actual no está en el certificado: regéneralo (8.1.3) y `.\nginx -s reload` |
+| "La conexión no es privada" en la laptop cliente | Falta instalar `rootCA.pem` (8.1.5), o acepten la advertencia |
+| La laptop cliente no carga nada | No están en la misma red, la red aísla a los equipos (escuela, invitados) o el firewall lo bloquea: usen el hotspot |
+| `bind() … failed` en `C:\nginx\logs\error.log` | Nginx ya estaba corriendo u otro programa usa el puerto 80/443: `.\nginx -s stop` y vuelve a arrancarlo |
+| Después, `http://localhost:5173` se cambia solo a `https` | El navegador recordó HSTS (lo envía la API). En `chrome://net-internals/#hsts` → *Delete domain security policies* → `localhost` |
 
 ### Servidor Ubuntu (como dice la arquitectura)
 
