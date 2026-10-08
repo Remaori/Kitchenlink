@@ -32,11 +32,18 @@ export function ProveedorSesion({ children }) {
     setEstado({ cargando: false, datos: null, aviso });
   }, []);
 
+  // Vuelve a leer usuario y permisos: el gerente pudo cambiar las casillas
+  // del rol (02c) o el rol de la persona (02a) mientras trabajaba.
+  const refrescar = useCallback(async () => {
+    const datos = await api.get('/auth/sesion').catch(() => null);
+    if (datos) setEstado((e) => ({ ...e, datos }));
+  }, []);
+
   const valor = useMemo(() => ({
     ...estado,
     tienePermiso: (clave) => !!estado.datos?.permisos.some((p) => p.clave === clave),
-    iniciarSesion, cambiarContrasena, cerrarSesion,
-  }), [estado, iniciarSesion, cambiarContrasena, cerrarSesion]);
+    iniciarSesion, cambiarContrasena, cerrarSesion, refrescar,
+  }), [estado, iniciarSesion, cambiarContrasena, cerrarSesion, refrescar]);
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }

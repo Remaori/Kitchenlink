@@ -33,7 +33,7 @@ body {
   background: var(--superficie);
   -webkit-font-smoothing: antialiased;
 }
-button, input { font: inherit; }
+button, input, select, textarea { font: inherit; }
 
 /* ---------- 01 y 01b: tarjeta centrada ---------- */
 .pantalla-centrada {
@@ -166,7 +166,7 @@ button, input { font: inherit; }
 .marco { display: flex; min-height: 100%; }
 .lateral {
   width: 248px; flex: none;
-  background: var(--blanco); border-right: 1px solid var(--borde);
+  background: var(--superficie); border-right: 1px solid var(--borde);
   display: flex; flex-direction: column;
   padding: 20px 14px;
   position: sticky; top: 0; height: 100vh;
@@ -174,13 +174,15 @@ button, input { font: inherit; }
 .lateral-marca { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; padding: 2px 8px 22px; }
 .lateral-menu { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; }
 .lateral-menu a, .lateral-menu span {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 12px; border-radius: var(--radio);
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 10px; border-radius: var(--radio);
   font-size: 14px; color: #374151; text-decoration: none; white-space: nowrap;
 }
+.lateral-menu svg { flex: none; }
 .lateral-menu a.activo { background: var(--morado-suave); color: var(--morado); font-weight: 500; }
 .lateral-menu .deshabilitado { color: var(--tenue); cursor: default; }
 .lateral-menu small {
+  flex: none;
   margin-left: auto; font-size: 10.5px; color: var(--tenue);
   border: 1px solid var(--borde); border-radius: 999px; padding: 1px 7px;
 }
@@ -189,17 +191,15 @@ button, input { font: inherit; }
 .lateral-perfil-texto strong { font-size: 13px; font-weight: 500; }
 .lateral-perfil-texto small { font-size: 11.5px; color: var(--tenue); }
 
-.principal { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.principal { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--blanco); }
 .encabezado {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 22px 30px; background: var(--blanco); border-bottom: 1px solid var(--borde);
 }
 .encabezado h1 { font-size: 20px; font-weight: 600; margin: 0; }
 .encabezado p { font-size: 13px; color: var(--gris); margin: 4px 0 0; }
-.contenido {
-  padding: 24px 30px 40px;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; align-items: start;
-}
+.contenido { padding: 24px 30px 40px; }
+.contenido.rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; align-items: start; }
 .tarjeta { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; padding: 18px 20px; }
 .tarjeta.ancho { grid-column: 1 / -1; }
 .tarjeta-titulo { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; margin: 0 0 6px; }
@@ -221,10 +221,10 @@ button, input { font: inherit; }
 .punto.ok { background: var(--verde); }
 .punto.malo { background: var(--rojo); }
 
-.tabla-envoltura { overflow-x: auto; border: 1px solid var(--borde); border-radius: 10px; }
-.tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
-.tabla th { text-align: left; font-weight: 500; color: var(--gris); background: var(--superficie); padding: 10px 14px; white-space: nowrap; }
-.tabla td { padding: 10px 14px; border-top: 1px solid var(--borde); white-space: nowrap; }
+.tabla-envoltura { overflow-x: auto; border: 1px solid var(--borde); border-radius: 12px; }
+.tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabla th { text-align: left; font-weight: 500; font-size: 13px; color: var(--gris); background: var(--superficie); padding: 12px 16px; white-space: nowrap; }
+.tabla td { padding: 12px 16px; border-top: 1px solid var(--borde); white-space: nowrap; vertical-align: middle; }
 .insignia { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 999px; }
 .insignia::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .insignia.ok { background: var(--verde-suave); color: #0E9F5A; }

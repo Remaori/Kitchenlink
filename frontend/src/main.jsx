@@ -7,6 +7,7 @@ import '@fontsource/inter/500.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import './estilos/app.css';
+import './estilos/administracion.css';
 import { ProveedorSesion } from './sesion/ContextoSesion.jsx';
 import App from './App.jsx';
 

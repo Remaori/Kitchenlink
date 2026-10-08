@@ -20,4 +20,12 @@ export const IconoCaja = I(<><rect x="4" y="10" width="16" height="10" rx="2" />
 export const IconoMenu = I(<><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 9h8M8 13h8M8 17h5" /></>);
 export const IconoGrafica = I(<><path d="M5 20V10M12 20V4M19 20v-7" /></>);
 export const IconoPersonas = I(<><circle cx="9" cy="8" r="3.2" /><path d="M3.5 19c.7-3.2 3-4.8 5.5-4.8s4.8 1.6 5.5 4.8" /><path d="M16 5.2a3 3 0 0 1 0 5.6M17.5 14.4c1.6.6 2.7 2 3 4.6" /></>);
+export const IconoMas = I(<path d="M12 5v14M5 12h14" />);
+export const IconoBuscar = I(<><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4 4" /></>);
+export const IconoCandado = I(<><rect x="5" y="10.5" width="14" height="9.5" rx="2" /><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" /></>);
+export const IconoCopiar = I(<><rect x="8.5" y="8.5" width="11" height="11" rx="2" /><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2" /></>);
+export const IconoEquis = I(<path d="M6 6l12 12M18 6L6 18" />);
+export const IconoFlecha = I(<path d="M5 12h14M13 6l6 6-6 6" />);
+export const IconoTelefono = I(<><rect x="7" y="3" width="10" height="18" rx="2" /><path d="M11 17.5h2" /></>);
+export const IconoHistorial = I(<><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5" /><path d="M4 4v4.5h4.5M12 8v4.5l3 2" /></>);
 export const IconoServidor = I(<><rect x="4" y="4" width="16" height="7" rx="1.5" /><rect x="4" y="13" width="16" height="7" rx="1.5" /><path d="M8 7.5h.1M8 16.5h.1" /></>);
