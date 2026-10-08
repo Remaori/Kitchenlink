@@ -98,10 +98,8 @@ npm run usuario:gerente -- lsaenz "Luis Sáenz Jiménez"   # primer gerente de u
 
 `backend/test/conectividad.test.js` — 8 pruebas de conexión, permisos mínimos, pool y `/api/salud`.
 
-## Pendiente para las siguientes tareas del módulo
+## Siguientes tareas del módulo
 
-02a/02b (alta, edición, baja y restablecimiento por el gerente), 02c (roles y permisos) y Socket.IO.
-
-Al hacer 02b: guardar `nombre_usuario` siempre en minúsculas. El inicio de sesión no distingue
-mayúsculas, pero la restricción UNIQUE de la base sí; sin esa regla podrían existir `Luis` y `luis`.
-(Alternativa en la base: un índice único sobre `lower(nombre_usuario)`.)
+02a/02b (alta, edición, baja y restablecimiento por el gerente) y 02c (roles y permisos) ya están hechas:
+ver [ROLES_Y_USUARIOS.md](ROLES_Y_USUARIOS.md). Ahí quedó resuelto el pendiente de guardar `nombre_usuario`
+siempre en minúsculas. Socket.IO va con las comandas.

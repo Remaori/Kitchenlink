@@ -13,6 +13,9 @@ Equipo: Luis Antonio Sáenz Jiménez · Diego Jerónimo Benítez
 | Creación de la base de datos | Listo · esquema v3 | [database/](database/README.md) · `npm run db:instalar` |
 | Pruebas de conectividad con base de datos | Listo · 24 verificaciones + 8 pruebas | `npm run db:conectividad` · `npm test` |
 | Codificación de Iniciar sesión (autenticación) | Listo · 01 y 01b + 22 pruebas | [docs/AUTENTICACION.md](docs/AUTENTICACION.md) |
+| Codificación de Administrar roles | Listo · 02c + 14 pruebas | [docs/ROLES_Y_USUARIOS.md](docs/ROLES_Y_USUARIOS.md) |
+| Prueba temprana de validación: Iniciar sesión y Administrar roles | Listo · 20 casos, 20 pasan | [docs/PRUEBA_TEMPRANA_VALIDACION.md](docs/PRUEBA_TEMPRANA_VALIDACION.md) |
+| Codificación de Administrar usuarios | Listo · 02a y 02b + 18 pruebas | [docs/ROLES_Y_USUARIOS.md](docs/ROLES_Y_USUARIOS.md) |
 
 ## Estructura
 
@@ -20,17 +23,17 @@ Equipo: Luis Antonio Sáenz Jiménez · Diego Jerónimo Benítez
 kitchenlink/
 ├── backend/            API REST · Node.js + Express
 │   ├── src/
-│   │   ├── seguridad/  inicio de sesión, sesiones, contraseñas, permisos
-│   │   ├── rutas/      /api/salud, /api/usuarios
+│   │   ├── seguridad/  inicio de sesión, sesiones, contraseñas, permisos, roles y usuarios
+│   │   ├── rutas/      /api/salud, /api/usuarios, /api/roles
 │   │   ├── app.js      aplicación Express
 │   │   ├── db.js       pool de PostgreSQL y transacciones con usuario
 │   │   └── server.js   punto de entrada
 │   ├── scripts/        instalar la base, conectividad, comandos de usuarios
 │   └── test/           pruebas automáticas (node:test + supertest)
-├── frontend/           SPA · React + Vite (pantallas 01 y 01b)
+├── frontend/           SPA · React + Vite (pantallas 01, 01b, 02a, 02b y 02c)
 ├── database/           scripts SQL 00–04 (esquema v3)
 ├── infra/nginx/        servidor web y proxy inverso con HTTPS local
-└── docs/               guía de entorno, autenticación y ERD v3
+└── docs/               guía de entorno, seguridad, prueba temprana (con evidencias) y ERD v3
 ```
 
 ## Inicio rápido
@@ -42,7 +45,7 @@ npm install
 npm run env:crear              # crea backend/.env; luego escribe DB_ADMIN_PASSWORD (contraseña de postgres)
 npm run db:instalar            # base kitchenlink con el esquema v3 y datos de demostración
 npm run db:conectividad        # pruebas de conectividad (genera reporte)
-npm test                       # 30 pruebas automáticas
+npm test                       # 62 pruebas automáticas
 npm run dev                    # API en :3000 y app en http://localhost:5173
 ```
 
