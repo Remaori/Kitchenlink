@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "node --test --test-reporter=spec --test-concurrency=1 test/conectividad.test.js test/autenticacion.test.js",
+    "test": "node --test --test-reporter=spec --test-concurrency=1 test/conectividad.test.js test/autenticacion.test.js test/roles.test.js test/usuarios.test.js",
     "env:crear": "node scripts/crear-env.js",
     "db:instalar": "node scripts/instalar-bd.js",
     "db:conectividad": "node scripts/conectividad.js",

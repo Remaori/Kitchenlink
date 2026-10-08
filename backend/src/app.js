@@ -7,6 +7,7 @@ import { manejadorErrores, rutaNoEncontrada } from './errores.js';
 import rutasSalud from './rutas/salud.js';
 import rutasAuth from './seguridad/rutas.js';
 import rutasUsuarios from './rutas/usuarios.js';
+import rutasRoles from './rutas/roles.js';
 
 export function crearApp() {
   const app = express();
@@ -30,6 +31,7 @@ export function crearApp() {
   app.use('/api/salud', rutasSalud);
   app.use('/api/auth', rutasAuth);
   app.use('/api/usuarios', rutasUsuarios);
+  app.use('/api/roles', rutasRoles);
   app.use('/api', rutaNoEncontrada);
   app.use(manejadorErrores);
   return app;

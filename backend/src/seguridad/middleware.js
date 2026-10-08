@@ -27,12 +27,16 @@ export function autenticar({ permitirTemporal = false } = {}) {
   };
 }
 
-/** Exige que el rol del usuario tenga marcada la casilla `clave` en 02c. */
-export function exigirPermiso(clave) {
+/**
+ * Exige que el rol del usuario tenga marcada la casilla `clave` en 02c.
+ * Con varias claves basta con una (ej. 02b lee los roles con «Administrar usuarios»).
+ */
+export function exigirPermiso(...claves) {
   return async (req, _res, next) => {
-    if (req.sesion?.permisos.some((p) => p.clave === clave)) return next();
-    const { rows: [p] } = await consulta('SELECT nombre FROM permiso WHERE clave = $1', [clave]);
+    if (req.sesion?.permisos.some((p) => claves.includes(p.clave))) return next();
+    const { rows } = await consulta('SELECT nombre FROM permiso WHERE clave = ANY($1::text[]) ORDER BY orden', [claves]);
+    const nombres = (rows.length ? rows.map((p) => p.nombre) : claves).map((n) => `«${n}»`).join(' ni ');
     throw new ErrorHttp(403, 'SIN_PERMISO',
-      `${req.sesion.usuario.rol} no tiene el permiso «${p ? p.nombre : clave}».`, { permiso: clave });
+      `${req.sesion.usuario.rol} no tiene el permiso ${nombres}.`, { permiso: claves.join(',') });
   };
 }
