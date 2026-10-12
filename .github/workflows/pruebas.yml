@@ -1,0 +1,60 @@
+# Pruebas automáticas en cada push a main y en cada Pull Request:
+# instala la base en un PostgreSQL 16 temporal, corre `npm test` y compila la aplicación.
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruebas:
+    name: API, base de datos y compilación
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Las pruebas no leen backend/.env: todo llega por variables de entorno.
+    # Son credenciales de un servidor desechable, no las del restaurante.
+    env:
+      TZ: America/Mexico_City
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_ADMIN_USER: postgres
+      DB_ADMIN_PASSWORD: postgres
+      DB_PASSWORD: kitchenlink-ci
+      JWT_SECRET: solo-para-pruebas-en-ci-0123456789abcdef
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Pruebas automáticas
+        run: npm test
+
+      - name: Compilar la aplicación
+        run: npm run build
+
+      # Aviso, no bloqueo: una vulnerabilidad publicada en una dependencia no rompe la integración,
+      # pero queda marcada en el resumen de la ejecución para actualizar la dependencia.
+      - name: Vulnerabilidades conocidas en dependencias
+        run: npm audit --audit-level=high
+        continue-on-error: true
