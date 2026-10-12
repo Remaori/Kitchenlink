@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSesion } from '../sesion/ContextoSesion.jsx';
 import { Alerta, Campo, CampoContrasena, Logo } from '../componentes/Campos.jsx';
 import { IconoInfo, IconoUsuario } from '../componentes/Iconos.jsx';
+// La versión del pie es la del paquete (la misma que reporta la API en /api/salud)
+import { version } from '../../package.json';
 
 export default function IniciarSesion() {
   const { iniciarSesion, aviso } = useSesion();
@@ -53,7 +55,7 @@ export default function IniciarSesion() {
           <IconoInfo width={16} height={16} />
           <span>¿No puedes entrar? Pide al gerente que restablezca tu contraseña.</span>
         </div>
-        <p className="acceso-pie">Versión 1.0 · Uso interno del restaurante</p>
+        <p className="acceso-pie">Versión {version} · Uso interno del restaurante</p>
       </form>
     </main>
   );
