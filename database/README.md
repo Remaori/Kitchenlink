@@ -1,4 +1,4 @@
-# Base de datos · PostgreSQL 16
+# Base de datos · PostgreSQL 16 o superior
 
 | Archivo | Qué hace | Quién lo ejecuta |
 |---|---|---|

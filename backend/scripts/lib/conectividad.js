@@ -48,7 +48,8 @@ export async function ejecutarVerificaciones({ urlApi = `http://127.0.0.1:${conf
              pg_encoding_to_char((SELECT encoding FROM pg_database WHERE datname = current_database())) AS codificacion,
              current_setting('TimeZone') AS zona, current_setting('search_path') AS search_path,
              (fn_ahora() = now()) AS reloj_real`);
-    v('Servidor', 'Versión de PostgreSQL', Math.floor(s.version_num / 10000) === 16 ? PASA : AVISO, s.version);
+    // El esquema se escribió para PostgreSQL 16 y funciona igual en versiones más nuevas (probado en 18)
+    v('Servidor', 'Versión de PostgreSQL (16 o superior)', Math.floor(s.version_num / 10000) >= 16 ? PASA : AVISO, s.version);
     v('Servidor', 'Usuario de la aplicación sin privilegios de superusuario', !s.superusuario ? PASA : FALLA, s.usuario);
     v('Servidor', 'Codificación UTF8', s.codificacion === 'UTF8' ? PASA : AVISO, s.codificacion + (s.codificacion === 'UTF8' ? '' : ' → npm run db:instalar -- --recrear'));
     v('Servidor', 'Zona horaria del restaurante', s.zona === config.zonaHoraria ? PASA : AVISO, s.zona);

@@ -95,7 +95,9 @@ export default function FormularioUsuario() {
     <form onSubmit={guardar} noValidate>
       <Encabezado titulo={titulo} migas={[['Usuarios y roles', '/usuarios'], [nuevo ? 'Nuevo usuario' : (original?.nombre_completo ?? '…')]]}>
         <Link className="boton boton-secundario" to="/usuarios">Cancelar</Link>
-        <button type="submit" className="boton boton-primario compacto" disabled={enviando || cargando || (original?.estado === 'dado_de_baja')}>
+        {/* Al dar de alta, espera a que llegue la contraseña temporal antes de dejar crear */}
+        <button type="submit" className="boton boton-primario compacto"
+          disabled={enviando || cargando || (nuevo && !temporal) || (original?.estado === 'dado_de_baja')}>
           {nuevo ? <><Ic.IconoMas width={17} height={17} />{enviando ? 'Creando…' : 'Crear usuario'}</> : (enviando ? 'Guardando…' : 'Guardar cambios')}
         </button>
       </Encabezado>

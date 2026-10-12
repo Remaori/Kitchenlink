@@ -91,6 +91,9 @@ button, input, select, textarea { font: inherit; }
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .entrada input::placeholder { color: var(--tenue); }
+/* Edge agrega a los campos su propio botón para ver la contraseña (y otro para borrar);
+   aquí el campo ya trae el suyo (el ojo), así que se ocultan los del navegador. */
+.entrada input::-ms-reveal, .entrada input::-ms-clear { display: none; }
 .entrada input:focus { border-color: var(--morado); box-shadow: 0 0 0 3px var(--morado-suave); }
 .entrada-icono, .entrada-boton {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);

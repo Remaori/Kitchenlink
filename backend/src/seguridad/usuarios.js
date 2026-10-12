@@ -227,7 +227,10 @@ export async function historial(id) {
                 ELSE b.detalle END AS detalle
        FROM bitacora b LEFT JOIN usuario a ON a.id = b.usuario_id
        WHERE b.entidad = 'usuario' AND b.entidad_id = $1
-       ORDER BY b.registrado_en DESC, b.id DESC
+       -- Lo más reciente arriba. Si una acción dejó varios registros a la misma hora, el
+       -- cambio de estado (el resultado) va encima de su causa: "Pendiente → Activo" sobre
+       -- "Creó su propia contraseña", como se lee el resto de la lista.
+       ORDER BY b.registrado_en DESC, (b.accion = 'cambiar_estado') DESC, b.id DESC
        LIMIT 100`, [id]),
     consulta(
       `SELECT (SELECT count(*) FROM comanda WHERE mesero_usuario_id = $1)::int        AS comandas,

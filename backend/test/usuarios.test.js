@@ -227,4 +227,11 @@ describe('02a · Ver historial', () => {
     assert.ok(pedro.body.eventos.some((e) => e.texto === 'Rol: Mesero → Hostess'));
     assert.ok(pedro.body.eventos.some((e) => e.texto === 'Datos editados: nombre, teléfono'));
   });
+
+  test('lo que deja una misma acción se lee de arriba abajo como el resto: el resultado sobre su causa', async () => {
+    const r = await gerente.get(`/api/usuarios/${await idDe('dbenitez')}/historial`).expect(200);
+    const textos = r.body.eventos.map((e) => e.texto);
+    const estado = textos.indexOf('Estado de la cuenta: Pendiente → Activo');
+    assert.ok(estado >= 0 && estado < textos.indexOf('Creó su propia contraseña'), textos.join(' / '));
+  });
 });

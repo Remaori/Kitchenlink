@@ -101,7 +101,7 @@ el primero y queda la versión completa del segundo, nunca una mezcla a medias.
 repetido, datos inválidos, guardar casillas (con bitácora), cambio sin volver a entrar, protección del
 Gerente, dar de baja y reactivar.
 
-`backend/test/usuarios.test.js` — 18 pruebas de 02a y 02b: lista, permisos de acceso, temporal sin caché,
+`backend/test/usuarios.test.js` — 19 pruebas de 02a y 02b: lista, permisos de acceso, temporal sin caché,
 alta → primer inicio → Activo con los permisos del rol, duplicados sin importar mayúsculas, validaciones,
 editar (bitácora y permisos al instante), protecciones del gerente, último Gerente activo, restablecer
 (sesiones cerradas, 01b), dar de baja (corta la sesión), reactivar (Activo o Pendiente, rol dado de baja) e
