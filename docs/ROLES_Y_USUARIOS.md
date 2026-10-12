@@ -58,9 +58,9 @@ lee los permisos del rol en cada petición (la misma consulta que revisa que la 
 triggers de la base revisan el permiso en el momento de cada operación. Así, quitarle un permiso a un rol
 surte efecto de inmediato, que es lo seguro. El menú de la persona se actualiza al cambiar de pantalla.
 La pantalla dice "Los cambios aplican desde la siguiente acción de cada usuario, sin que tenga que volver a
-entrar". **Ajustar el texto en Figma.**
+entrar"; el texto del diseño está pendiente de ajustarse.
 
-*Pregunta probable: "¿y si el gerente se equivoca y le quita un permiso a alguien que está trabajando?"*
+**¿Y si el gerente se equivoca y le quita un permiso a alguien que está trabajando?**
 Su siguiente acción con ese permiso se rechaza con un mensaje claro ("Mesero no tiene el permiso…"); el
 gerente marca la casilla de nuevo y la persona sigue sin volver a entrar.
 

@@ -2,19 +2,17 @@
 
 | | |
 |---|---|
-| Tarea del cronograma | Prueba temprana de validación: Iniciar sesión y Administrar roles (13 oct 2026) |
 | Ejecutada | 8 de octubre de 2026 |
 | Casos de uso | **Iniciar sesión** (pantallas 01 y 01b) y **Administrar roles** (pantalla 02c) |
 | Resultado | **20 casos · 20 pasan · 0 fallan** |
 
 ## Objetivo
 
-Confirmar, antes de la revisión del miércoles 14 de octubre, que los dos casos de uso hacen lo que dicen las
-pantallas 01, 01b y 02c y las reglas de la pantalla 12 (Flujos de operación), usando la aplicación completa:
-navegador → app compilada (servidor de Vite) → API → PostgreSQL.
+Confirmar que los dos casos de uso hacen lo que dicen las pantallas 01, 01b y 02c y las reglas de la
+pantalla 12 (Flujos de operación), usando la aplicación completa: navegador → app compilada (servidor de
+Vite) → API → PostgreSQL.
 
-Administrar usuarios (02a, 02b) queda fuera de esta prueba: tiene sus 18 pruebas automáticas y su prueba por
-caso de uso está programada para el 26 de noviembre.
+Administrar usuarios (02a, 02b) queda fuera de esta prueba; lo cubren sus propias pruebas automáticas.
 
 ## Cómo se hizo
 
@@ -58,16 +56,16 @@ Base `kitchenlink_e2e`, recién instalada con los datos de demostración (`03_pr
 | PV-19 | Dar de baja y reactivar | Encargado de barra (su único usuario ya está dado de baja) → Dar de baja rol → confirmar; abrir Nuevo usuario; volver y Reactivar rol | Queda "Dado de baja" al final de la lista; no aparece en el selector de rol de 02b; se reactiva | Pantalla · prueba automática | PASA · [baja](evidencias/prueba-temprana-seguridad/PV-19a.jpg) · [reactivado](evidencias/prueba-temprana-seguridad/PV-19.jpg) |
 | PV-20 | Rol sin el permiso | `lmora` (Mesero) → abrir `/roles` | Sin "Usuarios y roles" en el menú; la pantalla dice "Sin acceso"; la API responde 403 | Pantalla · prueba automática | PASA · [captura](evidencias/prueba-temprana-seguridad/PV-20.jpg) |
 
-## Observaciones para la revisión del 14 de octubre
+## Observaciones
 
 1. **Texto de 02c.** El diseño dice "Los cambios aplican en el siguiente inicio de sesión de cada usuario".
    En la aplicación aplican desde la siguiente acción (PV-16), que es más seguro: quitar un permiso surte
    efecto en ese momento. La pantalla ya dice "Los cambios aplican desde la siguiente acción de cada
    usuario, sin que tenga que volver a entrar". Propuesta: ajustar el texto en Figma. El porqué está en
    [ROLES_Y_USUARIOS.md](ROLES_Y_USUARIOS.md).
-2. **Cronograma.** "Codificación de Gestionar modificadores" (20 de octubre) ya no corresponde: el esquema v3
-   quitó los modificadores por una observación de la revisión anterior. Propuesta: quitarla o usar ese día
-   para otra tarea.
+2. **Modificadores.** El esquema v3 quitó los modificadores: el término y la guarnición van en la nota del
+   producto, y un extra con costo se da de alta como producto. La tarea de "Gestionar modificadores" del
+   plan de trabajo ya no corresponde.
 3. **"Panel" del gerente.** El menú lateral del diseño tiene "Panel", pero no hay pantalla para él. Por ahora
    la app muestra un Inicio provisional (permisos de quien entra y estado del sistema).
 
@@ -75,6 +73,6 @@ Base `kitchenlink_e2e`, recién instalada con los datos de demostración (`03_pr
 
 ```bash
 npm run db:instalar -- --recrear   # datos de demostración desde cero (algunos casos los modifican)
-npm test                           # 62 pruebas automáticas
+npm test                           # pruebas automáticas
 npm run dev                        # http://localhost:5173 y seguir la columna "Pasos" en orden
 ```

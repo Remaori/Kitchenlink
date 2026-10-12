@@ -1,8 +1,8 @@
 # Guía de entorno y repositorio · KitchenLink
 
-Cubre las tareas del cronograma **Preparación del entorno y repositorios**, **Creación de la base de datos**
-y **Pruebas de conectividad con base de datos**. Está escrita para Windows 10/11; al final hay notas para
-el servidor Ubuntu que describe la arquitectura.
+Cómo preparar una computadora para desarrollar KitchenLink (herramientas, base de datos y pruebas de
+conectividad) y cómo instalarlo en el servidor del restaurante con Nginx y HTTPS. Está escrita para
+Windows 10/11; al final hay notas para un servidor Ubuntu.
 
 Tiempo estimado: 1 hora la primera vez, por persona.
 
@@ -17,10 +17,8 @@ Tiempo estimado: 1 hora la primera vez, por persona.
 | Git | la más reciente | git-scm.com → Download for Windows | Opciones por defecto (incluye Git Credential Manager) |
 | VS Code | la más reciente | code.visualstudio.com | Al abrir el proyecto sugiere las extensiones recomendadas |
 
-> **Sobre Node.js 20:** la pantalla 11 dice "Node.js 20", pero Node 20 dejó de recibir
-> parches de seguridad el 30 de abril de 2026. Recomendamos instalar la 24 LTS y cambiar
-> ese texto en Figma a "Node.js 24 LTS". El código funciona con 20.19 o superior, por si
-> deciden no cambiarlo.
+> **Versión de Node.js:** se recomienda la 24 LTS. Node 20 dejó de recibir parches de seguridad el
+> 30 de abril de 2026, aunque el código funciona desde la 20.19.
 
 Comprueba en una terminal nueva (PowerShell o "Símbolo del sistema"):
 
@@ -41,66 +39,26 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 Configura Git una sola vez:
 
 ```powershell
-git config --global user.name "Luis Antonio Sáenz Jiménez"
+git config --global user.name "Tu Nombre"
 git config --global user.email "tu-correo@ejemplo.com"     # el mismo de tu cuenta de GitHub
 git config --global init.defaultBranch main
 ```
 
 ---
 
-## 2. Crear el repositorio en GitHub (lo hace una persona: Luis)
+## 2. Obtener el código
 
-1. En github.com → **New repository**.
-   - Nombre: `kitchenlink`
-   - **Private** (o Public si el profesor lo pide)
-   - **No** marques "Add a README", ".gitignore" ni licencia: el proyecto ya los trae.
-2. **Settings → Collaborators → Add people**: agrega a Diego (y al profesor si lo pide).
-3. **Settings → Branches → Add branch ruleset / protection rule** para `main`:
-   "Require a pull request before merging" con 1 aprobación.
-   *En repositorios privados de cuentas gratuitas GitHub a veces no permite esta regla; con el
-   GitHub Student Developer Pack (gratis para estudiantes) sí. Si no se puede, acuerden no
-   subir directo a `main`.*
-
-### Subir el código por primera vez
-
-Descomprime `kitchenlink.zip` en una ruta corta y sin espacios, por ejemplo `C:\Proyectos\kitchenlink`.
-
-```powershell
-cd C:\Proyectos\kitchenlink
-git init -b main
-git status        # backend/.env NO debe aparecer (todavía no existe y está en .gitignore)
-```
-
-Súbelo en commits por partes (se ve mejor en el historial que un solo commit gigante):
-
-```powershell
-git add .gitignore .gitattributes .editorconfig .nvmrc .vscode package.json package-lock.json scripts README.md docs
-git commit -m "chore: estructura del repositorio y guía de entorno"
-
-git add database
-git commit -m "feat(bd): esquema v3, permisos mínimos y datos de demostración"
-
-git add backend
-git commit -m "feat(api): Express, conectividad con PostgreSQL e inicio de sesión (JWT + bcrypt)"
-
-git add frontend infra
-git commit -m "feat(web): pantallas 01 y 01b; configuración de Nginx con HTTPS"
-
-git remote add origin https://github.com/TU_USUARIO/kitchenlink.git
-git push -u origin main
-```
-
-La primera vez que hagas `push` se abre el navegador para iniciar sesión en GitHub.
-
-### Diego: clonar
-
-Acepta la invitación (llega por correo o en github.com/notifications) y:
+Clónalo en una ruta corta y sin espacios ni acentos:
 
 ```powershell
 cd C:\Proyectos
-git clone https://github.com/TU_USUARIO/kitchenlink.git
+git clone https://github.com/Remaori/Kitchenlink.git kitchenlink
 cd kitchenlink
 ```
+
+Para subir cambios hace falta ser colaborador del repositorio: acepta la invitación (llega por correo o en
+github.com/notifications). La primera vez que hagas `push` se abre el navegador para iniciar sesión en
+GitHub. El flujo de ramas y Pull Requests está en [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ---
 
@@ -196,23 +154,15 @@ PostgreSQL **no** se abre a la red: solo Express (en el mismo equipo) se conecta
 
 ## 7. Cómo trabajar en equipo
 
-- `main` siempre funciona. Cada tarea en su rama: `feat/usuarios`, `fix/login-mensaje`, `docs/casos-de-uso`.
-- Antes de empezar: `git switch main` → `git pull` → `git switch -c feat/lo-que-sea`.
-- Commits chicos con prefijo: `feat:`, `fix:`, `docs:`, `test:`, `chore:`.
-- Al terminar: `git push -u origin feat/lo-que-sea` → Pull Request en GitHub → el otro lo revisa → *Merge*.
-- Antes de pedir revisión: `npm test` en verde.
-- Para la revisión del miércoles, una etiqueta:
-  `git tag -a v0.1.0 -m "Revisión: entorno, BD, conectividad e inicio de sesión"` y `git push --tags`.
-
-Sugerencia: que Diego suba su reporte de conectividad (`backend/reportes/conectividad-….md`, copiado a
-`docs/evidencias/`) desde su laptop en un Pull Request. Así queda evidencia de las pruebas en las dos
-máquinas y de que los dos trabajan en el repositorio.
+Ramas, commits, Pull Requests y versiones: ver [CONTRIBUTING.md](../CONTRIBUTING.md).
+Los reportes de `npm run db:conectividad` (en `backend/reportes/`, fuera del repositorio) se pueden copiar a
+`docs/evidencias/` cuando sirvan como evidencia de una prueba.
 
 ---
 
-## 8. Presentación con Nginx y HTTPS (cuando se acerque la entrega final)
+## 8. Instalación en el restaurante: Nginx y HTTPS
 
-No hace falta para el miércoles. Es la forma que describe la pantalla 11: una laptop hace de
+Es la instalación que describe la arquitectura: una laptop hace de
 **servidor** (Nginx + API + PostgreSQL) y la otra de **cliente**, que solo necesita un navegador.
 
 ```
@@ -275,9 +225,9 @@ laptop servidor (`ipconfig`; ignora la de "vEthernet (WSL)").
    Acepta el aviso y reinicia el navegador. Sigue sirviendo aunque cambie la IP.
    **Nunca copies `rootCA-key.pem`** (está en la misma carpeta): con esa llave se pueden fabricar
    certificados falsos de cualquier sitio que la otra laptop aceptaría.
-6. **Ensayen antes** todo el 8.2, en la misma red que van a usar el día de la presentación.
+6. **Prueben antes** todo el 8.2 en la misma red donde se va a usar.
 
-### 8.2 El día de la presentación
+### 8.2 Puesta en marcha
 
 **Red:** las dos laptops en la misma red. No hace falta internet (la app no usa nada externo).
 Usen el **hotspot de un celular**: las redes de escuelas y de invitados suelen impedir que los equipos

@@ -1,7 +1,7 @@
 # Módulo de seguridad · Iniciar sesión (autenticación)
 
-Pantallas **01 · Iniciar sesión** y **01b · Cambio de contraseña obligatorio**. Sigue la pantalla 11:
-"Inicio de sesión con JWT, contraseñas con bcrypt y permisos por rol".
+Pantallas **01 · Iniciar sesión** y **01b · Cambio de contraseña obligatorio**. Sigue la arquitectura del
+sistema: inicio de sesión con JWT, contraseñas con bcrypt y permisos por rol.
 
 ## Flujo
 
@@ -45,8 +45,8 @@ guarda solo el SHA-256 de ese secreto. En cada petición se revisa la fila, así
 de baja al usuario corta el acceso en ese momento**, aunque el JWT todavía no haya vencido. La misma tabla
 da el "En línea" y el "Último acceso" de 02a.
 
-*Pregunta probable: "¿para qué JWT si igual consultan la tabla?"* La firma descarta tokens falsos sin ir
-a la base, y la tabla permite revocar sesiones al instante, algo que un JWT solo no puede.
+**¿Para qué el JWT si de todos modos se consulta la tabla?** La firma descarta tokens falsos sin ir a la
+base, y la tabla permite revocar sesiones al instante, algo que un JWT solo no puede.
 
 **Mismo mensaje para usuario inexistente y contraseña incorrecta**, y el mismo tiempo de respuesta
 (si el usuario no existe se compara contra un hash de relleno). Así no se puede averiguar qué usuarios

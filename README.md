@@ -1,5 +1,10 @@
 # KitchenLink
 
+[![Pruebas](https://github.com/Remaori/Kitchenlink/actions/workflows/pruebas.yml/badge.svg)](https://github.com/Remaori/Kitchenlink/actions/workflows/pruebas.yml)
+[![Versión](https://img.shields.io/github/v/tag/Remaori/Kitchenlink?label=versión&color=7C5CFC)](CHANGELOG.md)
+![Node.js](https://img.shields.io/badge/Node.js-24_LTS-339933?logo=nodedotjs&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?logo=postgresql&logoColor=white)
+
 Sistema de gestión para restaurantes que funciona dentro de la red local del restaurante. Los dispositivos
 (tablets, pantallas y computadoras) se conectan a un servidor propio, así que la operación no depende de
 internet.
@@ -26,6 +31,14 @@ La base de datos (19 tablas, 22 vistas y 27 triggers) cubre la operación comple
 mesas, reservaciones y lista de espera, comandas, cocina y barra, cobro, cortes de caja y bitácora. Los
 módulos de la aplicación que usan esas tablas se integran por etapas.
 
+## Capturas
+
+| Inicio de sesión | Usuarios |
+|---|---|
+| ![Inicio de sesión](docs/capturas/iniciar-sesion.png) | ![Lista de usuarios con su rol, estado y último acceso](docs/capturas/usuarios.png) |
+| **Nuevo usuario** | **Roles y permisos** |
+| ![Alta de usuario con contraseña temporal y vista previa de sus permisos](docs/capturas/nuevo-usuario.png) | ![Permisos del rol Mesero agrupados por área](docs/capturas/roles-y-permisos.png) |
+
 ## Arquitectura
 
 ```
@@ -51,6 +64,8 @@ Dispositivos del restaurante (navegador)
   que cerrar sesión o dar de baja a un usuario corta su acceso al instante.
 - Los permisos se revisan en la API y otra vez en la base.
 - La bitácora registra altas, bajas, cambios de rol y restablecimientos de contraseña, con quién y cuándo.
+
+Diagramas y detalle en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ## Instalación
 
@@ -120,11 +135,13 @@ kitchenlink/
 
 ## Documentación
 
+- [Arquitectura](docs/ARQUITECTURA.md): despliegue, capas del backend y recorrido de una petición
 - [Guía de entorno](docs/GUIA_ENTORNO.md): instalación, red local, Nginx y HTTPS
 - [Base de datos](database/README.md): scripts SQL, usuarios de demostración y permisos de la aplicación
 - [Autenticación](docs/AUTENTICACION.md): inicio de sesión, sesiones y contraseñas
 - [Roles y usuarios](docs/ROLES_Y_USUARIOS.md): administración de usuarios, roles y permisos
 - [Diagrama entidad-relación](docs/erd/)
+- [Cambios por versión](CHANGELOG.md) · [Cómo contribuir](CONTRIBUTING.md)
 
 ## Autores
 
