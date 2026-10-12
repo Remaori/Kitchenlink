@@ -13,7 +13,7 @@ Tiempo estimado: 1 hora la primera vez, por persona.
 | Herramienta | Versión | Dónde | Notas |
 |---|---|---|---|
 | Node.js | **24 LTS** (mínimo 20.19) | nodejs.org → "LTS" → Windows Installer (.msi) | Deja **sin marcar** "Automatically install the necessary tools": no hace falta |
-| PostgreSQL | **16.x** | enterprisedb.com → PostgreSQL downloads → 16.x Windows x86-64 | Marca *PostgreSQL Server*, *pgAdmin 4* y *Command Line Tools*. Puerto **5432**. Anota la contraseña de `postgres` |
+| PostgreSQL | **16.x** o más nueva | enterprisedb.com → PostgreSQL downloads → 16.x Windows x86-64 | Marca *PostgreSQL Server*, *pgAdmin 4* y *Command Line Tools*. Puerto **5432**. Anota la contraseña de `postgres`. Las versiones más nuevas también sirven (probado con 18) |
 | Git | la más reciente | git-scm.com → Download for Windows | Opciones por defecto (incluye Git Credential Manager) |
 | VS Code | la más reciente | code.visualstudio.com | Al abrir el proyecto sugiere las extensiones recomendadas |
 
@@ -137,7 +137,7 @@ está en WIN1252. En ese caso recréala en UTF8 (cierra antes las pestañas de p
 npm run db:instalar -- --recrear
 ```
 
-Para verla en pgAdmin: Servers → PostgreSQL 16 → Databases → kitchenlink → Schemas → kitchenlink.
+Para verla en pgAdmin: Servers → PostgreSQL 16 (o tu versión) → Databases → kitchenlink → Schemas → kitchenlink.
 
 ---
 
@@ -230,7 +230,8 @@ laptop servidor (`ipconfig`; ignora la de "vEthernet (WSL)").
 
 1. **Nginx:** nginx.org → "Stable version" (zip para Windows). Descomprímelo en una ruta sin espacios
    ni acentos de modo que quede `C:\nginx\nginx.exe` (en esta guía, `C:\nginx`). No muevas la carpeta
-   después: el permiso del firewall queda ligado a esa ruta.
+   después: el permiso del firewall queda ligado a esa ruta. Si ya lo tienes en otra carpeta sin espacios
+   ni acentos (por ejemplo dentro de Documentos), también sirve: usa esa ruta donde la guía dice `C:\nginx`.
 2. **mkcert:** github.com/FiloSottile/mkcert → Releases → `mkcert-v1.4.4-windows-amd64.exe`. Renómbralo
    `mkcert.exe` y guárdalo en `C:\herramientas`. Luego, una sola vez:
    ```powershell
@@ -243,6 +244,10 @@ laptop servidor (`ipconfig`; ignora la de "vEthernet (WSL)").
    C:\herramientas\mkcert.exe -cert-file infra\nginx\certs\kitchenlink.pem -key-file infra\nginx\certs\kitchenlink-key.pem localhost 127.0.0.1 TU_IP
    ```
    Cambia `TU_IP` por la IP real (no la de ejemplo). `infra/nginx/certs/` está en `.gitignore`: no se sube.
+   - **Varias redes:** el mismo certificado puede llevar varias IP, por ejemplo la de la escuela y la de
+     casa (`… localhost 127.0.0.1 IP_ESCUELA IP_CASA`). Así no hay que regenerarlo al cambiar de red.
+   - **Si se creó en otra carpeta** (por correr mkcert fuera del repo, p. ej. `C:\herramientas\infra\…`),
+     borra esos `.pem`: Nginx no los usa y uno de ellos es una llave privada.
 4. **Configura Nginx.** Guarda una copia de `C:\nginx\conf\nginx.conf` (p. ej. `nginx.conf.original`) y,
    dentro del bloque `http { }`:
    - **Borra el `server { listen 80; server_name localhost; … }` de ejemplo.** Si se queda, sale
@@ -301,7 +306,14 @@ En la laptop servidor:
    start .\nginx.exe
    ```
    Si Windows pregunta por el Firewall, permite el acceso para el tipo de red que estén usando
-   (una red nueva, como el hotspot, suele quedar como **Pública**).
+   (una red nueva, como el hotspot, suele quedar como **Pública**). El permiso vale solo para ese tipo
+   de red: si después usan una red del otro tipo y la laptop cliente no carga, agrégalo desde PowerShell
+   **como administrador** (con la ruta de tu `nginx.exe`):
+   ```powershell
+   New-NetFirewallRule -DisplayName "KitchenLink · Nginx" -Direction Inbound -Action Allow -Profile Private,Public -Program "C:\nginx\nginx.exe"
+   ```
+   Para `npm run dev:red` es la misma línea con `-DisplayName "KitchenLink · Node.js"` y
+   `-Program "C:\Program Files\nodejs\node.exe"`.
 5. Comprueba en la laptop servidor: `https://TU_IP/api/salud` → `"estado":"ok"` y `"entorno":"production"`.
    Usa la IP, no `https://localhost` (ver la tabla de abajo).
 
@@ -351,7 +363,7 @@ como servicio de systemd. Se documenta cuando lleguen a esa tarea.
 | Mensaje | Causa y solución |
 |---|---|
 | `password authentication failed for user "postgres"` | `DB_ADMIN_PASSWORD` no es la contraseña de `postgres` |
-| `ECONNREFUSED` / "PostgreSQL no responde" | El servicio no está iniciado: Servicios de Windows → `postgresql-x64-16` → Iniciar |
+| `ECONNREFUSED` / "PostgreSQL no responde" | El servicio no está iniciado: Servicios de Windows → `postgresql-x64-16` (o el número de tu versión) → Iniciar |
 | `database "kitchenlink" is being accessed by other users` | Cierra las pestañas de pgAdmin sobre esa base y repite |
 | `Falta configurar en backend/.env: JWT_SECRET` | Ejecuta `npm run env:crear` (o borra el `.env` y repítelo) |
 | `Port 5173 is in use` / `EADDRINUSE :3000` | Ya hay otra copia corriendo: ciérrala (Ctrl+C) |
