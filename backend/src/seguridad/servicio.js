@@ -66,11 +66,11 @@ export async function iniciarSesion({ usuario, contrasena, ip, dispositivo }) {
     throw new ErrorHttp(400, 'DATOS_INCOMPLETOS', 'Escribe tu usuario y tu contraseña.');
   }
   const nombre = usuario.trim();
-  const espera = limitador.minutosDeBloqueo(ip, nombre);
-  if (espera) {
+  const intento = limitador.reservarIntento(ip, nombre);
+  if (intento.espera) {
     throw new ErrorHttp(429, 'DEMASIADOS_INTENTOS',
-      `Demasiados intentos fallidos. Espera ${espera} min o pide al gerente que restablezca tu contraseña.`,
-      { reintentar_en_min: espera });
+      `Demasiados intentos fallidos. Espera ${intento.espera} min o pide al gerente que restablezca tu contraseña.`,
+      { reintentar_en_min: intento.espera });
   }
 
   const { rows: [u] } = await consulta(
@@ -81,7 +81,7 @@ export async function iniciarSesion({ usuario, contrasena, ip, dispositivo }) {
   else correcta = await pw.comparar(contrasena, u.contrasena_hash).catch(() => false);
 
   if (!correcta) {
-    limitador.registrarFalla(ip, nombre);
+    // La falla ya quedó contada al reservar el intento
     if (u) {
       // Queda en la bitácora del usuario (solo si el usuario existe: así no se
       // guardan textos al azar, ni una contraseña escrita por error en "Usuario").
@@ -91,13 +91,28 @@ export async function iniciarSesion({ usuario, contrasena, ip, dispositivo }) {
     }
     throw new ErrorHttp(401, 'CREDENCIALES', CREDENCIALES);
   }
+  limitador.devolverIntento(ip, nombre, intento.ahora);
   if (u.estado === 'dado_de_baja') {
     throw new ErrorHttp(403, 'CUENTA_DADA_DE_BAJA', 'Tu cuenta está dada de baja. Si es un error, habla con el gerente.');
   }
 
   limitador.limpiar(ip, nombre);
-  const sesion = await conTransaccion(u.id, (c) => abrirSesion(c, u.id, { ip, dispositivo }));
+  const sesion = await conTransaccion(u.id, async (c) => {
+    // Si el gerente la restableció mientras bcrypt comparaba, la contraseña escrita ya no es la vigente
+    if (!(await mismaContrasena(c, u.id, u.contrasena_hash))) throw new ErrorHttp(401, 'CREDENCIALES', CREDENCIALES);
+    return abrirSesion(c, u.id, { ip, dispositivo });
+  });
   return { ...(await datosUsuario(u.id)), sesion };
+}
+
+/**
+ * ¿Sigue siendo la contraseña con la que se validó? La fila queda bloqueada hasta
+ * terminar, así un restablecimiento al mismo tiempo espera y cierra también esta sesión.
+ * (NO KEY UPDATE: no choca con las llaves foráneas que apuntan al usuario, como la bitácora.)
+ */
+async function mismaContrasena(c, usuarioId, hash) {
+  const { rowCount } = await c.query('SELECT 1 FROM usuario WHERE id = $1 AND contrasena_hash = $2 FOR NO KEY UPDATE', [usuarioId, hash]);
+  return rowCount > 0;
 }
 
 /** Lee la sesión de la cookie. null si no es válida, venció, se cerró o el usuario fue dado de baja. */
@@ -147,6 +162,10 @@ export async function cambiarContrasena({ usuarioId, actual, nueva, confirmacion
   // Se cierran todas sus sesiones y se abre una nueva (la anterior se emitió
   // con la contraseña temporal).
   const sesion = await conTransaccion(usuarioId, async (c) => {
+    if (!(await mismaContrasena(c, usuarioId, u.contrasena_hash))) {
+      throw new ErrorHttp(409, 'CONTRASENA_CAMBIADA',
+        'Tu contraseña cambió mientras guardabas (el gerente la restableció o se cambió en otro equipo). Vuelve a iniciar sesión.');
+    }
     await c.query('UPDATE usuario SET contrasena_hash = $1, requiere_cambio_pw = FALSE WHERE id = $2', [hash, usuarioId]);
     await c.query('UPDATE sesion SET cerrada_en = fn_ahora() WHERE usuario_id = $1 AND cerrada_en IS NULL', [usuarioId]);
     return abrirSesion(c, usuarioId, { ip, dispositivo });

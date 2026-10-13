@@ -49,3 +49,12 @@ export async function conTransaccion(usuarioId, fn) {
     cliente.release();
   }
 }
+
+/**
+ * Dentro de una transacción, pone en fila a quienes hacen lo mismo a la vez
+ * (candado consultivo de PostgreSQL; se suelta solo al terminar la transacción).
+ * Para reglas como "que no exista ya" o "que quede al menos un Gerente": el
+ * segundo espera y revisa con lo que el primero ya guardó.
+ */
+export const enFila = (cliente, tema) =>
+  cliente.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`kitchenlink:${tema}`]);

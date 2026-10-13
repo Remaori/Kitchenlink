@@ -91,21 +91,40 @@ Pendiente con su temporal. Si su rol también está dado de baja, primero hay qu
 registran los triggers. Los cambios de roles (crear, casillas agregadas y quitadas, baja, reactivación) y los
 de datos de contacto los registra el backend con `fn_bitacora`, dentro de la misma transacción.
 
-**Dos peticiones a la vez no se mezclan.** Cada cambio bloquea la fila (`SELECT … FOR UPDATE`) mientras
-dura la transacción: si dos gerentes guardan el mismo rol al mismo tiempo, el segundo espera a que termine
-el primero y queda la versión completa del segundo, nunca una mezcla a medias.
+**Dos peticiones a la vez no se mezclan.** Cada cambio bloquea la fila del rol o del usuario mientras dura
+la transacción: si dos gerentes guardan el mismo rol al mismo tiempo, el segundo espera a que termine el
+primero y queda la versión completa del segundo, nunca una mezcla a medias.
+
+**Las reglas que dependen de otros registros también se revisan en fila.** Contar los gerentes activos o
+buscar si un nombre ya existe no bloquea nada por sí solo: dos peticiones simultáneas verían lo mismo y las
+dos pasarían. Por eso:
+
+- Dos gerentes que se dan de baja entre sí al mismo tiempo no dejan el sistema sin Gerente: el segundo ya
+  cuenta al primero como dado de baja (candado de la transacción, `enFila` en `db.js`).
+- Un rol no se da de baja mientras se le asigna a alguien (`FOR SHARE` sobre el rol): o el usuario queda con
+  el rol activo, o el rol queda dado de baja y el alta se rechaza.
+- Si dos personas crean el mismo usuario o rol a la vez, se crea uno y la otra ve el aviso en su campo.
+- Las filas de usuario se bloquean con `FOR NO KEY UPDATE`, que no choca con la bitácora (que apunta a
+  quien hace el cambio): dos gerentes que se editan entre sí no se traban.
+- Si aun así la base detiene una operación para no trabarse, la pantalla dice "Otra persona estaba
+  cambiando lo mismo en ese momento. Vuelve a intentarlo." y no se guarda nada a medias.
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/roles.test.js` — 14 pruebas de 02c: lista y casillas, permisos de acceso, nuevo rol, nombre
+`backend/test/roles.test.js` — 15 pruebas de 02c: lista y casillas, permisos de acceso, nuevo rol, nombre
 repetido, datos inválidos, guardar casillas (con bitácora), cambio sin volver a entrar, protección del
-Gerente, dar de baja y reactivar.
+Gerente, dar de baja y reactivar, y el mismo rol creado dos veces a la vez.
 
-`backend/test/usuarios.test.js` — 19 pruebas de 02a y 02b: lista, permisos de acceso, temporal sin caché,
+`backend/test/usuarios.test.js` — 25 pruebas de 02a y 02b: lista, permisos de acceso, temporal sin caché,
 alta → primer inicio → Activo con los permisos del rol, duplicados sin importar mayúsculas, validaciones,
 editar (bitácora y permisos al instante), protecciones del gerente, último Gerente activo, restablecer
 (sesiones cerradas, 01b), dar de baja (corta la sesión), reactivar (Activo o Pendiente, rol dado de baja) e
-historial.
+historial. Y peticiones al mismo tiempo: alta doble, baja de un rol mientras se asigna, restablecer mientras
+la persona cambia su contraseña o entra con la anterior, gerentes que se editan o se dan de baja entre sí.
+
+Las pruebas de "al mismo tiempo" no confían en la suerte: una conexión de administrador retiene un candado
+hasta que todas las peticiones están esperando en la base y luego las suelta juntas
+(`backend/test/concurrencia.js`).
 
 La validación en pantalla de Iniciar sesión y Administrar roles está en
 [PRUEBA_TEMPRANA_VALIDACION.md](PRUEBA_TEMPRANA_VALIDACION.md).

@@ -4,7 +4,7 @@
 // tg_rol_permiso_proteger): al Gerente no se le quitan permisos ni se da de
 // baja, y un rol con usuarios no se da de baja. Aquí se valida lo demás y se
 // deja constancia en la bitácora (los triggers no registran cambios de roles).
-import { consulta, conTransaccion } from '../db.js';
+import { consulta, conTransaccion, enFila } from '../db.js';
 import { ErrorHttp } from '../errores.js';
 import { revisor } from '../validacion.js';
 
@@ -54,8 +54,10 @@ async function revisarDatos({ nombre, descripcion, permisos }) {
   return datos;
 }
 
-// "Mesero" y "mesero" serían el mismo rol para cualquiera que lea la lista
+// "Mesero" y "mesero" serían el mismo rol para cualquiera que lea la lista.
+// En fila: si dos gerentes crean el mismo rol a la vez, el segundo ve al primero.
 async function exigirNombreLibre(c, nombre, excepto = null) {
+  await enFila(c, 'roles:nombre');
   const { rows: [otro] } = await c.query(
     'SELECT nombre FROM rol WHERE lower(nombre) = lower($1) AND id IS DISTINCT FROM $2::bigint', [nombre, excepto]);
   if (otro) {

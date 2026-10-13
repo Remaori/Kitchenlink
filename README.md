@@ -108,8 +108,9 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 
 ## Pruebas
 
-- `npm test`: 63 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
-  permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios.
+- `npm test`: 71 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
+  permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, incluidas peticiones que
+  llegan al mismo tiempo.
 - `npm run db:conectividad`: 24 verificaciones de la conexión entre la API y PostgreSQL.
 - La validación de los casos de uso de seguridad, con capturas de cada caso, está en
   [docs/PRUEBA_TEMPRANA_VALIDACION.md](docs/PRUEBA_TEMPRANA_VALIDACION.md).

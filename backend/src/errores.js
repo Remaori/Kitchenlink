@@ -32,6 +32,10 @@ function desdePostgres(err) {
     case '22007':
     case '22008':
       return new ErrorHttp(400, 'DATO_INVALIDO', 'Algún dato no tiene el formato correcto.');
+    // Dos personas cambiaban lo mismo y la base detuvo a una para no trabarse: no se guardó nada
+    case '40P01':
+    case '40001':
+      return new ErrorHttp(409, 'REINTENTAR', 'Otra persona estaba cambiando lo mismo en ese momento. Vuelve a intentarlo.');
     default:
       return null;
   }

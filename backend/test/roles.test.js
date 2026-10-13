@@ -3,6 +3,7 @@ import './entorno.js';
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { prepararBase, cerrarBase, entrar, bd, rolId, ultimaBitacora } from './ayudantes.js';
+import { alMismoTiempo, estados } from './concurrencia.js';
 
 let gerente; // agente con la sesión de lsaenz (Gerente, 17 permisos)
 const roles = async () => (await gerente.get('/api/roles').expect(200)).body;
@@ -163,5 +164,20 @@ describe('02c · Dar de baja rol', () => {
     const de_nuevo = await gerente.post(`/api/roles/${id}/reactivar`).expect(200);
     assert.equal(de_nuevo.body.activo, true);
     assert.equal((await ultimaBitacora('rol', id)).accion, 'reactivar_rol');
+  });
+});
+
+describe('02c · Al mismo tiempo', () => {
+  test('dos gerentes crean el mismo rol a la vez (con otras mayúsculas): queda uno y el otro ve el aviso', async () => {
+    const nuevo = (nombre) => () => gerente.post('/api/roles').send({ nombre, permisos: [] });
+    // La bitácora retiene a las dos justo antes de terminar: las dos ya revisaron el nombre
+    const r = await alMismoTiempo({
+      candado: 'LOCK TABLE bitacora IN EXCLUSIVE MODE',
+      peticiones: [nuevo('Ayudante de barra'), nuevo('AYUDANTE DE BARRA')],
+    });
+    assert.deepEqual(estados(r), [201, 409]);
+    assert.match(r.find((x) => x.status === 409).body.campos?.nombre ?? '', /^Ya existe el rol/);
+    const [n] = await bd("SELECT count(*)::int AS n FROM rol WHERE lower(nombre) = 'ayudante de barra'");
+    assert.equal(n.n, 1);
   });
 });

@@ -80,6 +80,26 @@ sequenceDiagram
 4. Cada escritura va en una transacción que indica quién opera; los triggers usan ese dato para la
    bitácora y para revisar otra vez los permisos en las operaciones del restaurante.
 
+## Operaciones al mismo tiempo
+
+Varios dispositivos usan el sistema a la vez, así que dos personas pueden cambiar lo mismo en el mismo
+instante. PostgreSQL trabaja con su aislamiento por defecto (READ COMMITTED), y el backend usa tres
+herramientas según la regla:
+
+| Situación | Cómo se resuelve |
+|---|---|
+| Dos cambios a la misma fila (dos gerentes guardan el mismo rol) | La fila se bloquea al leerla (`FOR UPDATE` o `FOR NO KEY UPDATE`): el segundo espera y trabaja sobre lo que dejó el primero. |
+| Una regla que depende de otra fila (no dar de baja un rol que se está asignando) | Esa fila se bloquea en modo compartido (`FOR SHARE`): nadie la cambia hasta terminar. |
+| Una regla que depende de un conteo o de que algo no exista (que quede un Gerente activo, nombres que no se repiten) | Las operaciones se forman en fila con un candado de la transacción (`enFila` en `db.js`): la segunda revisa con lo que la primera ya guardó. |
+
+- La base hace lo mismo en sus triggers: por ejemplo, dos reservaciones para la misma mesa se forman en fila.
+- Si aun así la base detiene una operación para evitar un bloqueo mutuo, la API responde `409 REINTENTAR`
+  ("Otra persona estaba cambiando lo mismo en ese momento. Vuelve a intentarlo.") y no queda nada a medias.
+- El límite de intentos de inicio de sesión cuenta cada intento desde que llega: muchos intentos
+  simultáneos no se lo saltan.
+- Las pruebas fuerzan estos casos: una conexión de administrador retiene un candado hasta que todas las
+  peticiones esperan en la base y luego las suelta juntas (`backend/test/concurrencia.js`).
+
 ## Base de datos
 
 - **Esquema v3:** 19 tablas, 22 vistas, 10 tipos ENUM y 27 triggers

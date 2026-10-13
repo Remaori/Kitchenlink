@@ -7,7 +7,7 @@
 // Aquí se agregan las reglas que protegen al propio gerente: no puede darse de
 // baja, cambiar su rol ni restablecer su contraseña, y no se puede quedar el
 // sistema sin un Gerente activo.
-import { consulta, conTransaccion } from '../db.js';
+import { consulta, conTransaccion, enFila } from '../db.js';
 import { ErrorHttp } from '../errores.js';
 import { revisor } from '../validacion.js';
 import * as pw from './contrasenas.js';
@@ -43,12 +43,15 @@ export async function detalle(id) {
   return u;
 }
 
-// Fila bloqueada mientras dura la transacción (dos gerentes a la vez no se pisan)
+// Fila bloqueada mientras dura la transacción (dos gerentes a la vez no se pisan).
+// NO KEY UPDATE: no choca con las llaves foráneas que apuntan al usuario (la
+// bitácora de quien opera), así dos gerentes que se editan entre sí no se traban.
+// Su rol, compartido: que nadie lo dé de baja a la mitad (reactivar lo revisa).
 async function leerParaCambiar(c, id) {
   const { rows: [u] } = await c.query(
     `SELECT u.id, u.nombre_completo, u.telefono, u.correo, u.rol_id, u.estado::text AS estado,
             u.requiere_cambio_pw, u.ultimo_acceso, r.nombre AS rol, r.es_sistema AS rol_de_sistema, r.activo AS rol_activo
-     FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.id = $1 FOR UPDATE OF u`, [id]);
+     FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE u.id = $1 FOR NO KEY UPDATE OF u FOR SHARE OF r`, [id]);
   if (!u) throw new ErrorHttp(404, 'NO_ENCONTRADO', 'No existe ese usuario.');
   return u;
 }
@@ -83,8 +86,10 @@ function revisarDatos(cuerpo, { nuevo }) {
   return d;
 }
 
+// FOR SHARE: mientras se asigna, nadie da de baja el rol (y si alguien lo está
+// dando de baja, se espera a ver si quedó activo)
 async function exigirRolDisponible(c, rolId) {
-  const { rows: [r] } = await c.query('SELECT nombre, activo, es_sistema FROM rol WHERE id = $1', [rolId]);
+  const { rows: [r] } = await c.query('SELECT nombre, activo, es_sistema FROM rol WHERE id = $1 FOR SHARE', [rolId]);
   if (!r) throw new ErrorHttp(400, 'DATOS_INVALIDOS', 'Revisa los datos marcados.', { campos: { rol_id: 'Ese rol no existe.' } });
   if (!r.activo) {
     throw new ErrorHttp(409, 'REGLA_DE_NEGOCIO', `El rol ${r.nombre} está dado de baja.`,
@@ -94,6 +99,7 @@ async function exigirRolDisponible(c, rolId) {
 }
 
 async function exigirLibres(c, { nombre_usuario, correo }, excepto = null) {
+  await enFila(c, 'usuarios:datos'); // dos altas iguales a la vez: la segunda ve a la primera
   const campos = {};
   if (nombre_usuario) {
     const { rowCount } = await c.query('SELECT 1 FROM usuario WHERE lower(nombre_usuario) = $1 AND id IS DISTINCT FROM $2::bigint', [nombre_usuario, excepto]);
@@ -109,6 +115,8 @@ async function exigirLibres(c, { nombre_usuario, correo }, excepto = null) {
 // 12 · "conviene tener al menos dos cuentas de gerente": nunca se queda en cero
 async function exigirOtroGerente(c, u, accion) {
   if (!u.rol_de_sistema || u.estado !== 'activo') return;
+  // De una en una: si dos gerentes se dan de baja entre sí a la vez, el segundo ya cuenta al primero como dado de baja
+  await enFila(c, 'usuarios:gerentes');
   const { rows: [x] } = await c.query(
     `SELECT count(*)::int AS n FROM usuario o JOIN rol r ON r.id = o.rol_id
      WHERE r.es_sistema AND o.estado = 'activo' AND o.id <> $1`, [u.id]);

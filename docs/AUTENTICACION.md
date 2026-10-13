@@ -53,7 +53,14 @@ base, y la tabla permite revocar sesiones al instante, algo que un JWT solo no p
 existen. "Cuenta dada de baja" solo se dice si la contraseña era correcta.
 
 **Límite de intentos.** 5 fallos por usuario y equipo, o 20 por equipo, en 15 minutos → espera.
-Los fallos de usuarios que existen quedan en la `bitacora` (`inicio_sesion_fallido`, con IP y equipo).
+Cada intento cuenta desde que llega, no cuando bcrypt termina de comparar: aunque alguien mande muchos a la
+vez, solo pasan los que caben en el límite. Los fallos de usuarios que existen quedan en la `bitacora`
+(`inicio_sesion_fallido`, con IP y equipo).
+
+**Restablecer al mismo tiempo.** Si el gerente restablece una contraseña justo cuando la persona entra con
+la anterior o la está cambiando, gana el restablecimiento: antes de abrir la sesión o de guardar la nueva,
+se bloquea la fila del usuario y se revisa que su contraseña siga siendo la que se validó. Si cambió, no se
+abre la sesión, o el cambio se rechaza con "Tu contraseña cambió mientras guardabas…".
 
 **Contraseña temporal.** Usuario nuevo (Pendiente) o restablecido: entra con la temporal, pero hasta
 crear la suya el servidor solo le permite 01b (cualquier otra ruta responde `CAMBIO_CONTRASENA_REQUERIDO`)
@@ -84,13 +91,13 @@ npm run usuario:gerente -- lsaenz "Luis Sáenz Jiménez"   # primer gerente de u
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/autenticacion.test.js` — 22 pruebas:
+`backend/test/autenticacion.test.js` — 23 pruebas:
 
 - Entrada correcta: cookie `HttpOnly` y `SameSite=Strict`, permisos del rol, sesión registrada con
   el hash (no el token), IP, equipo y último acceso.
 - El usuario no distingue mayúsculas ni espacios.
 - Mismo mensaje para usuario inexistente y para contraseña incorrecta; el fallo queda en la bitácora.
-- Usuario dado de baja; bloqueo por intentos (por usuario y por equipo).
+- Usuario dado de baja; bloqueo por intentos (por usuario y por equipo), también con muchos intentos a la vez.
 - Token alterado o firmado con otra clave; sesión cerrada, vencida o de un usuario dado de baja.
 - Permisos: el gerente ve los usuarios y el mesero no.
 - 01b: reglas validadas en el servidor; Pendiente → Activo con bitácora; la sesión vieja deja de servir.

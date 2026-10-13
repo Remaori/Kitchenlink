@@ -103,7 +103,7 @@ Para verla en pgAdmin: Servers → PostgreSQL 16 (o tu versión) → Databases �
 
 ```powershell
 npm run db:conectividad     # 24 verificaciones; guarda el reporte en backend/reportes/
-npm test                    # 30 pruebas automáticas (conectividad + inicio de sesión)
+npm test                    # pruebas automáticas de la API y la base de datos
 ```
 
 `npm test` crea y usa una base aparte, `kitchenlink_pruebas`; no toca tus datos.

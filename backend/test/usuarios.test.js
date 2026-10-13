@@ -2,7 +2,10 @@
 import './entorno.js';
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { prepararBase, cerrarBase, entrar, activar, bd, idDe, rolId, ultimaBitacora, DEMO, TEMPORAL } from './ayudantes.js';
+import request from 'supertest';
+import { prepararBase, cerrarBase, entrar, activar, bd, idDe, rolId, ultimaBitacora, app, DEMO, TEMPORAL } from './ayudantes.js';
+import { alMismoTiempo, estados } from './concurrencia.js';
+import { hashear } from '../src/seguridad/contrasenas.js';
 
 let gerente; // agente con la sesión de lsaenz
 const alta = (datos) => gerente.post('/api/usuarios').send(datos);
@@ -233,5 +236,98 @@ describe('02a · Ver historial', () => {
     const textos = r.body.eventos.map((e) => e.texto);
     const estado = textos.indexOf('Estado de la cuenta: Pendiente → Activo');
     assert.ok(estado >= 0 && estado < textos.indexOf('Creó su propia contraseña'), textos.join(' / '));
+  });
+});
+
+// LOCK TABLE bitacora retiene cada petición justo antes de terminar (todas escriben en la
+// bitácora): así las dos revisan sus reglas antes de que la otra guarde, que es el caso difícil.
+const RETENER_EN_BITACORA = 'LOCK TABLE bitacora IN EXCLUSIVE MODE';
+// Lo que hace «Restablecer contraseña», hecho por "otro gerente" mientras la petición espera
+const restablecerPorFuera = (id, hash) => async (c) => {
+  await c.query('UPDATE usuario SET contrasena_hash = $1, requiere_cambio_pw = TRUE WHERE id = $2', [hash, id]);
+  await c.query('UPDATE sesion SET cerrada_en = fn_ahora() WHERE usuario_id = $1 AND cerrada_en IS NULL', [id]);
+};
+
+describe('Peticiones al mismo tiempo', () => {
+  test('el mismo usuario dado de alta dos veces a la vez: se crea una vez y la otra ve el aviso en su campo', async () => {
+    const datos = { nombre_completo: 'Doble Clic', nombre_usuario: 'dobleclic', rol_id: await rolId('Mesero'), contrasena_temporal: await temporal() };
+    const r = await alMismoTiempo({ candado: RETENER_EN_BITACORA, peticiones: [() => alta(datos), () => alta(datos)] });
+    assert.deepEqual(estados(r), [201, 409]);
+    assert.equal(r.find((x) => x.status === 409).body.campos?.nombre_usuario, 'Ya existe: no puede repetirse con otro usuario.');
+  });
+
+  test('dar de baja un rol mientras le asignan un usuario nuevo: nunca queda alguien con un rol dado de baja', async () => {
+    const nuevo = await gerente.post('/api/roles').send({ nombre: 'Ayudante temporal', permisos: ['mesa.ver'] }).expect(201);
+    const t = await temporal();
+    const r = await alMismoTiempo({
+      candado: RETENER_EN_BITACORA,
+      peticiones: [
+        () => gerente.post(`/api/roles/${nuevo.body.id}/dar-de-baja`),
+        () => alta({ nombre_completo: 'Ayudante Uno', nombre_usuario: 'ayudante1', rol_id: nuevo.body.id, contrasena_temporal: t }),
+      ],
+    });
+    assert.equal(r.filter((x) => x.status < 300).length, 1, r.map((x) => `${x.status} ${x.body.mensaje ?? ''}`).join(' / '));
+    const [x] = await bd(`SELECT count(*)::int AS n FROM usuario u JOIN rol r ON r.id = u.rol_id
+                          WHERE r.id = $1 AND NOT r.activo AND u.estado <> 'dado_de_baja'`, [nuevo.body.id]);
+    assert.equal(x.n, 0);
+  });
+
+  test('si el gerente restablece la contraseña mientras la persona la cambia, gana el restablecimiento', async () => {
+    const t = await temporal();
+    const { body: u } = await alta({ nombre_completo: 'Carrera Uno', nombre_usuario: 'carrera1', rol_id: await rolId('Mesero'), contrasena_temporal: t }).expect(201);
+    const { agente } = await activar('carrera1', t);
+    const [r] = await alMismoTiempo({
+      candado: 'SELECT 1 FROM usuario WHERE id = $1 FOR UPDATE', params: [u.id],
+      peticiones: [() => agente.post('/api/auth/cambiar-contrasena').send({ actual: 'Nueva2026x', nueva: 'Propia2026y', confirmacion: 'Propia2026y' })],
+      antesDeSoltar: restablecerPorFuera(u.id, await hashear('Restablecida2026')),
+    });
+    assert.equal(r.status, 409);
+    assert.equal(r.body.codigo, 'CONTRASENA_CAMBIADA');
+    assert.equal((await bd('SELECT requiere_cambio_pw FROM usuario WHERE id = $1', [u.id]))[0].requiere_cambio_pw, true);
+    assert.equal((await entrar('carrera1', 'Propia2026y')).r.status, 401);
+    assert.equal((await entrar('carrera1', 'Restablecida2026')).r.status, 200, 'la temporal del gerente es la que sirve');
+  });
+
+  test('quien entra con la contraseña anterior justo cuando el gerente la restablece no se queda con una sesión', async () => {
+    const t = await temporal();
+    const { body: u } = await alta({ nombre_completo: 'Carrera Dos', nombre_usuario: 'carrera2', rol_id: await rolId('Mesero'), contrasena_temporal: t }).expect(201);
+    await activar('carrera2', t);
+    const [r] = await alMismoTiempo({
+      candado: 'SELECT 1 FROM usuario WHERE id = $1 FOR UPDATE', params: [u.id],
+      peticiones: [() => request(app).post('/api/auth/iniciar-sesion').set('X-Forwarded-For', '10.3.0.1').send({ usuario: 'carrera2', contrasena: 'Nueva2026x' })],
+      antesDeSoltar: restablecerPorFuera(u.id, await hashear('Restablecida2026')),
+    });
+    assert.equal(r.status, 401);
+    const [s] = await bd('SELECT count(*)::int AS n FROM sesion WHERE usuario_id = $1 AND cerrada_en IS NULL', [u.id]);
+    assert.equal(s.n, 0);
+  });
+
+  let otro; // segundo gerente
+  test('dos gerentes que se editan entre sí al mismo tiempo: se guardan los dos cambios, sin trabarse', async () => {
+    const t = await temporal();
+    await alta({ nombre_completo: 'Gerente Dos', nombre_usuario: 'gdos', rol_id: await rolId('Gerente'), contrasena_temporal: t }).expect(201);
+    ({ agente: otro } = await activar('gdos', t));
+    const [luis, dos, gerenteRol] = [await idDe('lsaenz'), await idDe('gdos'), await rolId('Gerente')];
+    const r = await alMismoTiempo({
+      candado: RETENER_EN_BITACORA,
+      peticiones: [
+        () => gerente.put(`/api/usuarios/${dos}`).send({ nombre_completo: 'Gerente Dos', telefono: '55 1000 0002', rol_id: gerenteRol }),
+        () => otro.put(`/api/usuarios/${luis}`).send({ nombre_completo: 'Luis Sáenz Jiménez', telefono: '55 1000 0001', rol_id: gerenteRol }),
+      ],
+    });
+    assert.deepEqual(estados(r), [200, 200], r.map((x) => x.body.mensaje).join(' / '));
+  });
+
+  // Al final: puede dejar a lsaenz dado de baja
+  test('dos gerentes que se dan de baja entre sí al mismo tiempo: el sistema conserva un Gerente activo', async () => {
+    const [luis, dos] = [await idDe('lsaenz'), await idDe('gdos')];
+    const r = await alMismoTiempo({
+      candado: RETENER_EN_BITACORA,
+      peticiones: [() => gerente.post(`/api/usuarios/${dos}/dar-de-baja`), () => otro.post(`/api/usuarios/${luis}/dar-de-baja`)],
+    });
+    assert.deepEqual(estados(r), [200, 409]);
+    assert.match(r.find((x) => x.status === 409).body.mensaje, /único Gerente activo/);
+    const [g] = await bd(`SELECT count(*)::int AS n FROM usuario u JOIN rol r ON r.id = u.rol_id WHERE r.es_sistema AND u.estado = 'activo'`);
+    assert.equal(g.n, 1);
   });
 });

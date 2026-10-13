@@ -38,6 +38,28 @@ export function registrarFalla(ip, usuario, ahora = Date.now()) {
   }
 }
 
+/**
+ * El intento cuenta como falla desde que empieza, no cuando bcrypt termina de
+ * comparar: si llegan muchos a la vez, solo pasan los que caben en el límite.
+ * Devuelve { espera } (minutos) si debe esperar; si no, { ahora } para devolverlo.
+ */
+export function reservarIntento(ip, usuario, ahora = Date.now()) {
+  const espera = minutosDeBloqueo(ip, usuario, ahora);
+  if (espera) return { espera };
+  registrarFalla(ip, usuario, ahora);
+  return { ahora };
+}
+
+/** El intento reservado no fue una falla (la contraseña era correcta). */
+export function devolverIntento(ip, usuario, ahora) {
+  for (const c of claves(ip, usuario)) {
+    const r = registros.get(c);
+    const i = r ? r.fallas.lastIndexOf(ahora) : -1;
+    if (i >= 0) r.fallas.splice(i, 1);
+    if (r && !r.fallas.length) registros.delete(c);
+  }
+}
+
 export function limpiar(ip, usuario) {
   registros.delete(claves(ip, usuario)[0]);
 }

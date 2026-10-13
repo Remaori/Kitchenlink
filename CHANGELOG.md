@@ -4,6 +4,21 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen
 [Versionado Semántico](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Corregido
+
+- **Peticiones al mismo tiempo en usuarios y roles:**
+  - dos gerentes que se daban de baja entre sí a la vez podían dejar el sistema sin Gerente activo, o
+    trabarse y mostrar un error del servidor;
+  - un rol podía quedar dado de baja con un usuario recién asignado;
+  - el mismo usuario o rol creado dos veces a la vez quedaba repetido o mostraba un aviso genérico;
+  - si el gerente restablecía una contraseña justo cuando la persona entraba con la anterior o la
+    cambiaba, el restablecimiento podía perderse.
+- **Límite de intentos:** muchos intentos de inicio de sesión al mismo tiempo pasaban todos antes de que el
+  límite los contara.
+- Un bloqueo mutuo en la base ahora se explica ("Vuelve a intentarlo") en lugar de un error del servidor.
+
 ## [0.2.0] · 2026-10-14
 
 ### Agregado
@@ -60,4 +75,5 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 - Configuración de Nginx con HTTPS local.
 - 30 pruebas automáticas.
 
+[Sin publicar]: https://github.com/Remaori/Kitchenlink/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/Remaori/Kitchenlink/releases/tag/v0.2.0

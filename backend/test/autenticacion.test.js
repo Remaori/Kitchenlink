@@ -11,6 +11,7 @@ import { crearApp } from '../src/app.js';
 import { instalarBase } from '../scripts/lib/instalador.js';
 import { restablecerDesdeServidor, crearGerenteDesdeServidor } from '../src/seguridad/servicio.js';
 import { reiniciarTodo } from '../src/seguridad/limitador.js';
+import { alMismoTiempo } from './concurrencia.js';
 
 const DEMO = 'Kitchen2026';
 const TEMPORAL = 'Temporal2026';
@@ -119,6 +120,24 @@ describe('01 · Iniciar sesión', () => {
     const ip = nuevaIp();
     for (const u of ['u1', 'u2', 'u3', 'u4', 'u5', 'u6']) await entrar(u, 'equivocada1', ip);
     assert.equal((await entrar('aruiz', DEMO, ip)).r.status, 429);
+  });
+
+  test('muchos intentos al mismo tiempo no se saltan el límite', async () => {
+    const ip = nuevaIp();
+    const intentos = [];
+    // La base detiene la búsqueda del usuario; mientras, llegan los 10 intentos
+    await alMismoTiempo({
+      candado: 'LOCK TABLE usuario IN ACCESS EXCLUSIVE MODE',
+      peticiones: [() => {
+        for (let i = 0; i < 10; i++) intentos.push(entrar('aruiz', 'equivocada1', ip));
+        return Promise.resolve();
+      }],
+      detenidas: 3,
+      antesDeSoltar: () => new Promise((listo) => setTimeout(listo, 300)),
+    });
+    const r = (await Promise.all(intentos)).map((x) => x.r.status);
+    assert.equal(r.filter((s) => s === 401).length, 3, r.join(' '));
+    assert.equal(r.filter((s) => s === 429).length, 7);
   });
 });
 
