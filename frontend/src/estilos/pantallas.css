@@ -1,0 +1,37 @@
+/* KitchenLink · pantallas de operación: 04 · Mesas.
+   Usa los colores y medidas de app.css (tomados del diseño en Figma). */
+
+/* ---------- Piezas comunes de operación ---------- */
+.boton:disabled { cursor: not-allowed; opacity: 0.6; }
+.insignia { white-space: nowrap; }
+.tarjeta h2 { font-size: 16px; font-weight: 600; margin: 0; }
+
+.contador { display: inline-flex; align-items: center; gap: 16px; }
+.contador > span { font-size: 18px; font-weight: 600; min-width: 112px; text-align: center; }
+.contador-boton {
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--borde); background: var(--blanco);
+  color: var(--gris); display: grid; place-items: center; cursor: pointer;
+}
+.contador-boton:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- 04 · Mesas ---------- */
+.mesas-filtros { justify-content: space-between; }
+.filtros-derecha { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+.buscador-chico { width: 260px; }
+.rejilla-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
+.tarjeta-mesa {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px; text-align: left;
+  padding: 16px 16px 14px; border: 1px solid var(--borde); border-radius: 12px; background: var(--blanco);
+  color: var(--tinta); cursor: pointer; font-size: 14px; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tarjeta-mesa:hover:not(:disabled) { border-color: var(--morado-borde); box-shadow: 0 4px 14px rgba(17, 24, 39, 0.06); }
+.tarjeta-mesa:disabled { cursor: default; opacity: 1; }
+.tarjeta-mesa-titulo { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 15.5px; font-weight: 600; }
+.tarjeta-mesa-titulo svg { color: var(--gris); }
+.tarjeta-mesa-personas { display: flex; align-items: center; gap: 7px; color: var(--gris); font-size: 13.5px; }
+.tarjeta-mesa-personas svg { color: var(--tenue); }
+.tarjeta-mesa-pie { display: flex; flex-direction: column; gap: 6px; width: 100%; padding-top: 11px; border-top: 1px solid var(--borde); }
+.tarjeta-mesa-pie small { color: var(--tenue); font-size: 13px; }
+.mesas-baja { margin-top: 22px; }
+.mesas-baja ul { list-style: none; padding: 0; margin: 12px 0 0; }
+.mesas-baja li { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--borde); font-size: 14px; }

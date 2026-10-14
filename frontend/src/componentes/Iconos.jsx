@@ -29,3 +29,5 @@ export const IconoFlecha = I(<path d="M5 12h14M13 6l6 6-6 6" />);
 export const IconoTelefono = I(<><rect x="7" y="3" width="10" height="18" rx="2" /><path d="M11 17.5h2" /></>);
 export const IconoHistorial = I(<><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5" /><path d="M4 4v4.5h4.5M12 8v4.5l3 2" /></>);
 export const IconoServidor = I(<><rect x="4" y="4" width="16" height="7" rx="1.5" /><rect x="4" y="13" width="16" height="7" rx="1.5" /><path d="M8 7.5h.1M8 16.5h.1" /></>);
+export const IconoNota = I(<><rect x="5" y="3.5" width="14" height="17" rx="2" /><path d="M9 8.5h6M9 12h6M9 15.5h4" /></>);
+export const IconoMenos = I(<path d="M5 12h14" />);

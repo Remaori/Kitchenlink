@@ -1,4 +1,4 @@
-// Textos que se repiten en varias pantallas (fechas, iniciales)
+// Textos que se repiten en varias pantallas (fechas, dinero, iniciales)
 
 export const iniciales = (nombre = '') =>
   nombre.trim().split(/\s+/).slice(0, 2).map((p) => p[0] ?? '').join('').toUpperCase();
@@ -23,3 +23,10 @@ export function cuandoFue(f) {
 
 // "1 usuario" / "4 usuarios"
 export const contar = (n, singular, plural = `${singular}s`) => `${n} ${n === 1 ? singular : plural}`;
+
+// El dinero llega de la API como texto ("1571.80") para no perder centavos
+const pesos = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', currencySymbol: '$' });
+/** "$1,571.80" */
+export const dinero = (v) => pesos.format(Number(v ?? 0)).replace('MX$', '$');
+
+export const sinAcentos = (t = '') => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();

@@ -6,6 +6,18 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 
 ## [Sin publicar]
 
+### Agregado
+
+- **Menú, categorías y productos:**
+  - categorías con "Se prepara en" (cocina o barra) y su orden en el menú;
+  - productos con precio exacto, que se quitan del menú y se regresan sin borrarse;
+  - 86 con motivo: el producto sigue en el menú pero ya no se puede capturar;
+  - la misma pantalla es el "Menú" del mesero (solo consulta) y "Productos 86" de cocina.
+- **Crear mesa:** número ("7" es la Mesa 07), capacidad de 1 a 30 y zona; edición, baja y reactivación.
+  La capacidad no baja de una reservación ya hecha.
+- Los cambios del menú y de las mesas quedan en la bitácora.
+- **Pruebas automáticas:** pasan de 71 a 94, incluidas peticiones al mismo tiempo en el menú y las mesas.
+
 ### Cambiado
 
 - **En tablet:** la columna de acciones de las tablas queda siempre a la vista (con una sombra cuando la

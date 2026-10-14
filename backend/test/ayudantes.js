@@ -47,6 +47,8 @@ export async function activar(usuario, temporal, nueva = 'Nueva2026x') {
 }
 
 export const idDe = async (nombreUsuario) => (await bd('SELECT id FROM usuario WHERE nombre_usuario = $1', [nombreUsuario]))[0].id;
+export const mesaId = async (numero) => (await bd('SELECT id FROM mesa WHERE numero = $1', [numero]))[0].id;
+export const productoId = async (nombre) => (await bd('SELECT id FROM producto WHERE nombre = $1', [nombre]))[0].id;
 export const rolId = async (nombre) => (await bd('SELECT id FROM rol WHERE nombre = $1', [nombre]))[0].id;
 export const ultimaBitacora = async (entidad, id) =>
   (await bd(`SELECT b.accion, b.detalle, u.nombre_usuario AS por FROM bitacora b LEFT JOIN usuario u ON u.id = b.usuario_id

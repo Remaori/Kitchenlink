@@ -7,15 +7,20 @@ import { useSesion } from '../sesion/ContextoSesion.jsx';
 import { Logo } from './Campos.jsx';
 import * as Ic from './Iconos.jsx';
 
-// `ruta` = módulo ya construido; los demás se muestran como "pronto"
+// `ruta` = módulo ya construido; los demás se muestran como "pronto".
+// `nombre` puede depender de los permisos (el mesero ve "Menú"; cocina, "Productos 86").
 const MODULOS = [
-  { nombre: 'Mesas', icono: Ic.IconoMesa, permisos: ['mesa.ver', 'mesa.administrar'] },
+  { nombre: 'Mesas', icono: Ic.IconoMesa, permisos: ['mesa.ver', 'mesa.administrar'], ruta: () => '/mesas', activo: (r) => r === '/mesas' },
   { nombre: 'Reservaciones', icono: Ic.IconoCalendario, permisos: ['reservacion.gestionar'] },
   { nombre: 'Comandas', icono: Ic.IconoLista, permisos: ['comanda.abrir'] },
   { nombre: 'Cocina y barra', icono: Ic.IconoCocina, permisos: ['produccion.ver'] },
   { nombre: 'Cobro', icono: Ic.IconoRecibo, permisos: ['pago.registrar', 'ticket.pre_ticket'] },
   { nombre: 'Cortes de caja', icono: Ic.IconoCaja, permisos: ['caja.corte'] },
-  { nombre: 'Menú y productos', icono: Ic.IconoMenu, permisos: ['menu.administrar', 'menu.asignar_86'] },
+  {
+    nombre: (tiene) => (tiene('menu.administrar') ? 'Menú y productos' : tiene('menu.asignar_86') ? 'Productos 86' : 'Menú'),
+    icono: Ic.IconoMenu, permisos: ['menu.administrar', 'menu.asignar_86', 'comanda.abrir'],
+    ruta: () => '/menu', activo: (r) => r === '/menu',
+  },
   { nombre: 'Reportes', icono: Ic.IconoGrafica, permisos: ['reporte.ver'] },
   {
     nombre: 'Usuarios y roles', icono: Ic.IconoPersonas, permisos: ['usuario.administrar', 'rol.administrar'],
@@ -46,15 +51,18 @@ export default function Marco() {
         <div className="lateral-marca"><Logo tam={32} /><span>KitchenLink</span></div>
         <nav className="lateral-menu" aria-label="Módulos">
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'activo' : '')}><Ic.IconoInicio />Inicio</NavLink>
-          {modulos.map(({ nombre, icono: Icono, ruta, activo }) => (ruta ? (
-            <NavLink key={nombre} to={ruta(tienePermiso)} className={activo(pathname) ? 'activo' : ''}>
-              <Icono />{nombre}
-            </NavLink>
-          ) : (
-            <span key={nombre} className="deshabilitado" title="Se agrega en las siguientes tareas">
-              <Icono />{nombre}<small>pronto</small>
-            </span>
-          )))}
+          {modulos.map(({ nombre, icono: Icono, ruta, activo }) => {
+            const texto = typeof nombre === 'function' ? nombre(tienePermiso) : nombre;
+            return ruta ? (
+              <NavLink key={texto} to={ruta(tienePermiso)} className={activo(pathname) ? 'activo' : ''}>
+                <Icono />{texto}
+              </NavLink>
+            ) : (
+              <span key={texto} className="deshabilitado" title="Se agrega en las siguientes tareas">
+                <Icono />{texto}<small>pronto</small>
+              </span>
+            );
+          })}
         </nav>
         <div className="lateral-perfil">
           <span className="avatar">{usuario.iniciales}</span>

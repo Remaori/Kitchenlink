@@ -8,6 +8,8 @@ import rutasSalud from './rutas/salud.js';
 import rutasAuth from './seguridad/rutas.js';
 import rutasUsuarios from './rutas/usuarios.js';
 import rutasRoles from './rutas/roles.js';
+import rutasMenu from './rutas/menu.js';
+import rutasMesas from './rutas/mesas.js';
 
 export function crearApp() {
   const app = express();
@@ -32,6 +34,8 @@ export function crearApp() {
   app.use('/api/auth', rutasAuth);
   app.use('/api/usuarios', rutasUsuarios);
   app.use('/api/roles', rutasRoles);
+  app.use('/api/menu', rutasMenu);
+  app.use('/api/mesas', rutasMesas);
   app.use('/api', rutaNoEncontrada);
   app.use(manejadorErrores);
   return app;

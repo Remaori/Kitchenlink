@@ -6,6 +6,8 @@ import Inicio from './paginas/Inicio.jsx';
 import Usuarios from './paginas/usuarios/Usuarios.jsx';
 import FormularioUsuario from './paginas/usuarios/FormularioUsuario.jsx';
 import Roles from './paginas/roles/Roles.jsx';
+import Menu from './paginas/menu/Menu.jsx';
+import Mesas from './paginas/mesas/Mesas.jsx';
 import Marco, { ConPermiso } from './componentes/Marco.jsx';
 import { Logo } from './componentes/Campos.jsx';
 
@@ -43,6 +45,10 @@ export default function App() {
         {/* 02c · Roles y permisos */}
         <Route path="roles" element={roles(<Roles />)} />
         <Route path="roles/:id" element={roles(<Roles />)} />
+        {/* 09 · Menú y productos (también "Menú" del mesero y "Productos 86" de cocina) */}
+        <Route path="menu" element={<ConPermiso alguno={['menu.administrar', 'menu.asignar_86', 'comanda.abrir', 'produccion.ver']}><Menu /></ConPermiso>} />
+        {/* 04 · Mesas (Crear mesa) */}
+        <Route path="mesas" element={<ConPermiso alguno={['mesa.ver', 'mesa.administrar', 'reservacion.gestionar']}><Mesas /></ConPermiso>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
