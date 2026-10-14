@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>KitchenLink · Arquitectura de software</title>
+<!-- Fuente del PDF KitchenLink_Arquitectura.pdf: se abre en el navegador y se imprime a PDF
+     (tamaño carta horizontal, con gráficos de fondo). Las fuentes salen de node_modules (npm install). -->
+<style>
+  @font-face { font-family: Inter; font-weight: 400; src: url('../../node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2') format('woff2'); }
+  @font-face { font-family: Inter; font-weight: 500; src: url('../../node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2') format('woff2'); }
+  @font-face { font-family: Inter; font-weight: 600; src: url('../../node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2') format('woff2'); }
+  @font-face { font-family: Inter; font-weight: 700; src: url('../../node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2') format('woff2'); }
+
+  @page { size: 11in 8.5in; margin: 0; }
+  :root {
+    --morado: #7C5CFC; --morado-osc: #5B3FD9; --morado-suave: #F1EDFE; --morado-borde: #D4C9FC;
+    --tinta: #111827; --texto: #374151; --gris: #6B7280; --tenue: #9CA3AF; --borde: #E5E7EB; --superficie: #F7F7F9;
+    --azul: #2563EB; --azul-suave: #EFF6FF; --azul-borde: #BFDBFE;
+    --verde: #059669; --verde-suave: #ECFDF5; --verde-borde: #A7F3D0;
+    --ambar: #B45309; --ambar-suave: #FFF7ED; --ambar-borde: #FED7AA;
+    --amarillo-suave: #FEFCE8; --amarillo-borde: #FDE68A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #E5E7EB; }
+  body { font-family: Inter, system-ui, sans-serif; color: var(--tinta); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @media screen { .pagina { margin: 24px auto; box-shadow: 0 10px 40px rgba(17, 24, 39, .15); } }
+
+  .pagina {
+    width: 11in; height: 8.5in; padding: 30px 40px 22px; position: relative; overflow: hidden;
+    background: #fff; display: flex; flex-direction: column; break-after: page;
+  }
+  .pagina:last-child { break-after: auto; }
+
+  /* ---------- Encabezado y pie ---------- */
+  .encabezado { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 14px; }
+  .marca { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 13px; color: var(--gris); margin-bottom: 6px; }
+  .logo { width: 24px; height: 24px; border-radius: 7px; background: var(--morado); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+  h1 { font-size: 25px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+  .bajada { font-size: 13.5px; color: var(--gris); margin: 5px 0 0; }
+  .leyenda { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; font-size: 10px; color: var(--gris); }
+  .leyenda li { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .leyenda i { width: 14px; height: 10px; border-radius: 3px; display: inline-block; border: 1px solid; }
+  .l-disp { background: var(--morado-suave); border-color: var(--morado-borde) !important; }
+  .l-serv { background: var(--azul-suave); border-color: var(--azul-borde) !important; }
+  .l-datos { background: var(--verde-suave); border-color: var(--verde-borde) !important; }
+  .l-ext { background: var(--ambar-suave); border-color: var(--ambar-borde) !important; }
+  .l-prev { background: #fff; border-style: dashed !important; border-color: var(--tenue) !important; }
+  .pie { margin-top: auto; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: var(--tenue); border-top: 1px solid var(--borde); }
+
+  /* ---------- Piezas comunes ---------- */
+  .lienzo { position: relative; flex: 1; min-height: 0; }
+  .flechas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .circulo { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .banda { border-radius: 16px; border: 1.5px solid; padding: 12px 16px 14px; position: relative; }
+  .etiqueta-banda { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+  .caja { background: #fff; border: 1.5px solid var(--borde); border-radius: 12px; padding: 10px 12px; position: relative; }
+  .caja b { display: block; font-size: 14px; font-weight: 600; }
+  .caja small { display: block; font-size: 11px; color: var(--gris); line-height: 1.35; margin-top: 2px; }
+  .pastilla { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--superficie); color: var(--gris); margin-left: 6px; vertical-align: 2px; }
+  .lista { margin: 7px 0 0; padding: 0; list-style: none; font-size: 11px; color: var(--texto); display: flex; flex-direction: column; gap: 3px; }
+  .lista li { position: relative; padding-left: 11px; line-height: 1.3; }
+  .lista li::before { content: ''; position: absolute; left: 0; top: 5px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .35; }
+  .lista b { display: inline !important; font-size: inherit !important; }
+  .num { width: 22px; height: 22px; border-radius: 50%; background: var(--morado); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; flex: none; }
+  h2 { font-size: 15px; font-weight: 700; margin: 0 0 10px; letter-spacing: -.01em; }
+
+  /* ---------- Página 1 · Vista general ---------- */
+  .dispositivos { background: #FAF8FF; border-color: var(--morado-borde); color: var(--morado-osc); }
+  .fila-disp { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .disp { display: flex; align-items: center; gap: 10px; background: #fff; border: 1.5px solid #E9E4FD; border-radius: 12px; padding: 9px 10px; color: var(--tinta); }
+  .disp .circulo { background: var(--morado-suave); color: var(--morado); }
+  .disp b { display: block; font-size: 13.5px; font-weight: 600; }
+  .disp small { display: block; font-size: 10.5px; color: var(--gris); margin-top: 1px; }
+
+  .red { width: 330px; margin: 26px auto 0; display: flex; align-items: center; gap: 12px; background: var(--superficie); border: 1.5px solid #D1D5DB; border-radius: 12px; padding: 10px 14px; }
+  .red .circulo { background: #fff; color: var(--gris); border: 1px solid var(--borde); }
+  .red b { display: block; font-size: 13.5px; } .red small { display: block; font-size: 11px; color: var(--gris); margin-top: 1px; }
+
+  .servidor { margin-top: 24px; background: #F5F9FF; border-color: var(--azul-borde); color: var(--azul); }
+  .rejilla-serv { display: grid; grid-template-columns: 190px 1fr 196px; gap: 36px; align-items: stretch; color: var(--tinta); }
+  .col-izq { display: flex; flex-direction: column; gap: 18px; }
+  .caja.azul { border-color: var(--azul-borde); }
+  .titulo-caja { display: flex; align-items: center; gap: 8px; }
+  .titulo-caja .ico { color: var(--azul); }
+  .node { padding: 12px 14px 14px; }
+  .modulos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 10px; }
+  .modulo { background: #F8FBFF; border: 1px solid #DBEAFE; border-radius: 10px; padding: 8px 10px; }
+  .modulo .ico { width: 17px; height: 17px; color: var(--azul); margin-bottom: 3px; }
+  .modulo b { font-size: 12.5px; }
+  .modulo small { font-size: 10.5px; }
+  .caja.datos { background: var(--verde-suave); border-color: var(--verde-borde); }
+  .caja.datos .ico { color: var(--verde); }
+  .cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 9px; }
+  .cifra { background: #fff; border-radius: 8px; padding: 5px 8px; border: 1px solid #D1FAE5; }
+  .cifra strong { display: block; font-size: 17px; font-weight: 700; color: var(--verde); line-height: 1.1; }
+  .cifra span { font-size: 10px; color: var(--gris); }
+
+  .fila-ext { display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr 1fr; gap: 22px; margin-top: 22px; align-items: stretch; }
+  .nota { background: var(--amarillo-suave); border: 1.5px solid var(--amarillo-borde); border-radius: 12px; padding: 10px 13px; font-size: 11.5px; color: #713F12; line-height: 1.45; }
+  .nota b { display: block; font-size: 12px; margin-bottom: 2px; }
+  .caja.ext { background: var(--ambar-suave); border-color: var(--ambar-borde); display: flex; gap: 10px; align-items: center; }
+  .caja.ext .ico { color: var(--ambar); width: 22px; height: 22px; }
+  .caja.prev { border-style: dashed; border-color: var(--tenue); display: flex; gap: 10px; align-items: center; }
+  .caja.prev .ico { color: var(--gris); width: 22px; height: 22px; }
+  .fila-ext .caja { padding: 9px 11px; } .fila-ext .caja b { font-size: 13px; } .fila-ext .caja .ico { width: 20px !important; height: 20px !important; }
+  .caja.nube { background: #F0F9FF; border-color: #BAE6FD; display: flex; gap: 10px; align-items: center; }
+  .caja.nube .ico { color: #0284C7; width: 24px; height: 24px; }
+  .caja.fuera { background: var(--superficie); border-style: dashed; border-color: #D1D5DB; display: flex; gap: 10px; align-items: center; }
+  .caja.fuera .ico { color: var(--gris); width: 22px; height: 22px; }
+
+  /* ---------- Página 2 · Recorrido ---------- */
+  .recorrido { display: grid; grid-template-columns: repeat(4, 1fr); gap: 46px; }
+  .paso { background: #fff; border: 1.5px solid var(--borde); border-radius: 14px; padding: 12px 13px; display: flex; flex-direction: column; gap: 8px; }
+  .paso header { display: flex; align-items: center; gap: 9px; }
+  .paso header .circulo { width: 34px; height: 34px; }
+  .paso b { font-size: 13.5px; font-weight: 600; display: block; }
+  .paso small { font-size: 10.5px; color: var(--gris); display: block; }
+  .paso p { margin: 0; font-size: 11.5px; color: var(--texto); line-height: 1.45; }
+  .paso.morado { border-color: var(--morado-borde); background: #FCFBFF; } .paso.morado .circulo { background: var(--morado-suave); color: var(--morado); }
+  .paso.azul { border-color: var(--azul-borde); background: #F8FBFF; } .paso.azul .circulo { background: var(--azul-suave); color: var(--azul); }
+  .paso.verde { border-color: var(--verde-borde); background: #F6FEFA; } .paso.verde .circulo { background: var(--verde-suave); color: var(--verde); }
+  .paso.ambar { border-color: var(--ambar-borde); background: #FFFCF7; } .paso.ambar .circulo { background: var(--ambar-suave); color: var(--ambar); }
+  .chequeos { display: flex; flex-direction: column; gap: 4px; }
+  .chequeos span { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--texto); background: #fff; border: 1px solid #DBEAFE; border-radius: 7px; padding: 3px 7px; }
+  .chequeos span::before { content: '✓'; color: var(--verde); font-weight: 700; }
+  .fila-avisos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 46px; margin-top: 62px; }
+  .pantalla { border-radius: 12px; border: 1.5px solid var(--morado-borde); background: #FCFBFF; padding: 10px 12px; }
+  .pantalla header { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .pantalla .circulo { width: 30px; height: 30px; background: var(--morado-suave); color: var(--morado); }
+  .pantalla .ico { width: 17px; height: 17px; }
+  .mini { border: 1px solid var(--borde); border-radius: 8px; background: #fff; padding: 7px 8px; font-size: 10.5px; color: var(--texto); }
+  .mini .nueva { display: inline-block; font-size: 9.5px; font-weight: 600; color: var(--azul); background: var(--azul-suave); border-radius: 999px; padding: 1px 7px; margin-left: 4px; }
+  .mini .brillo { box-shadow: 0 0 0 3px var(--morado-borde); background: var(--morado-suave); }
+  .tres-notas { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 16px; margin-top: 38px; }
+  .tarjeta { border: 1.5px solid var(--borde); border-radius: 14px; padding: 12px 14px; font-size: 11.5px; color: var(--texto); line-height: 1.5; background: #fff; }
+  .tarjeta h3 { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 0 0 6px; color: var(--tinta); }
+  .tarjeta h3 .ico { width: 18px; height: 18px; color: var(--morado); }
+  .codigo { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 11px; background: #111827; color: #E5E7EB; border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+  .codigo .k { color: #C4B5FD; } .codigo .s { color: #86EFAC; }
+  .cobro { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; counter-reset: paso; }
+  .cobro span { counter-increment: paso; display: flex; align-items: center; gap: 7px; font-size: 10.5px; padding: 5px 8px; border-radius: 8px; background: var(--superficie); border: 1px solid var(--borde); }
+  .cobro span::before { content: counter(paso); width: 16px; height: 16px; border-radius: 50%; background: var(--morado); color: #fff; font-size: 9.5px; font-weight: 700; display: grid; place-items: center; flex: none; }
+
+  /* ---------- Página 3 · Seguridad, datos y tecnologías ---------- */
+  .dos-col { display: grid; grid-template-columns: 455px 1fr; gap: 30px; }
+  .capa { border-radius: 16px; border: 1.5px solid; padding: 9px 12px 12px; }
+  .capa > .titulo { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .capa > .titulo .ico { width: 16px; height: 16px; }
+  .capa > p { margin: 0 0 8px; font-size: 10.5px; color: var(--texto); line-height: 1.4; }
+  .c1 { background: #F9FAFB; border-color: #D1D5DB; color: #4B5563; }
+  .c2 { background: #FAF8FF; border-color: var(--morado-borde); color: var(--morado-osc); }
+  .c3 { background: #F5F9FF; border-color: var(--azul-borde); color: var(--azul); }
+  .c4 { background: #F2FDF8; border-color: var(--verde-borde); color: var(--verde); }
+  .c5 { background: #fff; border-color: var(--ambar-borde); color: var(--ambar); text-align: center; padding: 12px; }
+  .c5 .titulo { justify-content: center; }
+  .grupos { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .grupo { border: 1.5px solid var(--borde); border-radius: 12px; padding: 8px 10px; }
+  .grupo b { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 6px; }
+  .grupo b span { font-size: 10px; font-weight: 600; color: var(--gris); }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chips code { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 10.5px; padding: 2px 7px; border-radius: 6px; }
+  .g-seg { border-color: var(--morado-borde); } .g-seg code { background: var(--morado-suave); color: var(--morado-osc); }
+  .g-salon { border-color: var(--azul-borde); } .g-salon code { background: var(--azul-suave); color: #1D4ED8; }
+  .g-menu { border-color: #FBCFE8; } .g-menu code { background: #FDF2F8; color: #9D174D; }
+  .g-serv { border-color: var(--ambar-borde); } .g-serv code { background: var(--ambar-suave); color: var(--ambar); }
+  .g-caja { border-color: var(--verde-borde); } .g-caja code { background: var(--verde-suave); color: #047857; }
+  .g-conf { border-color: #E5E7EB; } .g-conf code { background: #F3F4F6; color: #4B5563; }
+  .totales { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+  .total { border-radius: 12px; background: var(--verde-suave); padding: 7px 10px; }
+  .total strong { display: block; font-size: 22px; font-weight: 700; color: var(--verde); line-height: 1.1; }
+  .total span { font-size: 10.5px; color: var(--texto); }
+  .dato-extra { margin-top: 9px; display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .dato-extra div { font-size: 10.5px; color: var(--texto); line-height: 1.4; background: var(--superficie); border-radius: 10px; padding: 7px 10px; }
+  .dato-extra b { color: var(--tinta); }
+  .tecnologias { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 16px; }
+  .tec { border: 1.5px solid var(--borde); border-radius: 12px; padding: 9px 11px; }
+  .tec .titulo { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gris); margin-bottom: 5px; }
+  .tec .titulo .ico { width: 16px; height: 16px; color: var(--morado); }
+  .tec ul { margin: 0; padding: 0; list-style: none; font-size: 11.5px; display: flex; flex-direction: column; gap: 2px; }
+  .tec li b { font-weight: 600; }
+  .puertos-titulo { font-size: 12px; font-weight: 700; margin: 16px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .puertos-titulo span { font-weight: 500; color: var(--gris); font-size: 11px; }
+  .puertos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .puerto { display: flex; align-items: center; gap: 11px; border-radius: 12px; padding: 8px 12px; border: 1.5px solid var(--borde); }
+  .puerto strong { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 20px; font-weight: 700; min-width: 54px; }
+  .puerto span { font-size: 11px; color: var(--texto); line-height: 1.35; }
+  .puerto.abierto { background: #FAF8FF; border-color: var(--morado-borde); } .puerto.abierto strong { color: var(--morado); }
+  .puerto.cerrado { background: #F5F9FF; border-color: var(--azul-borde); } .puerto.cerrado strong { color: var(--azul); }
+  .puerto.equipo { background: var(--ambar-suave); border-color: var(--ambar-borde); } .puerto.equipo strong { color: var(--ambar); }
+</style>
+</head>
+<body>
+
+<!-- ===================================================== Página 1 -->
+<section class="pagina">
+  <header class="encabezado">
+    <div>
+      <div class="marca"><span class="logo">K</span>KitchenLink</div>
+      <h1>Arquitectura de software</h1>
+      <p class="bajada">Todo corre dentro del restaurante: si se cae el internet, el servicio sigue.</p>
+    </div>
+  </header>
+
+  <div class="lienzo" id="p1">
+    <div class="banda dispositivos" id="dispositivos">
+      <span class="etiqueta-banda">Dispositivos del restaurante · cada quien usa la app en el navegador</span>
+      <div class="fila-disp">
+        <div class="disp"><span class="circulo"><svg class="ico" data-i="grafica"></svg></span><div><b>Gerente</b><small>Computadora</small></div></div>
+        <div class="disp"><span class="circulo"><svg class="ico" data-i="calendario"></svg></span><div><b>Hostess</b><small>Tablet</small></div></div>
+        <div class="disp"><span class="circulo"><svg class="ico" data-i="mesa"></svg></span><div><b>Meseros</b><small>Tablets</small></div></div>
+        <div class="disp"><span class="circulo"><svg class="ico" data-i="cocina"></svg></span><div><b>Cocina</b><small>Pantalla (KDS)</small></div></div>
+        <div class="disp"><span class="circulo"><svg class="ico" data-i="vaso"></svg></span><div><b>Barra</b><small>Pantalla (KDS)</small></div></div>
+        <div class="disp"><span class="circulo"><svg class="ico" data-i="recibo"></svg></span><div><b>Caja</b><small>Computadora</small></div></div>
+      </div>
+    </div>
+
+    <div class="red" id="red">
+      <span class="circulo"><svg class="ico" data-i="wifi"></svg></span>
+      <div><b>Red local del restaurante</b><small>Router Wi-Fi + Ethernet · no necesita internet</small></div>
+    </div>
+
+    <div class="banda servidor" id="servidor">
+      <span class="etiqueta-banda">Servidor local · una laptop o PC del restaurante (Windows 11 o Ubuntu Server)</span>
+      <div class="rejilla-serv">
+        <div class="col-izq">
+          <div class="caja azul" id="nginx">
+            <div class="titulo-caja"><svg class="ico" data-i="reparte"></svg><b>Nginx</b><span class="pastilla">HTTPS :443</span></div>
+            <ul class="lista"><li>Certificado de la red local (mkcert)</li><li>HTTP siempre pasa a HTTPS</li><li>Manda <b>/api</b> y <b>/socket.io</b> a Express</li></ul>
+          </div>
+          <div class="caja azul" id="app">
+            <div class="titulo-caja"><svg class="ico" data-i="monitor"></svg><b>App React 19</b></div>
+            <ul class="lista"><li>Compilada con Vite</li><li>Una sola app para los 6 roles</li><li>El menú sale de los permisos</li></ul>
+          </div>
+        </div>
+
+        <div class="caja azul node" id="node">
+          <div class="titulo-caja"><svg class="ico" data-i="servidor"></svg><b>Node.js 24 LTS + Express 5</b><span class="pastilla">solo en 127.0.0.1:3000</span></div>
+          <div class="modulos">
+            <div class="modulo"><svg class="ico" data-i="lista"></svg><b>API REST</b><small>Rutas por pantalla; errores claros en JSON</small></div>
+            <div class="modulo"><svg class="ico" data-i="rayo"></svg><b>Tiempo real</b><small>Socket.IO avisa a las pantallas qué cambió</small></div>
+            <div class="modulo"><svg class="ico" data-i="candado"></svg><b>Sesión</b><small>JWT en cookie · bcrypt · límite de intentos</small></div>
+            <div class="modulo"><svg class="ico" data-i="personas"></svg><b>Permisos por rol</b><small>17 permisos, revisados en cada petición</small></div>
+            <div class="modulo"><svg class="ico" data-i="reglas"></svg><b>Reglas del negocio</b><small>En transacción; en fila si llegan a la vez</small></div>
+            <div class="modulo" id="impresion"><svg class="ico" data-i="impresora"></svg><b>Impresión</b><small>Tickets y cortes ESC/POS, o desde el navegador</small></div>
+          </div>
+        </div>
+
+        <div class="caja datos" id="pg">
+          <div class="titulo-caja"><svg class="ico" data-i="base"></svg><b>PostgreSQL 16+</b></div>
+          <small style="margin-top:4px">Esquema v3 · revisa las reglas otra vez</small>
+          <div class="cifras">
+            <div class="cifra"><strong>19</strong><span>tablas</span></div>
+            <div class="cifra"><strong>22</strong><span>vistas</span></div>
+            <div class="cifra"><strong>27</strong><span>triggers</span></div>
+            <div class="cifra"><strong>10</strong><span>tipos (ENUM)</span></div>
+          </div>
+          <ul class="lista"><li>Bitácora: quién hizo qué y cuándo</li><li>La app entra con permisos mínimos (<b>kitchenlink_app</b>)</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="fila-ext">
+      <div class="nota"><b>Decisión de arquitectura</b>Todo corre en la red local. La nube solo guarda respaldos.</div>
+      <div class="caja fuera" id="terminal"><svg class="ico" data-i="tarjeta"></svg><div><b>Terminal bancaria</b><small>Aparte del sistema</small></div></div>
+      <div class="caja ext" id="impresora"><svg class="ico" data-i="impresora"></svg><div><b>Impresora térmica</b><small>Red local · 80 mm</small></div></div>
+      <div class="caja nube" id="nube"><svg class="ico" data-i="nube"></svg><div><b>Backblaze B2</b><small>Nube: copias fuera del restaurante</small></div></div>
+      <div class="caja prev" id="respaldo"><svg class="ico" data-i="disco"></svg><div><b>Respaldo nocturno</b><small>pg_dump, también a disco externo</small></div></div>
+    </div>
+
+    <svg class="flechas" data-flechas='[
+      ["#dispositivos", "#red", "HTTPS · Wi-Fi o Ethernet"],
+      ["#red", "#servidor", "TCP/IP"],
+      ["#nginx", "#node", "", "der"],
+      ["#nginx", "#app", "", "abajo"],
+      ["#node", "#pg", "SQL", "der"],
+      ["#impresion", "#impresora", "TCP 9100"],
+      ["#pg", "#respaldo", "", "abajo", "punteada"],
+      ["#respaldo", "#nube", "", "izq", "punteada"]
+    ]'></svg>
+  </div>
+  <footer class="pie"><span>KitchenLink · Arquitectura de software</span><ul class="leyenda"><li><i class="l-disp"></i>Dispositivos</li><li><i class="l-serv"></i>Servidor local</li><li><i class="l-datos"></i>Datos</li><li><i class="l-ext"></i>Equipo conectado</li><li><i class="l-prev"></i>Previsto / fuera del sistema</li>
+    </ul><span>1 / 3</span></footer>
+</section>
+
+<!-- ===================================================== Página 2 -->
+<section class="pagina">
+  <header class="encabezado">
+    <div>
+      <div class="marca"><span class="logo">K</span>KitchenLink</div>
+      <h1>Un pedido, de la mesa a la cocina</h1>
+      <p class="bajada">Qué pasa cuando el mesero presiona «Enviar», y por qué la cocina lo ve al instante sin recargar.</p>
+    </div>
+  </header>
+
+  <div class="lienzo" id="p2">
+    <div class="recorrido">
+      <div class="paso morado" id="r1">
+        <header><span class="num">1</span><span class="circulo"><svg class="ico" data-i="tablet"></svg></span><div><b>Mesero</b><small>Tablet · pantalla 05b</small></div></header>
+        <p>Toca los platillos (quedan «Sin enviar») y presiona <b style="display:inline;font-size:11.5px">Enviar 2 productos nuevos</b>.</p>
+      </div>
+      <div class="paso azul" id="r2">
+        <header><span class="num">2</span><span class="circulo"><svg class="ico" data-i="reparte"></svg></span><div><b>Nginx</b><small>HTTPS en la red local</small></div></header>
+        <p>Recibe la petición cifrada y la pasa a la API, que no está expuesta a la red.</p>
+      </div>
+      <div class="paso azul" id="r3">
+        <header><span class="num">3</span><span class="circulo"><svg class="ico" data-i="servidor"></svg></span><div><b>Express</b><small>Revisa antes de guardar</small></div></header>
+        <div class="chequeos"><span>¿La sesión sigue abierta?</span><span>¿Su rol tiene el permiso?</span><span>¿Los datos son válidos?</span></div>
+      </div>
+      <div class="paso verde" id="r4">
+        <header><span class="num">4</span><span class="circulo"><svg class="ico" data-i="base"></svg></span><div><b>PostgreSQL</b><small>Una sola transacción</small></div></header>
+        <p>Guarda el envío. Los triggers revisan que sea su mesa y anotan en la bitácora quién lo hizo.</p>
+      </div>
+    </div>
+
+    <div class="fila-avisos">
+      <div class="pantalla" id="a1">
+        <header><span class="num">6</span><span class="circulo"><svg class="ico" data-i="cocina"></svg></span><b style="font-size:13px">Cocina y barra</b></header>
+        <div class="mini">Mesa 08 · Envío 2 <span class="nueva">Nuevo</span><br><span style="color:var(--gris)">2× Tacos de camarón · suena un aviso</span></div>
+      </div>
+      <div class="pantalla" id="a2">
+        <header><span class="num">6</span><span class="circulo"><svg class="ico" data-i="recibo"></svg></span><b style="font-size:13px">Caja</b></header>
+        <div class="mini brillo">Mesa 08 · $1,571.80<br><span style="color:var(--gris)">El total se ilumina al cambiar</span></div>
+      </div>
+      <div class="pantalla" id="a3">
+        <header><span class="num">6</span><span class="circulo"><svg class="ico" data-i="mesa"></svg></span><b style="font-size:13px">Mesas y meseros</b></header>
+        <div class="mini">Mesa 08 · «2 en preparación»<br><span style="color:var(--gris)">El salón se pone al día solo</span></div>
+      </div>
+      <div class="paso ambar" id="r5">
+        <header><span class="num">5</span><span class="circulo"><svg class="ico" data-i="rayo"></svg></span><div><b>Socket.IO</b><small>Aviso en tiempo real</small></div></header>
+        <p>Avisa a todas las pantallas con sesión: <b style="display:inline;font-size:11.5px">cambiaron comandas y producción</b>.</p>
+      </div>
+    </div>
+
+    <div class="tres-notas">
+      <div class="tarjeta">
+        <h3><svg class="ico" data-i="candado"></svg>El aviso no lleva datos</h3>
+        Solo dice qué cambió:
+        <div class="codigo">{ <span class="k">"temas"</span>: [<span class="s">"comandas"</span>, <span class="s">"produccion"</span>] }</div>
+        Cada pantalla vuelve a pedir lo suyo con su sesión y sus permisos: un aviso nunca entrega algo que la persona no podría ver. Si se pierde la conexión, la pantalla se refresca sola cada 20 a 60 s.
+      </div>
+      <div class="tarjeta">
+        <h3><svg class="ico" data-i="personas"></svg>¿Y si dos lo hacen a la vez?</h3>
+        La base los forma en fila y el segundo ve lo que hizo el primero. Si el gerente y el mesero presionan Enviar al mismo tiempo, la cocina recibe el pedido una sola vez; si dos cajeras cobran la misma cuenta, entra un solo pago. Hay pruebas automáticas que fuerzan estos casos.
+      </div>
+      <div class="tarjeta">
+        <h3><svg class="ico" data-i="recibo"></svg>Al cobrar</h3>
+        <div class="cobro"><span>Caja registra el pago</span><span>La base cierra la comanda</span><span>La mesa queda libre</span><span>Sale el ticket impreso</span></div>
+        <p style="margin:8px 0 0">El ticket no se guarda: se genera de la comanda y sus pagos. Si la impresora no responde, se imprime desde el navegador y caja nunca se detiene.</p>
+      </div>
+    </div>
+
+    <svg class="flechas" data-flechas='[
+      ["#r1", "#r2", "", "der"], ["#r2", "#r3", "", "der"], ["#r3", "#r4", "", "der"],
+      ["#r4", "#r5", "al guardar, avisa", "abajo"],
+      ["#r5", "#a3", "", "izq"], ["#a3", "#a2", "", "izq"], ["#a2", "#a1", "", "izq"]
+    ]'></svg>
+  </div>
+  <footer class="pie"><span>KitchenLink · Arquitectura de software</span><span>Luis Antonio Sáenz Jiménez · Diego Jerónimo Benítez · octubre 2026</span><span>2 / 3</span></footer>
+</section>
+
+<!-- ===================================================== Página 3 -->
+<section class="pagina">
+  <header class="encabezado">
+    <div>
+      <div class="marca"><span class="logo">K</span>KitchenLink</div>
+      <h1>Seguridad, datos y tecnologías</h1>
+      <p class="bajada">Cada capa revisa por su cuenta: aunque alguien se salte una, la siguiente lo detiene.</p>
+    </div>
+  </header>
+
+  <div class="lienzo" id="p3">
+    <div class="dos-col">
+      <div>
+        <h2>Seguridad en capas</h2>
+        <div class="capa c1">
+          <div class="titulo"><svg class="ico" data-i="wifi"></svg>1 · Red local y HTTPS</div>
+          <p>Solo los equipos del restaurante llegan al servidor. Nginx cifra todo; la API y la base no se abren a la red.</p>
+          <div class="capa c2">
+            <div class="titulo"><svg class="ico" data-i="candado"></svg>2 · Sesión</div>
+            <p>Contraseñas con bcrypt. JWT en una cookie que el JavaScript no puede leer. Cada sesión vive en la base: cerrar sesión o dar de baja corta el acceso al instante. 5 intentos fallidos y espera.</p>
+            <div class="capa c3">
+              <div class="titulo"><svg class="ico" data-i="personas"></svg>3 · Permisos por rol</div>
+              <p>La API revisa en cada petición que el rol tenga la casilla. Un cambio de permisos aplica desde la siguiente acción.</p>
+              <div class="capa c4">
+                <div class="titulo"><svg class="ico" data-i="base"></svg>4 · La base revisa otra vez</div>
+                <p>Los triggers vuelven a revisar reglas y permisos. La app entra con un rol que no puede borrar tablas ni tocar la bitácora o los pagos.</p>
+                <div class="capa c5">
+                  <div class="titulo"><svg class="ico" data-i="lista"></svg>5 · Bitácora</div>
+                  <span style="font-size:10.5px;color:var(--texto)">Quién hizo qué y cuándo. No se modifica ni se borra.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2>Base de datos · esquema v3</h2>
+        <div class="totales">
+          <div class="total"><strong>19</strong><span>tablas</span></div>
+          <div class="total"><strong>22</strong><span>vistas (tickets, reportes)</span></div>
+          <div class="total"><strong>27</strong><span>triggers (reglas)</span></div>
+          <div class="total"><strong>10</strong><span>tipos de estado</span></div>
+        </div>
+        <div class="grupos">
+          <div class="grupo g-seg"><b>Seguridad <span>01 · 02a–02c</span></b><div class="chips"><code>usuario</code><code>rol</code><code>permiso</code><code>rol_permiso</code><code>sesion</code><code>bitacora</code></div></div>
+          <div class="grupo g-salon"><b>Salón y recepción <span>03a · 03b · 04</span></b><div class="chips"><code>mesa</code><code>reservacion</code><code>lista_espera</code></div></div>
+          <div class="grupo g-menu"><b>Menú <span>09</span></b><div class="chips"><code>categoria</code><code>producto</code></div></div>
+          <div class="grupo g-serv"><b>Servicio <span>05a · 05b · 06</span></b><div class="chips"><code>comanda</code><code>envio</code><code>detalle_comanda</code><code>cancelacion</code></div></div>
+          <div class="grupo g-caja"><b>Caja <span>07 · 08</span></b><div class="chips"><code>pago</code><code>corte_caja</code></div></div>
+          <div class="grupo g-conf"><b>Configuración <span>todas</span></b><div class="chips"><code>configuracion</code><code>etiqueta_estado</code></div></div>
+        </div>
+        <div class="dato-extra">
+          <div><b>Dinero exacto.</b> Montos en NUMERIC(10,2), nunca en punto flotante: no se pierden centavos.</div>
+          <div><b>Se calcula, no se copia.</b> Tickets, cortes Z y reportes son vistas que salen de las comandas y sus pagos.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tecnologias">
+      <div class="tec"><div class="titulo"><svg class="ico" data-i="monitor"></svg>Pantallas</div><ul><li><b>React 19</b></li><li>Vite 8</li><li>React Router 7</li></ul></div>
+      <div class="tec"><div class="titulo"><svg class="ico" data-i="servidor"></svg>Servidor</div><ul><li><b>Node.js 24 LTS</b></li><li>Express 5</li><li>Socket.IO 4</li></ul></div>
+      <div class="tec"><div class="titulo"><svg class="ico" data-i="base"></svg>Datos</div><ul><li><b>PostgreSQL 16+</b></li><li>Triggers y vistas</li><li>Respaldo en Backblaze B2</li></ul></div>
+      <div class="tec"><div class="titulo"><svg class="ico" data-i="reparte"></svg>Red</div><ul><li><b>Nginx</b></li><li>HTTPS con mkcert</li><li>Red local</li></ul></div>
+      <div class="tec"><div class="titulo"><svg class="ico" data-i="candado"></svg>Seguridad</div><ul><li><b>bcrypt · JWT</b></li><li>Helmet</li><li>Permisos por rol</li></ul></div>
+      <div class="tec"><div class="titulo"><svg class="ico" data-i="reglas"></svg>Calidad</div><ul><li><b>node:test</b></li><li>Playwright</li><li>GitHub Actions</li></ul></div>
+    </div>
+
+    <div class="puertos-titulo">Puertos <span>· qué se abre a la red local y qué se queda dentro del servidor</span></div>
+    <div class="puertos">
+      <div class="puerto abierto"><strong>443</strong><span><b>Nginx</b> · a él se conectan todos los dispositivos (el 80 solo redirige)</span></div>
+      <div class="puerto cerrado"><strong>3000</strong><span><b>Express</b> · solo dentro del servidor; Nginx le pasa las peticiones</span></div>
+      <div class="puerto cerrado"><strong>5432</strong><span><b>PostgreSQL</b> · solo dentro del servidor; únicamente Express se conecta</span></div>
+      <div class="puerto equipo"><strong>9100</strong><span><b>Impresora térmica</b> · el servidor le manda los tickets y cortes</span></div>
+    </div>
+  </div>
+  <footer class="pie"><span>KitchenLink · Arquitectura de software</span><span>Luis Antonio Sáenz Jiménez · Diego Jerónimo Benítez · octubre 2026</span><span>3 / 3</span></footer>
+</section>
+
+<script>
+  // Íconos de línea (los mismos trazos que usa la app)
+  const ICONOS = {
+    grafica: '<path d="M5 20V10M12 20V4M19 20v-7"/>',
+    calendario: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>',
+    mesa: '<path d="M3.5 8h17"/><path d="M6 8v10M18 8v10"/>',
+    cocina: '<path d="M6 14a4 4 0 1 1 2.3-7.3 4 4 0 0 1 7.4 0A4 4 0 1 1 18 14"/><path d="M7 14v6h10v-6"/>',
+    vaso: '<path d="M6 4h10l-1 16H7z"/><path d="M16 8h2a2 2 0 0 1 0 4h-2.4"/>',
+    recibo: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+    lista: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.1M4.5 12h.1M4.5 18h.1"/>',
+    candado: '<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
+    personas: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.7-3.2 3-4.8 5.5-4.8s4.8 1.6 5.5 4.8"/><path d="M16 5.2a3 3 0 0 1 0 5.6M17.5 14.4c1.6.6 2.7 2 3 4.6"/>',
+    impresora: '<path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="7" rx="1.5"/><path d="M7 14h10v6H7z"/>',
+    wifi: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.8 15.8a5 5 0 0 1 6.4 0"/><path d="M12 19h.1"/>',
+    servidor: '<rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.1M8 16.5h.1"/>',
+    base: '<ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>',
+    nube: '<path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.5 4.3 4.3 0 0 0 7 18z"/>',
+    tarjeta: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/>',
+    rayo: '<path d="M13 3L5 13h6l-1 8 8-10h-6z"/>',
+    reglas: '<path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.3 1.3L7.3 4.8M3.5 12l1.3 1.3 2.5-2.5M3.5 18l1.3 1.3 2.5-2.5"/>',
+    monitor: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+    tablet: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M11 17.5h2"/>',
+    disco: '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 12h.1M11 12h6"/>',
+    reparte: '<path d="M3 12h7"/><path d="M10 12l4-5h6M10 12l4 5h6"/><path d="M18 5l2 2-2 2M18 15l2 2-2 2"/>',
+  };
+  for (const s of document.querySelectorAll('svg.ico')) {
+    s.setAttribute('viewBox', '0 0 24 24');
+    s.innerHTML = ICONOS[s.dataset.i] ?? '';
+  }
+
+  // Flechas: [desde, hacia, etiqueta, lado, estilo]. Se calculan con la posición real de cada caja.
+  const NS = 'http://www.w3.org/2000/svg';
+  function dibujar(svg) {
+    const base = svg.getBoundingClientRect();
+    const r = (sel) => { const b = svg.parentElement.querySelector(sel).getBoundingClientRect(); return { x: b.left - base.left, y: b.top - base.top, w: b.width, h: b.height }; };
+    svg.innerHTML = `<defs><marker id="punta-${svg.parentElement.id}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#6B7280"/></marker></defs>`;
+    for (const [de, a, texto = '', lado = 'abajo', estilo = ''] of JSON.parse(svg.dataset.flechas)) {
+      const A = r(de); const B = r(a);
+      let d; let lx; let ly; let ancla = 'start';
+      if (lado === 'der' || lado === 'izq') {
+        // A la altura donde las dos cajas coinciden (o al centro de la primera)
+        const arriba = Math.max(A.y, B.y); const abajo = Math.min(A.y + A.h, B.y + B.h);
+        const y = abajo > arriba ? (arriba + abajo) / 2 : A.y + A.h / 2;
+        const x1 = lado === 'der' ? A.x + A.w : A.x; const x2 = lado === 'der' ? B.x : B.x + B.w;
+        d = `M${x1 + (lado === 'der' ? 2 : -2)} ${y}H${x2 + (lado === 'der' ? -3 : 3)}`;
+        lx = (x1 + x2) / 2; ly = y - 7; ancla = 'middle';
+      } else {
+        const x1 = A.x + A.w / 2; const x2 = B.x + B.w / 2; const y1 = A.y + A.h + 2; const y2 = B.y - 3;
+        if (Math.abs(x1 - x2) < 3) { d = `M${x1} ${y1}V${y2}`; lx = x1 + 8; ly = (y1 + y2) / 2 + 4; }
+        else { const ym = (y1 + y2) / 2; d = `M${x1} ${y1}V${ym}H${x2}V${y2}`; lx = Math.max(x1, x2) + 8; ly = y2 - 4; if (x1 > x2) { lx = x2 + 8; } }
+      }
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d); p.setAttribute('fill', 'none'); p.setAttribute('stroke', '#6B7280'); p.setAttribute('stroke-width', '1.6');
+      if (estilo === 'punteada') p.setAttribute('stroke-dasharray', '5 4');
+      p.setAttribute('marker-end', `url(#punta-${svg.parentElement.id})`);
+      svg.appendChild(p);
+      if (texto) {
+        const t = document.createElementNS(NS, 'text');
+        t.setAttribute('x', lx); t.setAttribute('y', ly); t.setAttribute('text-anchor', ancla);
+        t.setAttribute('font-size', '10.5'); t.setAttribute('font-family', 'Inter'); t.setAttribute('fill', '#6B7280'); t.setAttribute('font-weight', '500');
+        t.textContent = texto; svg.appendChild(t);
+      }
+    }
+  }
+  document.fonts.ready.then(() => { for (const s of document.querySelectorAll('svg.flechas')) dibujar(s); document.body.dataset.listo = 'si'; });
+</script>
+</body>
+</html>

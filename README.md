@@ -147,6 +147,8 @@ kitchenlink/
 ## Documentación
 
 - [Arquitectura](docs/ARQUITECTURA.md): despliegue, capas del backend y recorrido de una petición
+- [Arquitectura ilustrada (PDF)](docs/arquitectura/KitchenLink_Arquitectura.pdf): despliegue, recorrido de un pedido,
+  seguridad y respaldo en la nube
 - [Guía de entorno](docs/GUIA_ENTORNO.md): instalación, red local, Nginx y HTTPS
 - [Base de datos](database/README.md): scripts SQL, usuarios de demostración y permisos de la aplicación
 - [Autenticación](docs/AUTENTICACION.md): inicio de sesión, sesiones y contraseñas
