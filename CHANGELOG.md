@@ -6,6 +6,17 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 
 ## [Sin publicar]
 
+### Cambiado
+
+- **En tablet:** la columna de acciones de las tablas queda siempre a la vista (con una sombra cuando la
+  tabla se desliza), los permisos de un rol se acomodan en dos columnas y los botones del encabezado ya no se
+  parten en dos renglones.
+- **Al tocar:** los botones responden al presionarlos y, en pantallas táctiles, los enlaces se pueden tocar
+  con más holgura sin verse distintos.
+- **Transiciones cortas:** las ventanas y el aviso de "listo" entran y salen suave, sin mover la pantalla de
+  golpe. Si el sistema pide reducir el movimiento, no se anima nada.
+- Con el teclado, el foco se marca igual en todos los botones y enlaces.
+
 ### Corregido
 
 - **Peticiones al mismo tiempo en usuarios y roles:**

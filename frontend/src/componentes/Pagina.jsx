@@ -1,5 +1,5 @@
 // Piezas comunes de las pantallas con menú lateral: encabezado, pestañas y avisos
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useSesion } from '../sesion/ContextoSesion.jsx';
 import { IconoPalomita } from './Iconos.jsx';
@@ -38,13 +38,17 @@ export function PestanasSeguridad() {
   );
 }
 
-/** Aviso verde de "listo" que se quita solo */
+/** Aviso verde de "listo" que se quita solo (los últimos 300 ms se desliza hacia arriba) */
 export function AvisoExito({ texto, alTerminar }) {
+  const [saliendo, setSaliendo] = useState(false);
   useEffect(() => {
     if (!texto) return undefined;
+    setSaliendo(false);
+    const sale = setTimeout(() => setSaliendo(true), 5700);
     const t = setTimeout(alTerminar, 6000);
-    return () => clearTimeout(t);
+    return () => { clearTimeout(sale); clearTimeout(t); };
   }, [texto, alTerminar]);
   if (!texto) return null;
-  return <div className="aviso-exito" role="status"><IconoPalomita width={16} height={16} />{texto}</div>;
+  // key: un aviso nuevo vuelve a entrar aunque el anterior siga a la vista
+  return <div key={texto} className={`aviso-exito${saliendo ? ' saliendo' : ''}`} role="status"><IconoPalomita width={16} height={16} />{texto}</div>;
 }

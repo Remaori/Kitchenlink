@@ -2,7 +2,7 @@
    Usa los colores y medidas de app.css (tomados del diseño en Figma). */
 
 /* ---------- Encabezado, botones y pestañas ---------- */
-.encabezado-acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.encabezado-acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-left: auto; }
 .migas { font-size: 13px; color: var(--gris); margin-top: 4px; display: flex; flex-wrap: wrap; }
 .migas a { color: var(--gris); text-decoration: none; }
 .migas a:hover { color: var(--tinta); text-decoration: underline; }
@@ -29,6 +29,11 @@
 .enlace.gris { color: var(--gris); font-weight: 400; }
 .enlace:disabled { color: #D1D5DB; cursor: not-allowed; }
 .enlace.con-flecha { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; }
+/* En pantallas táctiles, los enlaces y los íconos se pueden tocar con holgura sin verse distintos */
+@media (pointer: coarse) {
+  .enlace, .boton-enlace, .boton-icono { position: relative; }
+  .enlace::after, .boton-enlace::after, .boton-icono::after { content: ''; position: absolute; inset: -12px -4px; }
+}
 
 .pestanas { display: flex; gap: 26px; border-bottom: 1px solid var(--borde); margin-bottom: 22px; }
 .pestanas a {
@@ -41,6 +46,17 @@
 .aviso-exito {
   display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 11px 14px;
   background: var(--verde-suave); color: #067647; border-radius: var(--radio); font-size: 13.5px;
+  overflow: hidden; animation: aviso-entra 0.25s ease-out;
+}
+/* Entra y se va deslizando: lo de abajo se acomoda suave en vez de brincar */
+.aviso-exito.saliendo { animation: aviso-sale 0.3s ease-in forwards; }
+@keyframes aviso-entra {
+  from { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; }
+  to { opacity: 1; max-height: 120px; }
+}
+@keyframes aviso-sale {
+  from { max-height: 120px; }
+  to { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; }
 }
 
 /* ---------- Campos de formulario ---------- */
@@ -77,6 +93,18 @@
 .tabla tr.apagada td, .tabla tr.apagada .celda-nombre { color: var(--tenue); }
 .tabla tr.resaltada td { background: #F7F5FF; }
 .tabla .acciones { display: flex; gap: 16px; align-items: center; }
+/* Si la tabla no cabe (tablet), la columna de acciones se queda a la vista y lo demás se desliza */
+.tabla:has(td > .acciones) :is(th, td):last-child { position: sticky; right: 0; }
+:where(.tabla:has(td > .acciones)) td:last-child { background: var(--blanco); }
+/* Con una sombra a su izquierda, pero solo cuando de verdad hay algo deslizándose debajo
+   (la línea de tiempo del desplazamiento solo existe si la tabla no cabe) */
+@supports (animation-timeline: scroll()) {
+  .tabla-envoltura { scroll-timeline: --tabla inline; }
+  .tabla:has(td > .acciones) :is(th, td):last-child { animation: sombra-acciones linear both; animation-timeline: --tabla; }
+  @keyframes sombra-acciones {
+    from, to { box-shadow: -12px 0 12px -10px rgba(17, 24, 39, 0.22); }
+  }
+}
 .tabla .tabla-vacia { text-align: center; color: var(--tenue); padding: 28px 16px; }
 
 .avatar.ambar { background: var(--ambar-suave); color: var(--ambar-tinta); }
@@ -173,7 +201,7 @@
 }
 .lista-roles-nota svg { flex: none; margin-top: 1px; }
 
-.detalle-rol { padding: 20px 22px 22px; }
+.detalle-rol { padding: 20px 22px 22px; container-type: inline-size; }
 .detalle-rol-encabezado { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
 .pastilla {
   display: inline-flex; align-items: center; gap: 7px; flex: none; padding: 5px 12px; border-radius: 999px;
@@ -190,6 +218,9 @@
 .permisos-encabezado h3 { font-size: 15px; font-weight: 600; margin: 0; }
 .permisos-encabezado span { font-size: 13.5px; color: var(--gris); }
 .modulos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+/* Las columnas de permisos dependen del ancho de la tarjeta, no de la pantalla (en tablet la lista de roles ocupa su parte) */
+@container (max-width: 640px) { .modulos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container (max-width: 400px) { .modulos { grid-template-columns: minmax(0, 1fr); } }
 .modulo { background: var(--superficie); border-radius: 10px; padding: 14px 16px 6px; }
 .modulo-encabezado { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
 .modulo-encabezado .cuenta { font-weight: 500; color: var(--tenue); }
@@ -204,11 +235,18 @@
 .detalle-rol-pie .botones { display: flex; gap: 10px; }
 
 /* ---------- Ventanas modales ---------- */
-.dialogo-fondo { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(17, 24, 39, 0.42); }
+.dialogo-fondo {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(17, 24, 39, 0.42);
+  animation: aparecer 0.15s ease-out;
+}
 .dialogo {
   width: 100%; max-width: 480px; max-height: calc(100vh - 32px); overflow: auto; outline: none;
   background: var(--blanco); border-radius: 14px; box-shadow: 0 24px 60px rgba(17, 24, 39, 0.24);
+  animation: dialogo-entra 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+/* Las ventanas entran suave en vez de aparecer de golpe */
+@keyframes aparecer { from { opacity: 0; } }
+@keyframes dialogo-entra { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
 .dialogo-encabezado { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 22px 0; }
 .dialogo-encabezado h2 { font-size: 17px; font-weight: 600; margin: 0; line-height: 1.35; }
 .dialogo-cuerpo { padding: 14px 22px 4px; font-size: 14px; color: #374151; line-height: 1.5; }
@@ -234,11 +272,10 @@
 .sin-permiso .boton { margin-top: 6px; }
 
 @media (max-width: 1100px) {
-  .modulos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dos-columnas, .roles { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
-  .rejilla-campos, .rol-campos, .modulos { grid-template-columns: minmax(0, 1fr); }
+  .rejilla-campos, .rol-campos { grid-template-columns: minmax(0, 1fr); }
   .filtros-resumen { margin-left: 0; }
   .encabezado { flex-wrap: wrap; }
 }
