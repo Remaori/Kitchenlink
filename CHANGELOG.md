@@ -32,6 +32,9 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
   tolerancias se vean igual en todas las tablets.
 - **Pruebas automáticas:** pasan de 71 a 123, incluidas peticiones al mismo tiempo en el menú, las mesas y la
   recepción.
+- **Pruebas de validación en pantalla** (`npm run e2e:validacion`): Microsoft Edge recorre solo 37 casos y
+  guarda una captura de cada uno. Los resultados del menú, las mesas, la recepción y las operaciones de mesas,
+  con sus capturas, están en `docs/PRUEBAS_DE_VALIDACION.md`.
 - Diagrama entidad-relación actualizado (20 tablas y 35 relaciones).
 
 ### Cambiado

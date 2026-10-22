@@ -10,6 +10,12 @@ frontend/dist/
 # Reportes generados en cada equipo (copia a docs/evidencias/ los que quieras entregar)
 backend/reportes/
 
+# Pruebas de pantalla: reportes, capturas y resultados de cada corrida
+e2e/reporte/
+e2e/resultados/
+e2e/resultados-validacion/
+e2e/evidencias/
+
 # Certificados locales de HTTPS (mkcert)
 infra/nginx/certs/
 

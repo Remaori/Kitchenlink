@@ -18,7 +18,8 @@ Administrar usuarios (02a, 02b) queda fuera de esta prueba; lo cubren sus propia
 
 1. **En la pantalla.** Microsoft Edge recorrió los casos como lo haría una persona (escribir, hacer clic,
    leer los mensajes) y guardó una captura por caso en [evidencias/prueba-temprana-seguridad](evidencias/prueba-temprana-seguridad/).
-   Cada caso se puede repetir a mano siguiendo la columna "Pasos".
+   El script es `e2e/validacion/01-prueba-temprana.spec.js`. Cada caso se puede repetir a mano siguiendo la
+   columna "Pasos".
 2. **En la API y la base.** `npm test` (62 pruebas): revisa lo que no se ve en la pantalla, como el hash de la
    contraseña, la cookie, la bitácora o que la base rechace una regla aunque alguien se salte la pantalla.
 
@@ -72,7 +73,10 @@ Base `kitchenlink_e2e`, recién instalada con los datos de demostración (`03_pr
 ## Cómo repetirla
 
 ```bash
-npm run db:instalar -- --recrear   # datos de demostración desde cero (algunos casos los modifican)
+npm run e2e:validacion             # Edge recorre los casos de pantalla solo y guarda las capturas
 npm test                           # pruebas automáticas
+
+# A mano:
+npm run db:instalar -- --recrear   # datos de demostración desde cero (algunos casos los modifican)
 npm run dev                        # http://localhost:5173 y seguir la columna "Pasos" en orden
 ```

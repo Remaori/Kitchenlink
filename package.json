@@ -17,6 +17,8 @@
     "dev:web": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
     "test": "npm test -w backend",
+    "e2e": "npm install --prefix e2e --no-audit --no-fund --silent && npm test --prefix e2e",
+    "e2e:validacion": "npm install --prefix e2e --no-audit --no-fund --silent && npm run validacion --prefix e2e",
     "env:crear": "npm run env:crear -w backend",
     "db:instalar": "npm run db:instalar -w backend --",
     "db:conectividad": "npm run db:conectividad -w backend --",

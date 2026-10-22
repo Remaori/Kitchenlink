@@ -118,6 +118,8 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 | `npm run dev` | API y aplicación en este equipo |
 | `npm run dev:red` | Igual, y la aplicación se abre desde otros equipos de la red local |
 | `npm test` | Pruebas automáticas (usan la base `kitchenlink_pruebas`) |
+| `npm run e2e:validacion` | Pruebas de validación en Microsoft Edge, con una captura por caso |
+| `npm run e2e` | Pruebas de pantalla (inicio de sesión y alta de usuarios) |
 | `npm run build` | Compila la aplicación para Nginx (`frontend/dist`) |
 | `npm run db:instalar [-- --recrear \| --sin-demo]` | Crea o actualiza la base |
 | `npm run db:conectividad [-- --api URL]` | Verifica la conexión API ↔ PostgreSQL y genera un reporte |
@@ -127,11 +129,15 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 ## Pruebas
 
 - `npm test`: 123 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
-  permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú, las mesas, las reservaciones y la lista de espera,
-  incluidas peticiones que llegan al mismo tiempo.
+  permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú, las mesas, las
+  reservaciones y la lista de espera, incluidas peticiones que llegan al mismo tiempo.
 - `npm run db:conectividad`: 24 verificaciones de la conexión entre la API y PostgreSQL.
-- La validación de los casos de uso de seguridad, con capturas de cada caso, está en
-  [docs/PRUEBA_TEMPRANA_VALIDACION.md](docs/PRUEBA_TEMPRANA_VALIDACION.md).
+- `npm run e2e:validacion`: las pruebas de validación en pantalla. Microsoft Edge recorre solo 37 casos como
+  una persona (escribe, hace clic y espera el texto exacto del diseño) y guarda una captura por caso. Detalles
+  en [e2e/README.md](e2e/README.md).
+- Resultados con capturas: [docs/PRUEBA_TEMPRANA_VALIDACION.md](docs/PRUEBA_TEMPRANA_VALIDACION.md) (inicio
+  de sesión y roles) y [docs/PRUEBAS_DE_VALIDACION.md](docs/PRUEBAS_DE_VALIDACION.md) (menú, mesas,
+  recepción y operaciones de mesas).
 
 ## Estructura
 
@@ -149,6 +155,7 @@ kitchenlink/
 │   ├── scripts/        instalar la base, verificar la conexión, comandos de usuarios
 │   └── test/           pruebas automáticas
 ├── frontend/           aplicación React + Vite
+├── e2e/                pruebas de pantalla y de validación (Playwright + Microsoft Edge)
 ├── database/           scripts SQL: base, esquema, permisos y datos de demostración
 ├── infra/nginx/        servidor web y proxy con HTTPS local
 └── docs/               guía de entorno, documentación de módulos y diagrama entidad-relación
@@ -166,6 +173,7 @@ kitchenlink/
 - [Menú y productos](docs/MENU.md): categorías, productos y 86
 - [Mesas](docs/MESAS.md): crear, editar, bloquear y dar de baja mesas; Mis mesas
 - [Recepción](docs/RECEPCION.md): reservaciones y lista de espera
+- [Pruebas de validación](docs/PRUEBAS_DE_VALIDACION.md): menú, mesas, recepción y operaciones, con capturas
 - [Diagrama entidad-relación](docs/erd/)
 - [Cambios por versión](CHANGELOG.md) · [Cómo contribuir](CONTRIBUTING.md)
 
