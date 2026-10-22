@@ -308,14 +308,17 @@ describe('Peticiones al mismo tiempo', () => {
     await alta({ nombre_completo: 'Gerente Dos', nombre_usuario: 'gdos', rol_id: await rolId('Gerente'), contrasena_temporal: t }).expect(201);
     ({ agente: otro } = await activar('gdos', t));
     const [luis, dos, gerenteRol] = [await idDe('lsaenz'), await idDe('gdos'), await rolId('Gerente')];
+    // Los dos cambian algo de verdad (si uno no cambiara nada, terminaría sin esperar a la bitácora)
     const r = await alMismoTiempo({
       candado: RETENER_EN_BITACORA,
       peticiones: [
         () => gerente.put(`/api/usuarios/${dos}`).send({ nombre_completo: 'Gerente Dos', telefono: '55 1000 0002', rol_id: gerenteRol }),
-        () => otro.put(`/api/usuarios/${luis}`).send({ nombre_completo: 'Luis Sáenz Jiménez', telefono: '55 1000 0001', rol_id: gerenteRol }),
+        () => otro.put(`/api/usuarios/${luis}`).send({ nombre_completo: 'Luis Sáenz Jiménez', telefono: '55 1000 0099', rol_id: gerenteRol }),
       ],
     });
     assert.deepEqual(estados(r), [200, 200], r.map((x) => x.body.mensaje).join(' / '));
+    const telefonos = await bd('SELECT nombre_usuario, telefono FROM usuario WHERE id = ANY($1) ORDER BY nombre_usuario', [[luis, dos]]);
+    assert.deepEqual(telefonos.map((x) => `${x.nombre_usuario} ${x.telefono}`), ['gdos 55 1000 0002', 'lsaenz 55 1000 0099']);
   });
 
   // Al final: puede dejar a lsaenz dado de baja

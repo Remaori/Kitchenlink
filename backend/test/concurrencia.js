@@ -38,11 +38,19 @@ export async function alMismoTiempo({ candado, params = [], peticiones, detenida
     await c.query('BEGIN');
     await c.query(candado, params);
     const enCurso = [];
-    for (const p of peticiones) {
-      enCurso.push(p().then((r) => r));
-      if (enOrden) await esperarDetenidas(observador, enCurso.length);
+    // Si alguna responde antes de quedar detenida, el error dice cuál y qué respondió
+    const respondieron = [];
+    const esperar = (n) => esperarDetenidas(observador, n).catch((e) => {
+      throw new Error(respondieron.length ? `${e.message} Ya respondieron: ${respondieron.join(' · ')}` : e.message);
+    });
+    for (const [i, p] of peticiones.entries()) {
+      enCurso.push(p().then((r) => {
+        if (r?.status) respondieron.push(`#${i + 1} ${r.status} ${r.body?.mensaje ?? ''}`.trim());
+        return r;
+      }));
+      if (enOrden) await esperar(enCurso.length);
     }
-    await esperarDetenidas(observador, detenidas);
+    await esperar(detenidas);
     if (antesDeSoltar) await antesDeSoltar(c);
     await c.query('COMMIT');
     return await Promise.all(enCurso);
