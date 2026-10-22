@@ -1,9 +1,10 @@
 // 09 · Menú y productos (gerente). La misma pantalla es el "Menú" del mesero
 // (solo consulta) y "Productos 86" de cocina (solo asigna o quita el 86).
+// "Historial de 86" (gerente y cocina): cada vez que algo se agotó, por qué y cuánto duró.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../../api.js';
 import { useSesion } from '../../sesion/ContextoSesion.jsx';
-import { contar, dinero, sinAcentos } from '../../formato.js';
+import { contar, dinero, duracion, fechaHora, sinAcentos } from '../../formato.js';
 import { AvisoExito, Encabezado } from '../../componentes/Pagina.jsx';
 import { Buscador, Cargando, Explicacion, Insignia, Pestanas, Segmentos } from '../../componentes/Piezas.jsx';
 import { Alerta } from '../../componentes/Campos.jsx';
@@ -61,7 +62,10 @@ export default function Menu() {
       </Encabezado>
 
       <div className="contenido">
-        {administra && <Pestanas valor={pestana} alCambiar={setPestana} opciones={[['productos', 'Productos'], ['categorias', 'Categorías']]} />}
+        {(administra || asigna86) && (
+          <Pestanas valor={pestana} alCambiar={setPestana}
+            opciones={[['productos', 'Productos'], ...(administra ? [['categorias', 'Categorías']] : []), ['historial86', 'Historial de 86']]} />
+        )}
         <AvisoExito texto={aviso} alTerminar={quitarAviso} />
         <Alerta>{error}</Alerta>
         {!datos && !error && <Cargando texto="Cargando el menú…" />}
@@ -161,6 +165,7 @@ export default function Menu() {
         {datos && pestana === 'categorias' && (
           <Categorias categorias={categorias} alEditar={(k) => setDialogo({ tipo: 'categoria', categoria: k })} alTerminar={listo} />
         )}
+        {pestana === 'historial86' && <Historial86 />}
       </div>
 
       {dialogo?.tipo === 'producto' && (
@@ -191,6 +196,41 @@ function Regresar({ producto, alTerminar }) {
       <button className="enlace" disabled={enviando}
         onClick={() => hacer(() => api.post(`/menu/productos/${producto.id}/reactivar`), `${producto.nombre} regresó al menú.`)}>Regresar al menú</button>
       {error && <span className="texto-malo">{error}</span>}
+    </>
+  );
+}
+
+/** Historial de 86: el registro de lo que se agotó (tabla producto_86), lo más reciente arriba */
+function Historial86() {
+  const [filas, setFilas] = useState(null);
+  const [error, setError] = useState(null);
+  const cargar = useCallback(() => api.get('/menu/86').then((d) => { setFilas(d); setError(null); }).catch((e) => setError(e.message)), []);
+  useEffect(() => { cargar(); }, [cargar]);
+  return (
+    <>
+      <Alerta>{error}</Alerta>
+      {!filas && !error && <Cargando texto="Cargando el historial…" />}
+      {filas && (
+        <div className="tabla-envoltura">
+          <table className="tabla">
+            <thead><tr><th>Producto</th><th>Motivo</th><th>Desde</th><th>Hasta</th><th>Duró</th><th>Lo marcó · lo regresó</th></tr></thead>
+            <tbody>
+              {filas.map((o) => (
+                <tr key={o.id}>
+                  <td className="celda-doble"><strong>{o.producto}</strong><small>{o.categoria}</small></td>
+                  <td>{o.motivo}</td>
+                  <td>{fechaHora(o.asignado_en)}</td>
+                  <td>{o.quitado_en ? fechaHora(o.quitado_en) : <Insignia tono="bad">Sigue agotado</Insignia>}</td>
+                  <td>{duracion(o.minutos)}</td>
+                  <td className="celda-doble"><strong>{o.asignado_por ?? '—'}</strong><small>{o.quitado_por ?? (o.quitado_en ? '—' : ' ')}</small></td>
+                </tr>
+              ))}
+              {!filas.length && <tr><td colSpan={6} className="tabla-vacia">Todavía no se ha agotado nada.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <Explicacion>Cada vez que se asigna un 86 queda aquí con su motivo y la hora; al quitarlo se anota cuándo y quién. El registro no se borra: sirve para ver qué se agota más y por qué.</Explicacion>
     </>
   );
 }

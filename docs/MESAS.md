@@ -25,8 +25,9 @@ crea, edita y da de baja mesas; quien solo consulta el salón o atiende mesas la
 **El estado de la mesa no se escribe aquí.** Una mesa nueva nace Libre; después lo mueven los triggers de
 comandas y reservaciones (`tg_mesa_reglas`), y la base rechaza un estado que no esté respaldado.
 
-**"7" es la Mesa 07.** Los números de un dígito se guardan con dos (como en el diseño) para que no existan
-la Mesa 7 y la Mesa 07 a la vez.
+**El número de mesa es un entero del 1 al 999** (revisión del 21 oct): sin letras, signos ni decimales
+("T1", "-3", "+5" o "2.5" no). La base también lo exige (`ck_mesa_numero`). **"7" es la Mesa 07:** los números
+de un dígito se guardan con dos (como en el diseño) para que no existan la Mesa 7 y la Mesa 07 a la vez.
 
 **La capacidad no deja fuera a una reservación ya hecha.** Si una mesa tiene una reservación para 6, no se
 le puede bajar a 4 sin cambiar antes la reservación de mesa.
@@ -42,6 +43,7 @@ Todo cambio (alta, edición con el valor anterior y el nuevo, baja y reactivaci�
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/mesas.test.js` — 9 pruebas: las mesas en servicio, quién consulta, quién ve las dadas de
-baja, crear mesa (bitácora, "7" = 07, capacidad), el mesero no crea mesas, editar sin dejar fuera una
+`backend/test/mesas.test.js` — 10 pruebas: las mesas en servicio, quién consulta, quién ve las dadas de
+baja, crear mesa (bitácora, "7" = 07, capacidad), el número solo entero (en la API y en la base), el mesero
+no crea mesas, editar sin dejar fuera una
 reservación, dar de baja y reactivar, y la misma mesa creada dos veces a la vez.

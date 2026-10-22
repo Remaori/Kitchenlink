@@ -29,4 +29,11 @@ const pesos = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN
 /** "$1,571.80" */
 export const dinero = (v) => pesos.format(Number(v ?? 0)).replace('MX$', '$');
 
+/** "45 min" · "1 h 24 min" */
+export function duracion(minutos) {
+  if (minutos == null) return '—';
+  const m = Math.round(minutos);
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`;
+}
+
 export const sinAcentos = (t = '') => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();

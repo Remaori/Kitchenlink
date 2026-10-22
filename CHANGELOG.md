@@ -16,10 +16,16 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 - **Crear mesa:** número ("7" es la Mesa 07), capacidad de 1 a 30 y zona; edición, baja y reactivación.
   La capacidad no baja de una reservación ya hecha.
 - Los cambios del menú y de las mesas quedan en la bitácora.
-- **Pruebas automáticas:** pasan de 71 a 94, incluidas peticiones al mismo tiempo en el menú y las mesas.
+- **Historial de 86** (revisión del 21 oct): el 86 tiene su propia tabla. Cada vez que un producto se agota
+  queda el motivo, desde cuándo y quién lo marcó, y al quitarlo, cuándo y quién lo regresó. El gerente y
+  cocina lo ven en la pestaña "Historial de 86".
+- **Pruebas automáticas:** pasan de 71 a 99, incluidas peticiones al mismo tiempo en el menú y las mesas.
+- Diagrama entidad-relación actualizado (20 tablas y 35 relaciones).
 
 ### Cambiado
 
+- **Número de mesa** (revisión del 21 oct): solo enteros del 1 al 999, sin letras ni signos; la base también
+  lo exige.
 - **En tablet:** la columna de acciones de las tablas queda siempre a la vista (con una sombra cuando la
   tabla se desliza), los permisos de un rol se acomodan en dos columnas y los botones del encabezado ya no se
   parten en dos renglones.
@@ -31,6 +37,9 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 
 ### Corregido
 
+- Un precio escrito con coma decimal ("12,50") se guardaba como $1,250.00: ahora se rechaza y se pide como
+  12.50. La coma solo separa miles ("1,250.50").
+- Un campo de números enteros aceptaba "1e1" (como 10), "4.0" o "+4".
 - **Peticiones al mismo tiempo en usuarios y roles:**
   - dos gerentes que se daban de baja entre sí a la vez podían dejar el sistema sin Gerente activo, o
     trabarse y mostrar un error del servidor;

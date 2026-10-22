@@ -14,6 +14,7 @@ permisos del rol:
    ├─ Nuevo producto / Editar ── categoría, nombre, descripción, precio ── Quitar del menú (se puede regresar)
    ├─ Asignar 86 ── motivo ──► "Asignado 86": sigue en el menú pero no se puede capturar en 05b
    └─ Quitar 86 ──► Disponible
+09 Historial de 86 (gerente y cocina) ── producto, motivo, desde, hasta, cuánto duró, quién lo marcó y quién lo regresó
 09 Categorías ── nombre, "Se prepara en" (Cocina | Barra), orden en el menú ── Dar de baja (solo vacía) · Reactivar
 ```
 
@@ -27,6 +28,7 @@ permisos del rol:
 | `POST /api/menu/productos` · `PUT /api/menu/productos/:id` | `menu.administrar` | `{ categoria_id, nombre, descripcion, precio }` |
 | `POST /api/menu/productos/:id/dar-de-baja` · `/reactivar` | `menu.administrar` | "Quitar del menú" / "Regresar al menú" |
 | `POST /api/menu/productos/:id/asignar-86` · `/quitar-86` | `menu.asignar_86` | `{ motivo }` al asignar |
+| `GET /api/menu/86` | `menu.administrar` o `menu.asignar_86` | Historial de 86, lo más reciente primero |
 
 ## Decisiones (y por qué)
 
@@ -44,9 +46,12 @@ quitan del menú.
 **Nombres sin repetirse**, sin importar mayúsculas: no puede haber "Bebidas" y "BEBIDAS", ni dos
 "Margarita" en Bar (sí una en Bar y otra en Bebidas).
 
-**El 86 pide motivo** y queda en la bitácora con quién lo hizo (lo registra el trigger
-`tg_producto_bitacora`). La base también revisa el permiso. Con 86, el mesero ve "86 · agotado" y la base
-rechaza capturarlo.
+**El 86 tiene su propia tabla** (`producto_86`, revisión del 21 oct). El producto ya no guarda si está
+disponible: cada vez que se agota se abre un registro con el **motivo**, **desde cuándo** y quién lo marcó, y
+al quitar el 86 se anota cuándo y quién lo regresó. El registro no se borra ni se edita (lo hace cumplir el
+trigger `tg_producto_86`), así que queda el historial para ver qué se agota más y por qué. Un producto tiene a
+lo más un 86 abierto (índice único) y la base revisa el permiso «Asignar 86 a productos». Con 86, el mesero ve
+"Asignado 86" y la base rechaza capturarlo.
 
 **Todo cambio queda en la bitácora**: altas, ediciones (con el valor anterior y el nuevo) y bajas.
 
@@ -55,8 +60,10 @@ orden (05b). Un extra con costo se da de alta como producto.
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/menu.test.js` — 14 pruebas: catálogo con categorías, destino y 86; quién consulta y quién
+`backend/test/menu.test.js` — 18 pruebas: catálogo con categorías, destino y 86; quién consulta y quién
 cambia; nueva categoría al final y en la bitácora; nombres repetidos y datos inválidos; editar "Se prepara
 en"; dar de baja una categoría; nuevo producto con el precio exacto; el cambio de precio no altera comandas;
-asignar y quitar 86; quitar del menú y regresarlo. Al mismo tiempo: dar de baja una categoría mientras le
-agregan un producto, y la misma categoría creada dos veces.
+asignar y quitar 86; quitar del menú y regresarlo; historial de 86 (cada vez con motivo, fecha y quién; quién
+lo consulta; la base no deja dos 86 abiertos ni cambiar el motivo). Al mismo tiempo: dar de baja una categoría
+mientras le agregan un producto, dos personas asignan 86 al mismo producto (un solo registro) y la misma
+categoría creada dos veces.

@@ -22,15 +22,17 @@ export async function mapa({ conBajas = false } = {}) {
 
 // ------------------------------------------------------- Crear y editar mesa
 
-// "7" y "07" son la misma mesa: los números van con dos cifras, como en el diseño
-const normalizarNumero = (t) => (/^\d$/.test(t) ? `0${t}` : t);
+// El número de mesa es un entero del 1 al 999, sin letras ni signos ("T1", "-3", "+5" o
+// "2.5" no). Se guarda con dos cifras como en el diseño: "7" y "007" son la Mesa 07.
+const normalizarNumero = (t) => String(Number(t)).padStart(2, '0');
 
 function revisar(cuerpo) {
   const v = revisor();
   const numero = v.texto('numero', cuerpo.numero == null ? null : String(cuerpo.numero), { etiqueta: 'El número', obligatorio: true, max: 10 });
-  if (numero && !/^[0-9A-Za-zÁÉÍÓÚÑáéíóúñ-]+$/.test(numero)) v.error('numero', 'Usa solo letras, números o guion (ej. 22, T1, Barra-2).');
+  const valido = numero && /^\d{1,3}$/.test(numero) && Number(numero) >= 1;
+  if (numero && !valido) v.error('numero', 'El número: solo números enteros del 1 al 999 (ej. 7 o 22).');
   const d = {
-    numero: numero && normalizarNumero(numero.toUpperCase()),
+    numero: valido ? normalizarNumero(numero) : numero,
     capacidad: v.entero('capacidad', cuerpo.capacidad, { etiqueta: 'La capacidad', obligatorio: true, min: 1, max: 30 }),
     zona: v.texto('zona', cuerpo.zona, { etiqueta: 'La zona', max: 60 }),
   };

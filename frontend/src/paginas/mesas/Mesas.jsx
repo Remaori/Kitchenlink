@@ -119,8 +119,8 @@ function DialogoMesa({ mesa, zonas, alCerrar, alTerminar }) {
         </button>
       </>}>
       <form id="form-mesa" className="rejilla-campos sin-margen" onSubmit={f.guardar} noValidate>
-        <Entrada etiqueta="Número" obligatorio value={f.valores.numero} onChange={f.campo('numero')} error={f.errores.numero} maxLength={10}
-          placeholder="Ej. 22" autoFocus data-foco ayuda="Así se verá: «Mesa 22»." />
+        <Entrada etiqueta="Número" obligatorio value={f.valores.numero} onChange={f.campo('numero')} error={f.errores.numero} maxLength={3}
+          inputMode="numeric" placeholder="Ej. 22" autoFocus data-foco ayuda="Solo números enteros: «7» será la Mesa 07." />
         <div className="campo-form">
           <span className="etiqueta">Capacidad<span className="obligatorio" aria-hidden="true">*</span></span>
           <div className="contador">

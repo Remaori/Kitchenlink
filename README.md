@@ -29,14 +29,15 @@ internet.
 
 - **Menú, categorías y productos:** cada categoría dice si se prepara en cocina o en barra; el precio se
   guarda exacto y un producto se quita del menú sin borrarse. Cocina marca con **86** lo que se agotó (con
-  motivo) y el mesero consulta el menú con lo que está disponible.
-- **Mesas:** alta con número, capacidad y zona; edición, baja y reactivación sin perder su historial. La
-  capacidad no baja de una reservación ya hecha.
+  motivo); cada 86 queda en un historial con su motivo, desde y hasta cuándo, y quién. El mesero consulta el
+  menú con lo que está disponible.
+- **Mesas:** alta con número (entero, del 1 al 999), capacidad y zona; edición, baja y reactivación sin
+  perder su historial. La capacidad no baja de una reservación ya hecha.
 - Los cambios del menú y de las mesas quedan en la bitácora con quién los hizo.
 
 **Modelo de datos**
 
-La base de datos (19 tablas, 22 vistas y 27 triggers) cubre la operación completa del restaurante: menú,
+La base de datos (20 tablas, 22 vistas y 27 triggers) cubre la operación completa del restaurante: menú,
 mesas, reservaciones y lista de espera, comandas, cocina y barra, cobro, cortes de caja y bitácora. Los
 módulos de la aplicación que usan esas tablas se integran por etapas.
 
@@ -117,7 +118,7 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 
 ## Pruebas
 
-- `npm test`: 94 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
+- `npm test`: 99 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
   permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú y las mesas,
   incluidas peticiones que llegan al mismo tiempo.
 - `npm run db:conectividad`: 24 verificaciones de la conexión entre la API y PostgreSQL.

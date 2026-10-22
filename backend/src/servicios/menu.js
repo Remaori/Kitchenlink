@@ -2,7 +2,7 @@
 //
 // Reglas que ya hace cumplir la base: el destino (cocina o barra) es de la
 // categoría; el 86 lo asigna quien tiene «Asignar 86 a productos» y queda en
-// la bitácora (tg_producto_bitacora); un producto con 86 o fuera del menú no
+// la bitácora (tabla producto_86, tg_producto_86); un producto con 86 o fuera del menú no
 // se puede capturar en una comanda (tg_detalle_agregar); el precio se congela
 // en la comanda al capturarlo, así que cambiarlo aquí no altera cuentas.
 // Aquí se agrega: nombres que no se repiten (sin importar mayúsculas), dar de
@@ -17,13 +17,15 @@ const SQL_CATEGORIAS = `
   SELECT k.id, k.nombre, k.descripcion, k.destino::text AS destino, fn_etiqueta('destino_produccion', k.destino::text) AS destino_etiqueta,
          k.orden, k.activo,
          (SELECT count(*) FROM producto p WHERE p.categoria_id = k.id AND p.activo)::int AS productos,
-         (SELECT count(*) FROM producto p WHERE p.categoria_id = k.id AND p.activo AND NOT p.disponible)::int AS productos_86
+         (SELECT count(*) FROM producto p WHERE p.categoria_id = k.id AND p.activo
+            AND EXISTS (SELECT 1 FROM producto_86 o WHERE o.producto_id = p.id AND o.quitado_en IS NULL))::int AS productos_86
   FROM categoria k`;
 
 const SQL_PRODUCTOS = `
   SELECT p.id, p.categoria_id, k.nombre AS categoria, k.destino::text AS destino, p.nombre, p.descripcion, p.precio,
-         p.disponible, p.motivo_no_disponible, p.activo
-  FROM producto p JOIN categoria k ON k.id = p.categoria_id`;
+         (o.id IS NULL) AS disponible, o.motivo AS motivo_no_disponible, o.asignado_en AS agotado_desde, p.activo
+  FROM producto p JOIN categoria k ON k.id = p.categoria_id
+  LEFT JOIN producto_86 o ON o.producto_id = p.id AND o.quitado_en IS NULL`;
 
 /**
  * El catálogo. Quien administra el menú ve también lo dado de baja; los demás
@@ -223,28 +225,58 @@ export async function reactivarProducto(id, actorId) {
   return producto(id);
 }
 
-/** "Asignar 86" (agotado): sigue en el menú pero no se puede capturar. La bitácora la llena la base. */
+// ------------------------------------------------------------- Productos 86
+
+// El producto queda en fila (FOR UPDATE): dos personas que le asignan o quitan el 86 a la
+// vez no abren dos registros; la segunda ve cómo lo dejó la primera.
+const productoEnFila = async (c, id) => {
+  const { rows: [p] } = await c.query('SELECT nombre, activo FROM producto WHERE id = $1 FOR UPDATE', [id]);
+  if (!p) throw noExiste('ese producto');
+  // En otra consulta: la que esperó el candado no vería el 86 que acaba de abrir la otra persona
+  const { rows: [o] } = await c.query(
+    'SELECT EXISTS (SELECT 1 FROM producto_86 WHERE producto_id = $1 AND quitado_en IS NULL) AS agotado', [id]);
+  return { ...p, agotado: o.agotado };
+};
+
+/**
+ * "Asignar 86" (agotado): abre un registro en producto_86 con el motivo y la hora. Sigue
+ * en el menú pero no se puede capturar. Quién lo hizo y la bitácora los pone la base.
+ */
 export async function asignar86(id, cuerpo, actorId) {
   const v = revisor();
   const motivo = v.texto('motivo', cuerpo?.motivo, { etiqueta: 'El motivo', obligatorio: true, min: 3, max: 160 });
   v.terminar();
   await conTransaccion(actorId, async (c) => {
-    const { rows: [p] } = await c.query('SELECT nombre, disponible, activo FROM producto WHERE id = $1 FOR UPDATE', [id]);
-    if (!p) throw noExiste('ese producto');
+    const p = await productoEnFila(c, id);
     if (!p.activo) throw regla(`${p.nombre} no está en el menú.`);
-    if (!p.disponible) throw regla(`${p.nombre} ya tiene 86.`);
-    await c.query('UPDATE producto SET disponible = FALSE, motivo_no_disponible = $1 WHERE id = $2', [motivo, id]);
+    if (p.agotado) throw regla(`${p.nombre} ya tiene 86.`);
+    await c.query('INSERT INTO producto_86 (producto_id, motivo) VALUES ($1, $2)', [id, motivo]);
   });
   return producto(id);
 }
 
-/** "Quitar 86": vuelve a estar disponible para capturarlo */
+/** "Quitar 86": cierra el registro abierto; el producto vuelve a estar disponible y el historial se queda */
 export async function quitar86(id, actorId) {
   await conTransaccion(actorId, async (c) => {
-    const { rows: [p] } = await c.query('SELECT nombre, disponible FROM producto WHERE id = $1 FOR UPDATE', [id]);
-    if (!p) throw noExiste('ese producto');
-    if (p.disponible) throw regla(`${p.nombre} ya está disponible.`);
-    await c.query('UPDATE producto SET disponible = TRUE, motivo_no_disponible = NULL WHERE id = $1', [id]);
+    const p = await productoEnFila(c, id);
+    if (!p.agotado) throw regla(`${p.nombre} ya está disponible.`);
+    await c.query('UPDATE producto_86 SET quitado_en = fn_ahora() WHERE producto_id = $1 AND quitado_en IS NULL', [id]);
   });
   return producto(id);
+}
+
+/** Historial de 86: qué se agotó, por qué, desde cuándo, cuánto duró y quién (lo más reciente primero) */
+export async function historial86() {
+  const { rows } = await consulta(`
+    SELECT o.id, o.producto_id, p.nombre AS producto, k.nombre AS categoria, o.motivo,
+           o.asignado_en, ua.nombre_completo AS asignado_por, o.quitado_en, uq.nombre_completo AS quitado_por,
+           floor(EXTRACT(EPOCH FROM COALESCE(o.quitado_en, fn_ahora()) - o.asignado_en) / 60)::int AS minutos
+    FROM producto_86 o
+    JOIN producto p  ON p.id = o.producto_id
+    JOIN categoria k ON k.id = p.categoria_id
+    LEFT JOIN usuario ua ON ua.id = o.asignado_por_usuario_id
+    LEFT JOIN usuario uq ON uq.id = o.quitado_por_usuario_id
+    ORDER BY o.asignado_en DESC, o.id DESC
+    LIMIT 200`);
+  return rows;
 }

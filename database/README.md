@@ -3,9 +3,9 @@
 | Archivo | Qué hace | Quién lo ejecuta |
 |---|---|---|
 | `00_crear_bd_y_rol.sql` | Crea el rol `kitchenlink_app` y la base `kitchenlink` en UTF8 | Solo si lo haces a mano |
-| `01_esquema_v3.sql` | Esquema v3: 19 tablas, 22 vistas, 10 ENUM, 27 triggers, catálogos (roles, 17 permisos, configuración) | `npm run db:instalar` |
+| `01_esquema_v3.sql` | Esquema v3: 20 tablas, 22 vistas, 10 ENUM, 27 triggers, catálogos (roles, 17 permisos, configuración) | `npm run db:instalar` |
 | `02_permisos_app.sql` | Permisos mínimos del rol de la aplicación, zona horaria y `search_path` | `npm run db:instalar` |
-| `03_prueba_coherencia_v3.sql` | Prueba de coherencia (168 verificaciones). Deja la base con los datos de las pantallas | `npm run db:instalar` |
+| `03_prueba_coherencia_v3.sql` | Prueba de coherencia (172 verificaciones). Deja la base con los datos de las pantallas | `npm run db:instalar` |
 | `04_contrasenas_demo.sql` | Contraseñas reales de demostración para el personal de las pantallas | `npm run db:instalar` |
 
 ## Forma normal

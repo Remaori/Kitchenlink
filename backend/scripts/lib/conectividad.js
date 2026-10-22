@@ -64,7 +64,7 @@ export async function ejecutarVerificaciones({ urlApi = `http://127.0.0.1:${conf
              (SELECT count(*) FROM pg_trigger g JOIN pg_class c ON c.oid = g.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'kitchenlink' AND NOT g.tgisinternal)::int AS triggers,
              (SELECT count(*) FROM rol)::int AS roles, (SELECT count(*) FROM permiso)::int AS permisos,
              fn_config_txt('impuesto.tasa') AS iva`);
-    v('Esquema v3', 'Tablas', e.tablas === 19 ? PASA : FALLA, `${e.tablas} de 19`);
+    v('Esquema v3', 'Tablas', e.tablas === 20 ? PASA : FALLA, `${e.tablas} de 20`);
     v('Esquema v3', 'Vistas (pantallas, tickets y reportes)', e.vistas === 22 ? PASA : FALLA, `${e.vistas} de 22`);
     v('Esquema v3', 'Tipos ENUM', e.enums === 10 ? PASA : FALLA, `${e.enums} de 10`);
     v('Esquema v3', 'Triggers de reglas de negocio', e.triggers === 27 ? PASA : FALLA, `${e.triggers} de 27`);

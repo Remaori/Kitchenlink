@@ -22,27 +22,32 @@ export function revisor() {
     },
 
     // Número entero (llega como número o como texto de un campo). Vacío -> null.
+    // Como texto solo cifras: "1e1", "0x10", "4.0" o "+4" no se aceptan aunque JavaScript
+    // los pueda convertir (un campo type="number" del navegador deja escribirlos).
     entero(campo, valor, { etiqueta, obligatorio = false, min, max }) {
       if (valor == null || valor === '') {
         if (obligatorio) this.error(campo, `Escribe ${etiqueta.toLowerCase()}.`);
         return null;
       }
-      const n = typeof valor === 'number' ? valor : Number(String(valor).trim());
-      if (!Number.isInteger(n)) { this.error(campo, `${etiqueta} debe ser un número entero.`); return null; }
+      const t = typeof valor === 'number' ? null : String(valor).trim();
+      const n = t === null ? valor : /^-?\d{1,9}$/.test(t) ? Number(t) : NaN;
+      if (!Number.isSafeInteger(n)) { this.error(campo, `${etiqueta} debe ser un número entero.`); return null; }
       if (min != null && n < min) this.error(campo, `${etiqueta}: mínimo ${min}.`);
       if (max != null && n > max) this.error(campo, `${etiqueta}: máximo ${max}.`);
       return n;
     },
 
     // Dinero con hasta 2 decimales. Devuelve TEXTO ("120.50") para que PostgreSQL
-    // lo guarde en NUMERIC sin pasar por punto flotante. Acepta "$1,250.5".
+    // lo guarde en NUMERIC sin pasar por punto flotante. Acepta "$1,250.5"; la coma solo
+    // separa miles ("12,50" no es 12.50 ni 1250: se rechaza).
     dinero(campo, valor, { etiqueta, obligatorio = false, min = 0, mayorQueCero = false }) {
       if (valor == null || valor === '') {
         if (obligatorio) this.error(campo, `Escribe ${etiqueta.toLowerCase()}.`);
         return null;
       }
-      const t = String(valor).trim().replace(/[$,\s]/g, '');
-      if (!/^\d{1,8}(\.\d{1,2})?$/.test(t)) { this.error(campo, `${etiqueta}: escribe una cantidad como 120 o 120.50.`); return null; }
+      const s = String(valor).trim().replace(/^\$\s*/, '');
+      if (!/^(\d{1,8}|\d{1,3}(,\d{3}){1,2})(\.\d{1,2})?$/.test(s)) { this.error(campo, `${etiqueta}: escribe una cantidad como 120 o 120.50.`); return null; }
+      const t = s.replace(/,/g, '');
       const n = Number(t);
       if (mayorQueCero && n <= 0) this.error(campo, `${etiqueta} debe ser mayor que cero.`);
       else if (n < min) this.error(campo, `${etiqueta}: mínimo $${min}.`);

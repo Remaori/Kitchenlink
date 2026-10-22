@@ -83,7 +83,7 @@ npm run db:instalar
 Debe terminar con:
 
 ```
-✓ 03_prueba_coherencia_v3.sql · 168 pruebas → TODO CORRECTO
+✓ 03_prueba_coherencia_v3.sql · 172 pruebas → TODO CORRECTO
 ```
 
 y la tabla de usuarios de demostración (contraseña `Kitchen2026`; `smendez` tiene la temporal `Temporal2026`).
@@ -109,7 +109,7 @@ npm test                    # pruebas automáticas de la API y la base de datos
 `npm test` crea y usa una base aparte, `kitchenlink_pruebas`; no toca tus datos.
 
 Qué comprueba `db:conectividad`: conexión y autenticación del rol `kitchenlink_app`, que rechace una
-contraseña incorrecta, versión 16, UTF8, zona horaria, esquema v3 completo (19 tablas, 22 vistas,
+contraseña incorrecta, versión 16, UTF8, zona horaria, esquema v3 completo (20 tablas, 22 vistas,
 10 ENUM, 27 triggers), **permisos mínimos** (no puede crear/borrar tablas, ni tocar bitácora, pagos o
 cancelaciones), que los triggers se apliquen a la aplicación, que el usuario de una petición no se
 "filtre" a otra en el pool, 30 consultas simultáneas y, si el servidor está iniciado, `GET /api/salud`.

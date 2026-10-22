@@ -36,7 +36,7 @@ GRANT USAGE ON SCHEMA kitchenlink TO kitchenlink_app;
 GRANT SELECT ON ALL TABLES IN SCHEMA kitchenlink TO kitchenlink_app;
 
 -- Alta y cambios donde la operación los necesita
-GRANT INSERT, UPDATE ON rol, usuario, sesion, mesa, categoria, producto,
+GRANT INSERT, UPDATE ON rol, usuario, sesion, mesa, categoria, producto, producto_86,
                         reservacion, lista_espera, comanda, envio,
                         detalle_comanda, corte_caja
       TO kitchenlink_app;

@@ -40,7 +40,7 @@ SET search_path TO kitchenlink, public;
 SET TIME ZONE 'America/Mexico_City';
 SET kitchenlink.usuario_id = '';
 
-TRUNCATE usuario, sesion, mesa, categoria, producto, reservacion, lista_espera,
+TRUNCATE usuario, sesion, mesa, categoria, producto, producto_86, reservacion, lista_espera,
          comanda, envio, detalle_comanda, corte_caja, pago, cancelacion, bitacora
 RESTART IDENTITY CASCADE;
 
@@ -175,8 +175,22 @@ FROM (SELECT x.*, row_number() OVER () AS n FROM (VALUES ('Entradas','Sopa de to
              ('Bar','Margarita',NULL,120)) x(cat, nombre, descr, precio)) v
 JOIN categoria c ON c.nombre = v.cat
 ORDER BY v.n;                                         -- el orden de alta es el orden en pantalla
-UPDATE producto SET disponible = FALSE, motivo_no_disponible = 'Se terminó el limón amarillo' WHERE nombre = 'Pay de limón';
-UPDATE producto SET disponible = FALSE, motivo_no_disponible = 'No llegaron los hongos'        WHERE nombre = 'Risotto de hongos';
+-- 09 · Productos 86 (su propia tabla). Días anteriores: el jefe de cocina los marcó y los
+-- regresó; el registro se queda para saber qué se agota y por qué.
+SELECT pg_temp.actor('dbenitez');
+SELECT pg_temp.reloj('2026-09-20 18:40');
+INSERT INTO producto_86 (producto_id, motivo) VALUES (pg_temp.p('Guacamole'), 'Se acabó el aguacate');
+SELECT pg_temp.reloj('2026-09-20 21:15');
+UPDATE producto_86 SET quitado_en = fn_ahora() WHERE producto_id = pg_temp.p('Guacamole') AND quitado_en IS NULL;
+SELECT pg_temp.reloj('2026-09-21 14:10');
+INSERT INTO producto_86 (producto_id, motivo) VALUES (pg_temp.p('Pay de limón'), 'Se terminó el limón amarillo');
+SELECT pg_temp.reloj('2026-09-21 17:30');
+UPDATE producto_86 SET quitado_en = fn_ahora() WHERE producto_id = pg_temp.p('Pay de limón') AND quitado_en IS NULL;
+-- Hoy a las 16:00 el gerente marca lo que se acabó: sigue en el menú pero no se puede capturar
+SELECT pg_temp.reloj('16:00');
+SELECT pg_temp.actor('lsaenz');
+INSERT INTO producto_86 (producto_id, motivo) VALUES (pg_temp.p('Pay de limón'), 'Se terminó el limón amarillo');
+INSERT INTO producto_86 (producto_id, motivo) VALUES (pg_temp.p('Risotto de hongos'), 'No llegaron los hongos');
 
 -- 16:05 · La hostess registra las reservaciones del día (por teléfono)
 SELECT pg_temp.reloj('16:05');
@@ -429,7 +443,24 @@ SELECT pg_temp.r(46, '08', 'Resumen del día (a las 19:09)', 'Ventas $313.20 · 
 SELECT pg_temp.r(47, '10', 'Tiempo de rotación de la Mesa 06 (umbral en Configuración)', 'Mesa 06 · 70 min · Alto',
     (SELECT 'Mesa ' || mesa || ' · ' || minutos_promedio || ' min · ' || nivel FROM v_rotacion_mesas WHERE mesa = '06'));
 SELECT pg_temp.r(48, '09', 'Productos con 86', 'Pay de limón: 86 · Risotto de hongos: 86',
-    (SELECT string_agg(nombre || ': 86', ' · ' ORDER BY nombre) FROM producto WHERE NOT disponible));
+    (SELECT string_agg(p.nombre || ': 86', ' · ' ORDER BY p.nombre) FROM producto p
+     WHERE EXISTS (SELECT 1 FROM producto_86 o WHERE o.producto_id = p.id AND o.quitado_en IS NULL)));
+SELECT pg_temp.r(74, '09', 'Historial de 86 del Pay de limón: el de ayer se quitó y el de hoy sigue abierto (no se borra)',
+    '21/09 14:10–17:30 Se terminó el limón amarillo (Diego Benítez) · 22/09 16:00–… Se terminó el limón amarillo (Luis Sáenz Jiménez)',
+    (SELECT string_agg(to_char(o.asignado_en, 'DD/MM HH24:MI') || '–' || COALESCE(to_char(o.quitado_en, 'HH24:MI'), '…') || ' ' || o.motivo
+                       || ' (' || u.nombre_completo || ')', ' · ' ORDER BY o.asignado_en)
+     FROM producto_86 o JOIN usuario u ON u.id = o.asignado_por_usuario_id WHERE o.producto_id = pg_temp.p('Pay de limón')));
+SELECT pg_temp.r(75, '09', 'Rechaza un segundo 86 abierto del mismo producto', 'rechazado', pg_temp.rechaza($q$
+    INSERT INTO producto_86 (producto_id, motivo) VALUES (pg_temp.p('Pay de limón'), 'Otra vez') $q$));
+SELECT pg_temp.r(76, '09', 'Rechaza cambiar el motivo de un 86 (es historial)', 'rechazado', pg_temp.rechaza($q$
+    UPDATE producto_86 SET motivo = 'Otro motivo' WHERE producto_id = pg_temp.p('Risotto de hongos') AND quitado_en IS NULL $q$));
+DO $$
+BEGIN
+    PERFORM pg_temp.actor('cruiz');
+    PERFORM pg_temp.r(77, '09', 'Rechaza que un mesero asigne 86 (permiso «Asignar 86 a productos»)', 'rechazado', pg_temp.rechaza($q$
+        INSERT INTO producto_86 (producto_id, motivo) VALUES (pg_temp.p('Guacamole'), 'Prueba') $q$));
+    PERFORM pg_temp.actor('');
+END $$;
 SELECT pg_temp.r(49, '09', 'Dónde se prepara cada categoría (decide el panel de 06)', 'Entradas: Cocina · Platos fuertes: Cocina · Bebidas: Barra · Postres: Cocina · Bar: Barra',
     (SELECT string_agg(nombre || ': ' || fn_etiqueta('destino_produccion', destino::text), ' · ' ORDER BY orden) FROM categoria));
 SELECT pg_temp.r(50, 'Todas', 'Cada valor de la base tiene su texto de pantalla (etiqueta_estado)', '0 sin etiqueta',
@@ -902,8 +933,8 @@ $prueba$;
 -- =====================================================================
 --  PARTE C · Inventario del esquema y regreso a las 19:09
 -- =====================================================================
-SELECT pg_temp.r(201, 'ERD', 'Tablas', '19', (SELECT COUNT(*)::text FROM information_schema.tables WHERE table_schema = 'kitchenlink' AND table_type = 'BASE TABLE'));
-SELECT pg_temp.r(202, 'ERD', 'Llaves foráneas (relaciones del diagrama)', '32', (SELECT COUNT(*)::text FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace WHERE n.nspname = 'kitchenlink' AND c.contype = 'f'));
+SELECT pg_temp.r(201, 'ERD', 'Tablas (con producto_86, revisión del 21 oct)', '20', (SELECT COUNT(*)::text FROM information_schema.tables WHERE table_schema = 'kitchenlink' AND table_type = 'BASE TABLE'));
+SELECT pg_temp.r(202, 'ERD', 'Llaves foráneas (relaciones del diagrama)', '35', (SELECT COUNT(*)::text FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace WHERE n.nspname = 'kitchenlink' AND c.contype = 'f'));
 SELECT pg_temp.r(203, 'ERD', 'Tipos ENUM (estados)', '10', (SELECT COUNT(*)::text FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'kitchenlink' AND t.typtype = 'e'));
 SELECT pg_temp.r(204, 'ERD', 'Vistas (una o más por pantalla; tickets y reportes salen de aquí)', '22', (SELECT COUNT(*)::text FROM information_schema.views WHERE table_schema = 'kitchenlink'));
 SELECT pg_temp.r(206, 'ERD', 'Sin columnas genéricas creado_en / actualizado_en', '0',

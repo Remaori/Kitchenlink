@@ -33,6 +33,13 @@
 --      las fechas que usa el negocio (abierta_en, enviado_en, listo_en,
 --      registrado_en…), porque de ellas salen tiempos y reportes.
 --
+--  CAMBIOS DE LA REVISIÓN DEL 21 DE OCTUBRE
+--    · El 86 tiene su propia tabla (producto_86): cada vez que un
+--      producto se agota queda el motivo, desde cuándo, quién lo marcó y
+--      cuándo y quién lo regresó. Producto ya no guarda la
+--      disponibilidad: está agotado si tiene un 86 abierto.
+--    · El número de mesa es un entero del 1 al 999 (ck_mesa_numero).
+--
 --  NOTAS DE DISEÑO
 --    · Dinero en NUMERIC(10,2), nunca FLOAT.
 --    · El nombre y el precio del producto se congelan en la línea, y la
@@ -170,6 +177,7 @@ CREATE TABLE mesa (
     bloqueada_por_usuario_id  BIGINT       REFERENCES usuario(id) ON DELETE SET NULL,
     bloqueada_en              TIMESTAMPTZ,
     activo                    BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT ck_mesa_numero      CHECK (numero ~ '^(0[1-9]|[1-9][0-9]{1,2})$'),   -- entero del 1 al 999, con dos cifras: 07, 22, 105
     CONSTRAINT ck_mesa_capacidad   CHECK (capacidad BETWEEN 1 AND 30),
     CONSTRAINT ck_mesa_bloqueo     CHECK ((estado = 'bloqueada') = (motivo_bloqueo IS NOT NULL)),
     CONSTRAINT ck_mesa_libre_desde CHECK ((estado = 'libre') = (libre_desde IS NOT NULL))
@@ -199,14 +207,26 @@ CREATE TABLE producto (
     nombre                  VARCHAR(120)  NOT NULL,
     descripcion             VARCHAR(250),
     precio                  NUMERIC(10,2) NOT NULL,
-    disponible              BOOLEAN       NOT NULL DEFAULT TRUE,
-    motivo_no_disponible    VARCHAR(160),
     activo                  BOOLEAN       NOT NULL DEFAULT TRUE,
     CONSTRAINT ck_producto_precio CHECK (precio >= 0),
     CONSTRAINT uq_producto_nombre_categoria UNIQUE (categoria_id, nombre)
 );
-COMMENT ON TABLE  producto            IS '09 · Lo que se vende. Un extra con costo (ej. extra de aguacate) se da de alta como producto; término, guarnición y peticiones especiales van en la nota de la línea.';
-COMMENT ON COLUMN producto.disponible IS '05b · FALSE = "86 · agotado". Sigue en el menú pero no se puede capturar.';
+COMMENT ON TABLE  producto            IS '09 · Lo que se vende. Un extra con costo (ej. extra de aguacate) se da de alta como producto; término, guarnición y peticiones especiales van en la nota de la línea. Si está agotado lo dice producto_86.';
+
+CREATE TABLE producto_86 (
+    id                        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    producto_id               BIGINT        NOT NULL REFERENCES producto(id) ON DELETE RESTRICT,
+    motivo                    VARCHAR(160)  NOT NULL,
+    asignado_en               TIMESTAMPTZ   NOT NULL DEFAULT fn_ahora(),
+    asignado_por_usuario_id   BIGINT        REFERENCES usuario(id) ON DELETE SET NULL,
+    quitado_en                TIMESTAMPTZ,
+    quitado_por_usuario_id    BIGINT        REFERENCES usuario(id) ON DELETE SET NULL,
+    CONSTRAINT ck_producto_86_motivo CHECK (length(btrim(motivo)) >= 3),
+    CONSTRAINT ck_producto_86_fechas CHECK (quitado_en IS NULL OR quitado_en >= asignado_en)
+);
+COMMENT ON TABLE  producto_86            IS '09, 05b · Cada vez que un producto se agotó ("86"): por qué, desde cuándo, quién lo marcó y cuándo y quién lo regresó. Con quitado_en vacío está agotado: sigue en el menú pero no se puede capturar. Es un registro: no se borra ni se edita, solo se cierra.';
+COMMENT ON COLUMN producto_86.motivo     IS '09 · "Asignar 86": motivo obligatorio (ej. "Se terminó el limón amarillo").';
+COMMENT ON COLUMN producto_86.quitado_en IS '09 · "Quitar 86": desde aquí el producto vuelve a estar disponible.';
 
 
 -- =====================================================================
@@ -803,21 +823,47 @@ END $$;
 CREATE TRIGGER tg_mesa_bitacora AFTER UPDATE OF estado ON mesa
     FOR EACH ROW EXECUTE FUNCTION tg_mesa_bitacora();
 
--- ---------- 09 · Productos (86) ---------------------------------------
-CREATE FUNCTION tg_producto_bitacora() RETURNS trigger
+-- ---------- 09 · Productos 86 ----------------------------------------
+-- Asignar 86 = un registro nuevo con motivo; quitarlo = cerrarlo (quitado_en).
+-- Nada más cambia: el motivo y las fechas son el historial. Quien lo hace
+-- necesita «Asignar 86 a productos», y queda en la bitácora.
+CREATE FUNCTION tg_producto_86() RETURNS trigger
 LANGUAGE plpgsql SET search_path = kitchenlink, public AS $$
+DECLARE
+    v_prod record;
 BEGIN
-    IF NEW.disponible IS DISTINCT FROM OLD.disponible THEN
-        IF fn_usuario_actual() IS NOT NULL THEN
-            PERFORM fn_exigir_permiso(fn_usuario_actual(), 'menu.asignar_86', 'asignar o quitar el 86');
+    SELECT nombre, activo INTO v_prod FROM producto WHERE id = NEW.producto_id;
+    IF TG_OP = 'INSERT' THEN
+        IF NOT v_prod.activo THEN
+            RAISE EXCEPTION '% no está en el menú: no se le asigna 86.', v_prod.nombre;
         END IF;
-        PERFORM fn_bitacora('producto', NEW.id, CASE WHEN NEW.disponible THEN 'quitar_86' ELSE 'asignar_86' END,
-                            jsonb_build_object('motivo', NEW.motivo_no_disponible));
+        NEW.asignado_por_usuario_id := COALESCE(NEW.asignado_por_usuario_id, fn_usuario_actual());
+        IF NEW.asignado_por_usuario_id IS NOT NULL THEN
+            PERFORM fn_exigir_permiso(NEW.asignado_por_usuario_id, 'menu.asignar_86', 'asignar o quitar el 86');
+        END IF;
+        IF NEW.quitado_en IS NULL THEN
+            PERFORM fn_bitacora('producto', NEW.producto_id, 'asignar_86', jsonb_build_object('motivo', NEW.motivo));
+        END IF;
+        RETURN NEW;
+    END IF;
+    IF OLD.quitado_en IS NOT NULL THEN
+        RAISE EXCEPTION 'Ese 86 de % ya se quitó: el historial no cambia.', v_prod.nombre;
+    END IF;
+    IF (NEW.producto_id, NEW.motivo, NEW.asignado_en, NEW.asignado_por_usuario_id)
+       IS DISTINCT FROM (OLD.producto_id, OLD.motivo, OLD.asignado_en, OLD.asignado_por_usuario_id) THEN
+        RAISE EXCEPTION 'Del 86 de % solo se registra cuándo se quitó: el motivo y la fecha no cambian.', v_prod.nombre;
+    END IF;
+    IF NEW.quitado_en IS NOT NULL THEN
+        NEW.quitado_por_usuario_id := COALESCE(NEW.quitado_por_usuario_id, fn_usuario_actual());
+        IF NEW.quitado_por_usuario_id IS NOT NULL THEN
+            PERFORM fn_exigir_permiso(NEW.quitado_por_usuario_id, 'menu.asignar_86', 'asignar o quitar el 86');
+        END IF;
+        PERFORM fn_bitacora('producto', NEW.producto_id, 'quitar_86', jsonb_build_object('motivo', NEW.motivo));
     END IF;
     RETURN NEW;
 END $$;
-CREATE TRIGGER tg_producto_bitacora AFTER UPDATE OF disponible ON producto
-    FOR EACH ROW EXECUTE FUNCTION tg_producto_bitacora();
+CREATE TRIGGER tg_producto_86 BEFORE INSERT OR UPDATE ON producto_86
+    FOR EACH ROW EXECUTE FUNCTION tg_producto_86();
 
 -- ---------- 03a · Reservaciones --------------------------------------
 CREATE FUNCTION tg_reservacion_reglas() RETURNS trigger
@@ -1279,7 +1325,7 @@ BEGIN
     SELECT * INTO v_prod FROM producto WHERE id = NEW.producto_id;
     IF NOT v_prod.activo THEN
         RAISE EXCEPTION '% ya no está en el menú.', v_prod.nombre;
-    ELSIF NOT v_prod.disponible THEN
+    ELSIF EXISTS (SELECT 1 FROM producto_86 WHERE producto_id = v_prod.id AND quitado_en IS NULL) THEN
         RAISE EXCEPTION '% está agotado (86).', v_prod.nombre;
     END IF;
     -- Snapshot: siempre del catálogo, nunca lo que mande la aplicación
@@ -1551,6 +1597,8 @@ CREATE INDEX ix_espera_activa       ON lista_espera (llegada_en) WHERE estado = 
 CREATE INDEX ix_pago_comanda        ON pago (comanda_id);                                                                         -- 07
 CREATE INDEX ix_pago_corte          ON pago (corte_caja_id);                                                                      -- 08
 CREATE INDEX ix_producto_categoria  ON producto (categoria_id) WHERE activo;
+CREATE UNIQUE INDEX uq_producto_86_abierto ON producto_86 (producto_id) WHERE quitado_en IS NULL;                        -- 09: a lo más un 86 abierto
+CREATE INDEX ix_producto_86_fecha   ON producto_86 (asignado_en);                                                        -- 09: historial
 CREATE INDEX ix_bitacora_entidad    ON bitacora (entidad, entidad_id);
 CREATE INDEX ix_cancelacion_fecha   ON cancelacion (registrada_en);                                                              -- 10
 CREATE INDEX ix_sesion_abierta      ON sesion (usuario_id) WHERE cerrada_en IS NULL;                                              -- 02a
@@ -1668,10 +1716,11 @@ ORDER BY l.llegada_en;
 CREATE VIEW v_menu AS
 SELECT  p.id, k.nombre AS categoria, k.orden AS orden_categoria, p.nombre, p.descripcion, p.precio,
         k.destino, ed.etiqueta AS se_prepara_en,
-        p.disponible, CASE WHEN p.disponible THEN 'Disponible' ELSE 'Asignado 86' END AS estado_texto,
-        p.motivo_no_disponible
+        (o.id IS NULL) AS disponible, CASE WHEN o.id IS NULL THEN 'Disponible' ELSE 'Asignado 86' END AS estado_texto,
+        o.motivo AS motivo_no_disponible, o.asignado_en AS agotado_desde
 FROM producto p
 JOIN categoria k ON k.id = p.categoria_id
+LEFT JOIN producto_86 o ON o.producto_id = p.id AND o.quitado_en IS NULL
 LEFT JOIN etiqueta_estado ed ON ed.dominio = 'destino_produccion' AND ed.valor = k.destino::text
 WHERE p.activo AND k.activo
 ORDER BY k.orden, p.id;

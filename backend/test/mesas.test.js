@@ -61,6 +61,17 @@ describe('04 · Crear mesa', () => {
     assert.ok(c.body.campos.numero && c.body.campos.capacidad);
   });
 
+  test('el número es un entero del 1 al 999: sin letras, signos ni decimales (revisión del 21 oct)', async () => {
+    for (const numero of ['T1', 'Barra-2', '-3', '+5', '2.5', '1e2', '0', '00', '1000']) {
+      const r = await gerente.post('/api/mesas').send({ numero, capacidad: 2 }).expect(400);
+      assert.equal(r.body.campos.numero, 'El número: solo números enteros del 1 al 999 (ej. 7 o 22).', numero);
+    }
+    const r = await gerente.post('/api/mesas').send({ numero: '007', capacidad: 2 }).expect(409);
+    assert.equal(r.body.campos.numero, 'Ya existe la Mesa 07.');
+    // La base también lo exige, aunque alguien se salte la API
+    await assert.rejects(bd("INSERT INTO mesa (numero, capacidad) VALUES ('T1', 2)"), /ck_mesa_numero/);
+  });
+
   test('el mesero no crea mesas', async () => {
     const r = await mesero.post('/api/mesas').send({ numero: '40', capacidad: 2 }).expect(403);
     assert.equal(r.body.mensaje, 'Mesero no tiene el permiso «Crear y bloquear mesas».');

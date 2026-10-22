@@ -87,7 +87,7 @@ export async function instalarBase({ nombre = config.bd.database, recrear = fals
 
   // 2) Esquema v3 y permisos del rol de la aplicación
   await ejecutarArchivo(nombre, '01_esquema_v3.sql');
-  paso('01_esquema_v3.sql · 19 tablas, 22 vistas, reglas del negocio');
+  paso('01_esquema_v3.sql · 20 tablas, 22 vistas, reglas del negocio');
   await ejecutarArchivo(nombre, '02_permisos_app.sql');
   paso('02_permisos_app.sql · permisos mínimos para kitchenlink_app');
 

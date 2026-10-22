@@ -152,6 +152,41 @@ describe('09 · Productos', () => {
   });
 });
 
+describe('09 · Historial de 86 (tabla propia, revisión del 21 oct)', () => {
+  test('cada 86 queda con su motivo, desde cuándo y quién; al quitarlo se cierra y no se borra', async () => {
+    const id = await productoId('Guacamole');
+    await cocina.post(`/api/menu/productos/${id}/asignar-86`).send({ motivo: 'Se acabó el aguacate' }).expect(200);
+    await gerente.post(`/api/menu/productos/${id}/quitar-86`).expect(200);
+    const filas = await bd(`SELECT o.motivo, ua.nombre_usuario AS marco, uq.nombre_usuario AS regreso, o.quitado_en >= o.asignado_en AS cerrado
+                            FROM producto_86 o
+                            LEFT JOIN usuario ua ON ua.id = o.asignado_por_usuario_id
+                            LEFT JOIN usuario uq ON uq.id = o.quitado_por_usuario_id
+                            WHERE o.producto_id = $1 ORDER BY o.id`, [id]);
+    // El del 20 de septiembre (datos de demostración) y el de ahora: los dos se quedan
+    assert.deepEqual(filas.map((f) => [f.motivo, f.marco, f.regreso, f.cerrado]), [
+      ['Se acabó el aguacate', 'dbenitez', 'dbenitez', true],
+      ['Se acabó el aguacate', 'dbenitez', 'lsaenz', true],
+    ]);
+  });
+
+  test('el historial lo consultan el gerente y cocina, lo más reciente primero; el mesero no', async () => {
+    const h = (await cocina.get('/api/menu/86').expect(200)).body;
+    assert.equal(h[0].producto, 'Guacamole');
+    assert.equal(h[0].quitado_por, 'Luis Sáenz Jiménez');
+    const risotto = h.find((o) => o.producto === 'Risotto de hongos');
+    assert.deepEqual([risotto.motivo, risotto.quitado_en, risotto.asignado_por], ['No llegaron los hongos', null, 'Luis Sáenz Jiménez']);
+    await gerente.get('/api/menu/86').expect(200);
+    await mesero.get('/api/menu/86').expect(403);
+  });
+
+  test('la base no deja dos 86 abiertos del mismo producto ni cambiar el motivo de uno', async () => {
+    const id = await productoId('Risotto de hongos');
+    await assert.rejects(bd("INSERT INTO producto_86 (producto_id, motivo) VALUES ($1, 'Otra vez')", [id]), /uq_producto_86_abierto/);
+    await assert.rejects(bd("UPDATE producto_86 SET motivo = 'Otro' WHERE producto_id = $1 AND quitado_en IS NULL", [id]),
+      /solo se registra cuándo se quitó/);
+  });
+});
+
 describe('09 · Al mismo tiempo', () => {
   // La bitácora retiene a las dos justo antes de terminar: las dos ya revisaron sus reglas
   const RETENER_EN_BITACORA = 'LOCK TABLE bitacora IN EXCLUSIVE MODE';
@@ -169,6 +204,16 @@ describe('09 · Al mismo tiempo', () => {
     const [n] = await bd(`SELECT count(*)::int AS n FROM producto p JOIN categoria k ON k.id = p.categoria_id
                           WHERE k.id = $1 AND NOT k.activo AND p.activo`, [k.id]);
     assert.equal(n.n, 0);
+  });
+
+  test('dos personas asignan 86 al mismo producto a la vez: se abre un solo registro', async () => {
+    const id = await productoId('Churros con cajeta');
+    const asignar = (agente) => () => agente.post(`/api/menu/productos/${id}/asignar-86`).send({ motivo: 'Se acabó la cajeta' });
+    const r = await alMismoTiempo({ candado: RETENER_EN_BITACORA, peticiones: [asignar(cocina), asignar(gerente)] });
+    assert.deepEqual(estados(r), [200, 409]);
+    assert.equal(r.find((x) => x.status === 409).body.mensaje, 'Churros con cajeta ya tiene 86.');
+    const [n] = await bd('SELECT count(*)::int AS n FROM producto_86 WHERE producto_id = $1 AND quitado_en IS NULL', [id]);
+    assert.equal(n.n, 1);
   });
 
   test('dos gerentes crean la misma categoría a la vez (con otras mayúsculas): queda una y el otro ve el aviso', async () => {

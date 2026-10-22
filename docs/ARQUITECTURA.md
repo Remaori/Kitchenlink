@@ -102,7 +102,7 @@ herramientas según la regla:
 
 ## Base de datos
 
-- **Esquema v3:** 19 tablas, 22 vistas, 10 tipos ENUM y 27 triggers
+- **Esquema v3:** 20 tablas, 22 vistas, 10 tipos ENUM y 27 triggers
   ([database/01_esquema_v3.sql](../database/01_esquema_v3.sql), [diagrama entidad-relación](erd/)).
 - **Reglas en la base:** estados válidos, permisos por operación, cortes de caja inmutables. Si alguien se
   salta la aplicación, la base rechaza la operación con un mensaje claro.
