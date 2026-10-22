@@ -31,3 +31,7 @@ export const IconoHistorial = I(<><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5" /><pat
 export const IconoServidor = I(<><rect x="4" y="4" width="16" height="7" rx="1.5" /><rect x="4" y="13" width="16" height="7" rx="1.5" /><path d="M8 7.5h.1M8 16.5h.1" /></>);
 export const IconoNota = I(<><rect x="5" y="3.5" width="14" height="17" rx="2" /><path d="M9 8.5h6M9 12h6M9 15.5h4" /></>);
 export const IconoMenos = I(<path d="M5 12h14" />);
+export const IconoArena = I(<><path d="M7 3h10M7 21h10" /><path d="M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9" /></>);
+export const IconoReloj = I(<><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>);
+export const IconoIntercambio = I(<><path d="M4 8h14M14 4l4 4-4 4" /><path d="M20 16H6M10 12l-4 4 4 4" /></>);
+export const IconoLapiz = I(<><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>);

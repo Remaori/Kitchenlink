@@ -16,7 +16,7 @@ router.post('/iniciar-sesion', async (req, res) => {
       usuario: req.body?.usuario, contrasena: req.body?.contrasena,
       ip: req.ip, dispositivo: req.get('user-agent'),
     });
-    res.cookie(COOKIE, r.sesion.token, opcionesCookie(r.sesion.expiraEn));
+    res.cookie(COOKIE, r.sesion.token, opcionesCookie(r.sesion.venceCookie));
     res.json(respuesta(r));
   } catch (e) {
     if (e instanceof ErrorHttp && e.estado === 429) res.set('Retry-After', String(e.extra.reintentar_en_min * 60));
@@ -36,7 +36,7 @@ router.post('/cambiar-contrasena', autenticar({ permitirTemporal: true }), async
     actual: req.body?.actual, nueva: req.body?.nueva, confirmacion: req.body?.confirmacion,
     ip: req.ip, dispositivo: req.get('user-agent'),
   });
-  res.cookie(COOKIE, r.sesion.token, opcionesCookie(r.sesion.expiraEn));
+  res.cookie(COOKIE, r.sesion.token, opcionesCookie(r.sesion.venceCookie));
   res.json(respuesta(r));
 });
 

@@ -25,14 +25,22 @@ internet.
   acción de cada usuario. El rol Gerente es del sistema: no se le quitan permisos ni se da de baja.
 - El menú y las pantallas de cada persona se arman con los permisos de su rol.
 
-**Menú y mesas**
+**Menú, mesas y recepción**
 
 - **Menú, categorías y productos:** cada categoría dice si se prepara en cocina o en barra; el precio se
   guarda exacto y un producto se quita del menú sin borrarse. Cocina marca con **86** lo que se agotó (con
   motivo); cada 86 queda en un historial con su motivo, desde y hasta cuándo, y quién. El mesero consulta el
   menú con lo que está disponible.
 - **Mesas:** alta con número (entero, del 1 al 999), capacidad y zona; edición, baja y reactivación sin
-  perder su historial. La capacidad no baja de una reservación ya hecha.
+  perder su historial. La capacidad no baja de una reservación ya hecha. Una mesa libre se bloquea con
+  motivo (limpieza, reparación…) y la tarjeta dice por qué y quién la bloqueó.
+- **Reservaciones:** agenda del día con la tolerancia de llegada y la duración; la nueva reservación sugiere
+  la mesa que cabe y no se empalma, y queda Por confirmar. Confirmar, marcar llegada o cancelar; si el cliente
+  no llega dentro de la tolerancia, pasa solo a "No se presentó" y la mesa se libera.
+- **Lista de espera:** en orden de llegada, con lo que lleva esperando cada grupo y el estimado; al asignar
+  mesa, la reservación tiene prioridad y la mesa debe ser de su tamaño.
+- **Mis mesas (mesero):** sus mesas primero; cambia su comanda de mesa (a una libre donde quepan) o ajusta
+  las personas.
 - Los cambios del menú y de las mesas quedan en la bitácora con quién los hizo.
 
 **Modelo de datos**
@@ -118,8 +126,8 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 
 ## Pruebas
 
-- `npm test`: 99 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
-  permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú y las mesas,
+- `npm test`: 123 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
+  permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú, las mesas, las reservaciones y la lista de espera,
   incluidas peticiones que llegan al mismo tiempo.
 - `npm run db:conectividad`: 24 verificaciones de la conexión entre la API y PostgreSQL.
 - La validación de los casos de uso de seguridad, con capturas de cada caso, está en
@@ -132,8 +140,9 @@ kitchenlink/
 ├── backend/            API REST · Node.js + Express
 │   ├── src/
 │   │   ├── seguridad/  inicio de sesión, sesiones, contraseñas, permisos, roles y usuarios
-│   │   ├── rutas/      /api/salud, /api/usuarios, /api/roles, /api/menu, /api/mesas
-│   │   ├── servicios/  reglas del menú y de las mesas
+│   │   ├── rutas/      /api/salud, /api/usuarios, /api/roles, /api/menu, /api/mesas, /api/reservaciones,
+│   │   │               /api/lista-espera, /api/comandas (cambiar mesa o personas)
+│   │   ├── servicios/  reglas del menú, las mesas y la recepción
 │   │   ├── app.js      aplicación Express
 │   │   ├── db.js       conexión a PostgreSQL y transacciones con el usuario que opera
 │   │   └── server.js   punto de entrada
@@ -155,7 +164,8 @@ kitchenlink/
 - [Autenticación](docs/AUTENTICACION.md): inicio de sesión, sesiones y contraseñas
 - [Roles y usuarios](docs/ROLES_Y_USUARIOS.md): administración de usuarios, roles y permisos
 - [Menú y productos](docs/MENU.md): categorías, productos y 86
-- [Mesas](docs/MESAS.md): crear, editar y dar de baja mesas
+- [Mesas](docs/MESAS.md): crear, editar, bloquear y dar de baja mesas; Mis mesas
+- [Recepción](docs/RECEPCION.md): reservaciones y lista de espera
 - [Diagrama entidad-relación](docs/erd/)
 - [Cambios por versión](CHANGELOG.md) · [Cómo contribuir](CONTRIBUTING.md)
 

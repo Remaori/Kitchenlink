@@ -19,7 +19,19 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 - **Historial de 86** (revisión del 21 oct): el 86 tiene su propia tabla. Cada vez que un producto se agota
   queda el motivo, desde cuándo y quién lo marcó, y al quitarlo, cuándo y quién lo regresó. El gerente y
   cocina lo ven en la pestaña "Historial de 86".
-- **Pruebas automáticas:** pasan de 71 a 99, incluidas peticiones al mismo tiempo en el menú y las mesas.
+- **Reservaciones:** agenda del día, nueva reservación con la mesa sugerida, confirmar, marcar llegada y
+  cancelar. Si el cliente no llega dentro de la tolerancia pasa solo a "No se presentó" (se revisa cada
+  minuto) y, si llega tarde, entra a la lista de espera.
+- **Lista de espera:** grupos en orden de llegada con su tiempo de espera; asignar mesa respetando las
+  reservaciones y el tamaño de la mesa.
+- **Operaciones de mesas:** bloquear y desbloquear con motivo; en "Mis mesas" el mesero cambia su comanda de
+  mesa o de personas.
+- Los nombres de clientes solo aceptan letras, el teléfono pide 10 dígitos y se guarda con un solo formato, y
+  una fecha que no existe se rechaza.
+- **Hora de la aplicación:** la da el servidor en cada respuesta, para que los minutos de espera y las
+  tolerancias se vean igual en todas las tablets.
+- **Pruebas automáticas:** pasan de 71 a 123, incluidas peticiones al mismo tiempo en el menú, las mesas y la
+  recepción.
 - Diagrama entidad-relación actualizado (20 tablas y 35 relaciones).
 
 ### Cambiado

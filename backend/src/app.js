@@ -10,6 +10,9 @@ import rutasUsuarios from './rutas/usuarios.js';
 import rutasRoles from './rutas/roles.js';
 import rutasMenu from './rutas/menu.js';
 import rutasMesas from './rutas/mesas.js';
+import { reservaciones, listaEspera } from './rutas/recepcion.js';
+import rutasComandas from './rutas/comandas.js';
+import { ahora } from './reloj.js';
 
 export function crearApp() {
   const app = express();
@@ -30,12 +33,19 @@ export function crearApp() {
     });
   }
 
+  // Hora de la aplicación en cada respuesta: las pantallas cuentan los minutos
+  // (espera, tolerancia) con ella y no con el reloj de cada tablet.
+  app.use((_req, res, next) => { res.set('X-Ahora', ahora().toISOString()); next(); });
+
   app.use('/api/salud', rutasSalud);
   app.use('/api/auth', rutasAuth);
   app.use('/api/usuarios', rutasUsuarios);
   app.use('/api/roles', rutasRoles);
   app.use('/api/menu', rutasMenu);
   app.use('/api/mesas', rutasMesas);
+  app.use('/api/reservaciones', reservaciones);
+  app.use('/api/lista-espera', listaEspera);
+  app.use('/api/comandas', rutasComandas);
   app.use('/api', rutaNoEncontrada);
   app.use(manejadorErrores);
   return app;

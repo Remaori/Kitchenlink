@@ -49,8 +49,11 @@ async function abrirSesion(cliente, usuarioId, { ip, dispositivo }) {
      VALUES ($1, $2, $3, $4, fn_ahora() + ($5::float8 * interval '1 hour'))
      RETURNING id, emitida_en, expira_en`,
     [usuarioId, tk.hashJti(jti), ip ? String(ip).slice(0, 45) : null, describirDispositivo(dispositivo), config.sesionHoras]);
-  const token = tk.firmar({ usuarioId, sesionId: s.id, jti, expiraEn: s.expira_en });
-  return { token, sesionId: s.id, emitidaEn: s.emitida_en, expiraEn: s.expira_en };
+  // El JWT y la cookie vencen con la hora real del equipo (la fila usa el reloj de
+  // la aplicación, que en una demostración o en las pruebas puede estar en otra fecha).
+  const venceCookie = new Date(Date.now() + config.sesionHoras * 3_600_000);
+  const token = tk.firmar({ usuarioId, sesionId: s.id, jti, expiraEn: venceCookie });
+  return { token, sesionId: s.id, emitidaEn: s.emitida_en, expiraEn: s.expira_en, venceCookie };
 }
 
 async function datosUsuario(usuarioId) {

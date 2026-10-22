@@ -75,6 +75,38 @@ export function revisor() {
       return n;
     },
 
+    // Nombre de una persona (cliente de una reservación o de la lista de espera): letras,
+    // espacios, punto, apóstrofo y guion; al menos 2 letras. "12345" o "@@" no son nombres.
+    nombre(campo, valor, { etiqueta, obligatorio = false, max = 120 }) {
+      const t = this.texto(campo, valor, { etiqueta, obligatorio, max });
+      if (t && (!/^[\p{L}][\p{L}\p{M} .'-]*$/u.test(t) || (t.match(/\p{L}/gu) ?? []).length < 2)) {
+        this.error(campo, `${etiqueta}: usa solo letras (sin números ni símbolos).`);
+      }
+      return t;
+    },
+
+    // Teléfono de México: 10 dígitos, con espacios, guiones o paréntesis si se quiere, y
+    // +52 opcional. Se guarda como "55 1234 5678" (o "+52 55 1234 5678"). Vacío -> null.
+    telefono(campo, valor, { etiqueta = 'El teléfono', obligatorio = false } = {}) {
+      const t = this.texto(campo, valor, { etiqueta, obligatorio, max: 25 });
+      if (!t) return null;
+      const m = /^(\+52)?([\d\s().-]+)$/.exec(t);
+      const d = m ? m[2].replace(/\D/g, '') : '';
+      if (!m || d.length !== 10) { this.error(campo, `${etiqueta}: 10 dígitos (ej. 55 1234 5678).`); return null; }
+      return `${m[1] ? '+52 ' : ''}${d.slice(0, 2)} ${d.slice(2, 6)} ${d.slice(6)}`;
+    },
+
+    // Fecha AAAA-MM-DD que exista en el calendario (el 31 de febrero no)
+    fecha(campo, valor, { etiqueta = 'La fecha' } = {}) {
+      const m = typeof valor === 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor) : null;
+      const d = m && new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+      if (!m || d.getUTCFullYear() !== +m[1] || d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) {
+        this.error(campo, !valor ? `Elige ${etiqueta.toLowerCase()}.` : m ? `${etiqueta} no existe en el calendario.` : `${etiqueta}: usa el formato AAAA-MM-DD.`);
+        return null;
+      }
+      return valor;
+    },
+
     terminar() {
       if (Object.keys(campos).length) {
         throw new ErrorHttp(400, 'DATOS_INVALIDOS', 'Revisa los datos marcados.', { campos });

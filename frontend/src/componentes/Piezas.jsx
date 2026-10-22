@@ -1,11 +1,23 @@
-// Piezas de las pantallas de operación: insignias de estado, pestañas,
-// interruptores y avisos. Colores y medidas del diseño.
+// Piezas de las pantallas de operación: insignias de estado, fichas de filtro,
+// pestañas, interruptores y avisos. Colores y medidas del diseño.
 import * as Ic from './Iconos.jsx';
 
 /** Insignia con punto: el texto y el tono vienen de etiqueta_estado de la base. */
 export const Insignia = ({ tono = 'gray', children, className = '' }) => (
   <span className={`insignia ${tono} ${className}`}>{children}</span>
 );
+
+/** Fichas para filtrar ("Todas (18)", "Libres (7)"…) */
+export function Fichas({ opciones, valor, alCambiar, etiqueta }) {
+  return (
+    <div className="fichas" role="group" aria-label={etiqueta}>
+      {opciones.map(([v, texto]) => (
+        <button key={v} type="button" className={`ficha${v === valor ? ' activa' : ''}`} aria-pressed={v === valor}
+          onClick={() => alCambiar(v)}>{texto}</button>
+      ))}
+    </div>
+  );
+}
 
 /** Pestañas que cambian de vista dentro de la misma pantalla */
 export function Pestanas({ opciones, valor, alCambiar }) {

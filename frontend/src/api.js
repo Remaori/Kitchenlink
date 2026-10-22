@@ -1,5 +1,7 @@
 // Cliente de la API. La sesión viaja en una cookie httpOnly: aquí no se
 // guarda ni se ve ningún token.
+import { ajustarReloj } from './reloj.js';
+
 export class ErrorApi extends Error {
   constructor(estado, cuerpo) {
     super(cuerpo?.mensaje || `Error ${estado}`);
@@ -26,6 +28,8 @@ async function pedir(metodo, ruta, cuerpo) {
   } catch {
     throw new ErrorApi(0, { codigo: 'SIN_RED', mensaje: 'No hay conexión con el servidor. Revisa la red del restaurante.' });
   }
+  // Hora de la aplicación (ver reloj.js)
+  if (r.headers.get('X-Ahora')) ajustarReloj(r.headers.get('X-Ahora'));
   const datos = r.status === 204 ? null : await r.json().catch(() => null);
   if (!r.ok) {
     if (!datos && r.status >= 500) {

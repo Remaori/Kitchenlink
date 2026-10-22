@@ -1,12 +1,15 @@
-// Pruebas de 04 · Mesas: Crear mesa (Codificación de Crear mesa)
+// Pruebas de 04 · Mesas: Crear mesa y operaciones de mesas (bloqueo; cambiar mesa o personas desde 05a)
 import './entorno.js';
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { prepararBase, cerrarBase, entrar, bd, idDe, mesaId, ultimaBitacora } from './ayudantes.js';
+import { prepararBase, cerrarBase, entrar, bd, idDe, mesaId, comandaId, ultimaBitacora, relojDePantallas } from './ayudantes.js';
 import { alMismoTiempo, estados } from './concurrencia.js';
 
 let gerente; let hostess; let mesero;
 const mapa = async (agente = gerente) => (await agente.get('/api/mesas').expect(200)).body;
+const tarjeta = async (numero, agente) => (await mapa(agente)).mesas.find((m) => m.numero === numero);
+const estadoMesa = async (numero) => (await bd('SELECT estado::text AS e FROM mesa WHERE numero = $1', [numero]))[0].e;
+let luis;
 
 before(async () => {
   await prepararBase();
@@ -103,6 +106,68 @@ describe('04 · Crear mesa', () => {
     assert.equal(c.body.campos.numero, 'La Mesa 23 existe pero está dada de baja: reactívala.');
     await gerente.post(`/api/mesas/${id}/reactivar`).expect(200);
     assert.equal((await mapa()).mesas.some((x) => x.numero === '23'), true);
+  });
+});
+
+describe('04 · Operaciones: bloquear y desbloquear', () => {
+  before(async () => {
+    relojDePantallas();
+    ({ agente: luis } = await entrar('lmora'));
+  });
+
+  test('bloquear pide motivo y queda quién lo hizo', async () => {
+    const id = await mesaId('13');
+    const a = await hostess.post(`/api/mesas/${id}/bloquear`).send({}).expect(400);
+    assert.ok(a.body.campos.motivo);
+    await hostess.post(`/api/mesas/${id}/bloquear`).send({ motivo: 'Mantel manchado' }).expect(200);
+    const t = await tarjeta('13');
+    assert.equal(t.estado, 'bloqueada');
+    assert.equal(t.bloqueada_por, 'Hostess');
+    const b = await ultimaBitacora('mesa', id);
+    assert.deepEqual([b.accion, b.detalle, b.por], ['bloquear', { motivo: 'Mantel manchado' }, 'alopez']);
+  });
+
+  test('solo se bloquea una mesa libre (lo dice la base)', async () => {
+    const r = await gerente.post(`/api/mesas/${await mesaId('08')}/bloquear`).send({ motivo: 'Prueba' }).expect(409);
+    assert.equal(r.body.mensaje, 'Solo se puede bloquear una mesa libre (la mesa 08 está: Comanda abierta).');
+    await luis.post(`/api/mesas/${await mesaId('14')}/bloquear`).send({ motivo: 'Prueba' }).expect(403);
+  });
+
+  test('desbloquear la deja libre desde ese momento', async () => {
+    await gerente.post(`/api/mesas/${await mesaId('13')}/desbloquear`).expect(200);
+    const t = await tarjeta('13');
+    assert.equal(t.estado, 'libre');
+    assert.equal(new Date(t.libre_desde).toISOString(), '2026-09-23T01:09:00.000Z');
+    const r = await gerente.post(`/api/mesas/${await mesaId('14')}/desbloquear`).expect(409);
+    assert.equal(r.body.mensaje, 'La Mesa 14 no está bloqueada.');
+  });
+});
+
+describe('05a · Operaciones de mesas: cambiar mesa y personas', () => {
+  test('cambiar mesa: solo a una libre donde quepan; la anterior se libera y queda en bitácora', async () => {
+    const id = await comandaId('C-1042');
+    const a = await mesero.put(`/api/comandas/${id}/mesa`).send({ mesa_id: await mesaId('09') }).expect(409);
+    assert.equal(a.body.mensaje, 'Solo se puede cambiar a una mesa libre (la mesa 09 está: Comanda abierta).');
+    const b = await mesero.put(`/api/comandas/${id}/mesa`).send({ mesa_id: await mesaId('14') }).expect(409);
+    assert.equal(b.body.mensaje, 'La Mesa 14 es para 2 personas y en la comanda hay 6.');
+    const r = await mesero.put(`/api/comandas/${id}/mesa`).send({ mesa_id: await mesaId('07') }).expect(200);
+    assert.equal(r.body.mesa, '07');
+    assert.deepEqual([await estadoMesa('08'), await estadoMesa('07')], ['libre', 'comanda_abierta']);
+    assert.equal((await ultimaBitacora('comanda', id)).accion, 'cambiar_mesa');
+  });
+
+  test('cambiar personas, hasta la capacidad de la mesa', async () => {
+    const id = await comandaId('C-1042');
+    const r = await mesero.put(`/api/comandas/${id}/personas`).send({ numero_personas: 7 }).expect(200);
+    assert.equal(r.body.numero_personas, 7);
+    assert.deepEqual((await ultimaBitacora('comanda', id)).detalle, { de: 6, a: 7 });
+    const x = await mesero.put(`/api/comandas/${id}/personas`).send({ numero_personas: 9 }).expect(409);
+    assert.equal(x.body.mensaje, 'La Mesa 07 es para 8 personas: para 9, cámbialos a una mesa más grande.');
+  });
+
+  test('otro mesero no cambia una comanda que no es suya', async () => {
+    const r = await luis.put(`/api/comandas/${await comandaId('C-1042')}/personas`).send({ numero_personas: 5 });
+    assert.equal(r.status, 403);
   });
 });
 

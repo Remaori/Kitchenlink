@@ -2,6 +2,7 @@
 import { config, validarConfig } from './config.js';
 import { crearApp } from './app.js';
 import { pool } from './db.js';
+import { revisarReservaciones } from './servicios/recepcion.js';
 
 try {
   validarConfig();
@@ -23,8 +24,17 @@ const servidor = crearApp().listen(config.puerto, host, async () => {
   }
 });
 
+// 03a · "Si el cliente no llega dentro de la tolerancia, cambia sola a No se
+// presentó" y "la mesa se aparta 30 min antes": la base lo hace con
+// fn_revisar_reservaciones(); aquí se llama cada minuto.
+const cadaMinuto = setInterval(() => {
+  revisarReservaciones().catch((e) => console.error('[reservaciones]', e.message));
+}, 60_000);
+revisarReservaciones().catch(() => {});
+
 function apagar(senal) {
   console.log(`\n${senal}: cerrando…`);
+  clearInterval(cadaMinuto);
   servidor.close(() => pool.end().then(() => process.exit(0)));
   setTimeout(() => process.exit(0), 5000).unref();
 }

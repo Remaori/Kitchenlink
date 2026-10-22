@@ -1,5 +1,33 @@
 // Ganchos (hooks) que usan los formularios y botones de las pantallas
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+const NINGUNO = new Set();
+
+/**
+ * Lo que cambió desde la carga anterior de la pantalla (casi siempre por un aviso
+ * en tiempo real), para iluminarlo un momento con la clase `recien`. La primera
+ * carga no ilumina nada; `lista` vacía (undefined) = la pantalla empieza de nuevo.
+ * `clave(x)` identifica al elemento y `firma(x)` resume lo que se ve de él.
+ */
+export function useRecientes(lista, clave, firma) {
+  const anterior = useRef(null);
+  const reloj = useRef(null);
+  const [recientes, setRecientes] = useState(NINGUNO);
+  useEffect(() => () => clearTimeout(reloj.current), []);
+  useEffect(() => {
+    if (!lista) { anterior.current = null; return; }
+    const actual = new Map(lista.map((x) => [clave(x), firma(x)]));
+    const previo = anterior.current;
+    anterior.current = actual;
+    if (!previo) return;
+    const cambiaron = [...actual].filter(([k, f]) => previo.get(k) !== f).map(([k]) => k);
+    if (!cambiaron.length) return;
+    clearTimeout(reloj.current);
+    setRecientes(new Set(cambiaron));
+    reloj.current = setTimeout(() => setRecientes(NINGUNO), 1800);
+  }, [lista]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (x) => (recientes.has(clave(x)) ? ' recien' : '');
+}
 
 /**
  * Formulario de un diálogo: guarda con `enviar(valores)`, pone el error de cada

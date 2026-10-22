@@ -6,3 +6,5 @@ process.env.BCRYPT_COSTO = '4';
 process.env.INTENTOS_MAX = '3';
 process.env.INTENTOS_MAX_EQUIPO = '6';
 process.env.SESION_HORAS = '12';
+// Hora real: cada archivo que necesita la hora de las pantallas la fija con relojDePantallas()
+process.env.RELOJ_INICIO = '';

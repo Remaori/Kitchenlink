@@ -8,6 +8,9 @@ import FormularioUsuario from './paginas/usuarios/FormularioUsuario.jsx';
 import Roles from './paginas/roles/Roles.jsx';
 import Menu from './paginas/menu/Menu.jsx';
 import Mesas from './paginas/mesas/Mesas.jsx';
+import MisMesas from './paginas/mesas/MisMesas.jsx';
+import Reservaciones from './paginas/recepcion/Reservaciones.jsx';
+import ListaEspera from './paginas/recepcion/ListaEspera.jsx';
 import Marco, { ConPermiso } from './componentes/Marco.jsx';
 import { Logo } from './componentes/Campos.jsx';
 
@@ -49,6 +52,11 @@ export default function App() {
         <Route path="menu" element={<ConPermiso alguno={['menu.administrar', 'menu.asignar_86', 'comanda.abrir', 'produccion.ver']}><Menu /></ConPermiso>} />
         {/* 04 · Mesas (Crear mesa) */}
         <Route path="mesas" element={<ConPermiso alguno={['mesa.ver', 'mesa.administrar', 'reservacion.gestionar']}><Mesas /></ConPermiso>} />
+        {/* 05a · Mis mesas (operaciones de mesas: cambiar mesa o personas) */}
+        <Route path="mis-mesas" element={<ConPermiso alguno={['comanda.abrir']}><MisMesas /></ConPermiso>} />
+        {/* 03a · Reservaciones y 03b · Lista de espera */}
+        <Route path="reservaciones" element={<ConPermiso alguno={['reservacion.gestionar']}><Reservaciones /></ConPermiso>} />
+        <Route path="lista-espera" element={<ConPermiso alguno={['reservacion.gestionar']}><ListaEspera /></ConPermiso>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

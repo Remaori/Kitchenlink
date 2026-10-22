@@ -1,6 +1,7 @@
 // Conexión a PostgreSQL 16 (pool de conexiones del usuario kitchenlink_app)
 import pg from 'pg';
 import { config } from './config.js';
+import { ahoraParaLaBase } from './reloj.js';
 
 // BIGINT (ids) como número de JavaScript. Los NUMERIC (dinero) se quedan
 // como texto para no perder centavos por redondeo de punto flotante.
@@ -24,21 +25,35 @@ export const pool = new pg.Pool({ ...opcionesConexion(), max: 10, idleTimeoutMil
 // debe tumbar el servidor: el pool la descarta y abre otra.
 pool.on('error', (err) => console.error('[bd] conexión inactiva con error:', err.message));
 
-export const consulta = (texto, params) => pool.query(texto, params);
+/**
+ * Consulta suelta (sin transacción). Con el reloj de la aplicación fijado (RELOJ_INICIO),
+ * antes le dice a la base qué hora es (kitchenlink.ahora, ver reloj.js).
+ */
+export async function consulta(texto, params) {
+  if (!config.reloj) return pool.query(texto, params);
+  const cliente = await pool.connect();
+  try {
+    await cliente.query("SELECT set_config('kitchenlink.ahora', $1, false)", [ahoraParaLaBase()]);
+    return await cliente.query(texto, params);
+  } finally {
+    cliente.release();
+  }
+}
 
 /**
  * Ejecuta `fn(cliente)` dentro de una transacción.
  * Antes de empezar le dice a la base quién opera (kitchenlink.usuario_id),
- * que es lo que usan los triggers para la bitácora y los permisos.
- * El valor es LOCAL a la transacción: al terminar, la conexión vuelve
+ * que es lo que usan los triggers para la bitácora y los permisos, y qué
+ * hora es (kitchenlink.ahora: vacío = la hora real).
+ * Los valores son LOCALES a la transacción: al terminar, la conexión vuelve
  * al pool sin rastro del usuario.
  */
 export async function conTransaccion(usuarioId, fn) {
   const cliente = await pool.connect();
   try {
     await cliente.query('BEGIN');
-    await cliente.query("SELECT set_config('kitchenlink.usuario_id', $1, true)",
-      [usuarioId == null ? '' : String(usuarioId)]);
+    await cliente.query("SELECT set_config('kitchenlink.usuario_id', $1, true), set_config('kitchenlink.ahora', $2, true)",
+      [usuarioId == null ? '' : String(usuarioId), ahoraParaLaBase()]);
     const resultado = await fn(cliente);
     await cliente.query('COMMIT');
     return resultado;

@@ -1,15 +1,20 @@
-# Mesas: crear mesa (pantalla 04)
+# Mesas: crear mesa y operaciones de mesas (pantallas 04 y 05a)
 
-Caso de uso **Crear mesa**: el catálogo de mesas del salón, con su número, su capacidad y su zona.
+Casos de uso **Crear mesa** (el catálogo de mesas: número, capacidad y zona) y **Operaciones de mesas**
+(bloquear y desbloquear con motivo; cambiar de mesa o de personas una comanda abierta).
 
 Quién ve qué (por permisos, no por nombre de rol): quien tiene «Crear y bloquear mesas» (gerente, hostess)
-crea, edita y da de baja mesas; quien solo consulta el salón o atiende mesas las ve.
+crea, edita, da de baja y bloquea mesas en **04 · Mesas**; quien atiende mesas (mesero) ve **05a · Mis mesas**.
 
 ```
-04 Mesas ── buscar mesa ── tarjetas: número, capacidad y zona
+04 Mesas ── buscar mesa ── tarjetas: número, capacidad y zona (una bloqueada dice por qué y quién)
    ├─ Crear mesa ── número ("7" → Mesa 07), capacidad 1–30, zona ──► nace Libre
-   ├─ Tarjeta ──► editar ── Dar de baja (solo libre y sin reservaciones por venir)
+   ├─ Tarjeta ──► editar ── Dar de baja (solo libre y sin reservaciones por venir) · bloquear (motivo) / desbloquear
+   ├─ Bloquear / desbloquear ── solo una mesa libre, con motivo
    └─ Mesas dadas de baja ──► Reactivar
+05a Mis mesas ── Todas · Mis mesas · Libres
+   ├─ mi comanda ── Cambiar mesa (a una libre donde quepan) · Personas
+   └─ de otro mesero ── "La atiende otro mesero"
 ```
 
 ## Rutas de la API
@@ -19,6 +24,8 @@ crea, edita y da de baja mesas; quien solo consulta el salón o atiende mesas la
 | `GET /api/mesas` | ver mesas, administrarlas, comandas o reservaciones | Las mesas en servicio (`v_mapa_mesas`); quien las administra ve también las dadas de baja |
 | `POST /api/mesas` · `PUT /api/mesas/:id` | `mesa.administrar` | `{ numero, capacidad, zona }` |
 | `POST /api/mesas/:id/dar-de-baja` · `/reactivar` | `mesa.administrar` | Solo libre (o bloqueada) y sin reservaciones por venir |
+| `POST /api/mesas/:id/bloquear` · `/desbloquear` | `mesa.administrar` | `{ motivo }` al bloquear |
+| `PUT /api/comandas/:id/mesa` · `/personas` | `comanda.abrir` | Cambiar de mesa o de personas (su mesero o el gerente) |
 
 ## Decisiones (y por qué)
 
@@ -39,11 +46,21 @@ reactivar.
 **Al mismo tiempo.** Si dos personas crean la misma mesa a la vez, la segunda espera a la primera (candado
 de la transacción, `enFila` en `db.js`) y ve el aviso en el campo Número en lugar de duplicarla.
 
-Todo cambio (alta, edición con el valor anterior y el nuevo, baja y reactivación) queda en la bitácora.
+**Cambiar de mesa: a una libre donde quepan.** La base exige que la mesa nueva esté libre y lo registra en
+la bitácora; el backend revisa además que quepan. Lo mismo al cambiar personas: hasta la capacidad de la
+mesa (si son más, se cambian a una más grande). Solo su mesero o el gerente, porque la comanda es suya.
+
+**Quién bloqueó.** "Bloqueada por Hostess" sale del rol de quien la bloqueó (`bloqueada_por_usuario_id`).
+
+Todo cambio (alta, edición con el valor anterior y el nuevo, baja, reactivación, bloqueo y cambio de mesa o
+de personas) queda en la bitácora.
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/mesas.test.js` — 10 pruebas: las mesas en servicio, quién consulta, quién ve las dadas de
+`backend/test/mesas.test.js` — 16 pruebas: las mesas en servicio, quién consulta, quién ve las dadas de
 baja, crear mesa (bitácora, "7" = 07, capacidad), el número solo entero (en la API y en la base), el mesero
 no crea mesas, editar sin dejar fuera una
-reservación, dar de baja y reactivar, y la misma mesa creada dos veces a la vez.
+reservación, dar de baja y reactivar, y la misma mesa creada dos veces a la vez. Operaciones (a las 19:09):
+bloquear pide motivo y queda quién lo hizo, solo se bloquea una mesa libre, desbloquear la deja libre desde
+ese momento, cambiar mesa (solo a una libre donde quepan), cambiar personas hasta la capacidad y otro mesero
+no cambia una comanda que no es suya.

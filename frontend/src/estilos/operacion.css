@@ -1,7 +1,7 @@
-/* KitchenLink · piezas de las pantallas de operación (04 y 09).
+/* KitchenLink · piezas de las pantallas de operación (03a a 09).
    Usa los colores y medidas de app.css (tomados del diseño en Figma). */
 
-/* ---------- Pestañas como botones y segmentos ---------- */
+/* ---------- Pestañas como botones, fichas, segmentos ---------- */
 .pestanas button {
   background: none; border: 0; cursor: pointer;
   padding: 4px 2px 12px; font-size: 15px; color: var(--gris);
@@ -10,6 +10,14 @@
 .pestanas button:hover { color: var(--tinta); }
 .pestanas button.activa { color: var(--morado); border-bottom-color: var(--morado); font-weight: 500; }
 
+
+.fichas { display: flex; flex-wrap: wrap; gap: 10px; }
+.ficha {
+  height: 40px; padding: 0 17px; border-radius: 999px; border: 1px solid var(--borde);
+  background: var(--blanco); color: #374151; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+.ficha:hover { background: var(--superficie); }
+.ficha.activa { background: var(--morado); border-color: var(--morado); color: var(--blanco); font-weight: 500; }
 
 .segmentos { display: inline-flex; padding: 4px; gap: 2px; background: #F2F2F5; border-radius: 10px; }
 .segmentos button {

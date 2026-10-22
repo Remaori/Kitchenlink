@@ -1,18 +1,44 @@
-// 04 · Mesas: Crear mesa
+// 04 · Mesas (crear mesa y bloqueo) y 05a · Mis mesas (mesero)
 //
-// El estado de la mesa lo mueven los triggers de comandas y reservaciones
-// (tg_mesa_reglas). Aquí se agrega: número sin repetirse ("7" y "07" son la
-// misma mesa), capacidad que no deje fuera a una reservación ya hecha, y dar
-// de baja en lugar de borrar.
+// El estado de la mesa lo mueven los triggers de comandas y reservaciones; a
+// mano solo se bloquea (con motivo) y se desbloquea (tg_mesa_reglas). Aquí se
+// agrega: número sin repetirse ("7" y "07" son la misma mesa), capacidad que
+// no deje fuera a una reservación ya hecha, y dar de baja en lugar de borrar.
 import { consulta, conTransaccion, enFila } from '../db.js';
 import { revisor } from '../validacion.js';
 import { bitacora, campoInvalido, noExiste, regla } from './comun.js';
 
+// v_mapa_mesas + lo que piden las tarjetas de 04 y 05a
+const SQL_MAPA = `
+  SELECT v.id, v.numero, v.capacidad, m.zona, v.estado::text AS estado, v.estado_etiqueta, v.estado_tono,
+         v.libre_desde, v.motivo_bloqueo, m.bloqueada_en, rb.nombre AS bloqueada_por,
+         v.comanda_id, v.folio, v.mesero_usuario_id, v.mesero, v.numero_personas, v.abierta_en, v.total, v.cuenta_pedida_en,
+         v.productos_sin_enviar::int AS productos_sin_enviar, v.platillos_listos::int AS platillos_listos,
+         v.grupo_por_atender, v.personas_por_atender, v.sentada_en,
+         v.proxima_reservacion, v.proxima_reservacion_hora, v.se_libera_si_no_llega,
+         rp.estado::text AS proxima_reservacion_estado, rp.apartado_desde AS proxima_reservacion_apartado,
+         rp.numero_personas AS proxima_reservacion_personas,
+         rs.nombre_cliente AS grupo_de_reservacion,
+         (SELECT r.nombre_cliente FROM reservacion r WHERE r.mesa_id = v.id AND r.estado = 'no_se_presento'
+            AND r.finalizada_en = v.libre_desde LIMIT 1) AS libre_porque_no_llego,
+         pr.nombre_producto AS en_preparacion, pr.enviado_en AS en_preparacion_desde
+  FROM v_mapa_mesas v
+  JOIN mesa m ON m.id = v.id
+  LEFT JOIN usuario ub ON ub.id = m.bloqueada_por_usuario_id
+  LEFT JOIN rol rb ON rb.id = ub.rol_id
+  LEFT JOIN LATERAL (SELECT r.estado, r.apartado_desde, r.numero_personas FROM reservacion r
+                     WHERE r.mesa_id = v.id AND r.estado IN ('por_confirmar','confirmada') AND r.tolerancia_hasta >= fn_ahora()
+                     ORDER BY r.fecha_hora LIMIT 1) rp ON TRUE
+  LEFT JOIN comanda c ON c.id = v.comanda_id
+  LEFT JOIN reservacion rs ON rs.id = c.reservacion_id
+  LEFT JOIN LATERAL (SELECT d.nombre_producto, e.enviado_en FROM detalle_comanda d JOIN envio e ON e.id = d.envio_id
+                     WHERE d.comanda_id = v.comanda_id AND d.estado = 'en_preparacion'
+                     ORDER BY e.enviado_en, d.id LIMIT 1) pr ON TRUE`;
+
 /** Las mesas del salón (v_mapa_mesas: solo las que están en servicio). */
 export async function mapa({ conBajas = false } = {}) {
   const [{ rows: mesas }, bajas] = await Promise.all([
-    consulta(`SELECT v.id, v.numero, v.capacidad, m.zona, v.estado::text AS estado, v.estado_etiqueta, v.estado_tono
-              FROM v_mapa_mesas v JOIN mesa m ON m.id = v.id ORDER BY v.numero`),
+    consulta(`${SQL_MAPA} ORDER BY v.numero`),
     conBajas
       ? consulta('SELECT id, numero, capacidad, zona FROM mesa WHERE NOT activo ORDER BY numero').then((r) => r.rows)
       : Promise.resolve(undefined),
@@ -127,3 +153,29 @@ export async function reactivar(id, actorId) {
 }
 
 const etiqueta = async (c, estado) => (await c.query("SELECT fn_etiqueta('estado_mesa', $1) AS e", [estado])).rows[0].e;
+
+// ----------------------------------------------- Operaciones: bloquear mesa
+
+/** "Bloquear": solo una mesa libre, con motivo (lo hace cumplir la base y queda en la bitácora). */
+export async function bloquear(id, cuerpo, actorId) {
+  const v = revisor();
+  const motivo = v.texto('motivo', cuerpo?.motivo, { etiqueta: 'El motivo', obligatorio: true, min: 3, max: 160 });
+  v.terminar();
+  await conTransaccion(actorId, async (c) => {
+    const { rows: [m] } = await c.query('SELECT numero, activo FROM mesa WHERE id = $1 FOR UPDATE', [id]);
+    if (!m || !m.activo) throw noExiste('esa mesa');
+    await c.query("UPDATE mesa SET estado = 'bloqueada', motivo_bloqueo = $1, bloqueada_por_usuario_id = $2 WHERE id = $3", [motivo, actorId, id]);
+  });
+  return unaMesa(id);
+}
+
+/** "Desbloquear": queda Libre (o Reservada si ya está en la ventana de una reservación). */
+export async function desbloquear(id, actorId) {
+  await conTransaccion(actorId, async (c) => {
+    const { rows: [m] } = await c.query('SELECT numero, estado::text AS estado FROM mesa WHERE id = $1 FOR UPDATE', [id]);
+    if (!m) throw noExiste('esa mesa');
+    if (m.estado !== 'bloqueada') throw regla(`La Mesa ${m.numero} no está bloqueada.`);
+    await c.query("UPDATE mesa SET estado = 'libre', libre_desde = NULL WHERE id = $1", [id]);
+  });
+  return unaMesa(id);
+}

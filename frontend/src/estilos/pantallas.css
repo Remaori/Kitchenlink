@@ -1,11 +1,22 @@
-/* KitchenLink · pantallas de operación: 04 · Mesas.
+/* KitchenLink · pantallas de operación: 03a, 03b, 04 y 05a.
    Usa los colores y medidas de app.css (tomados del diseño en Figma). */
 
 /* ---------- Piezas comunes de operación ---------- */
+.boton.ancho { width: 100%; }
 .boton:disabled { cursor: not-allowed; opacity: 0.6; }
+.enlace.peligro { color: var(--rojo-tinta); }
 .insignia { white-space: nowrap; }
+.insignia.chica { font-size: 11px; padding: 1px 8px; margin-left: 8px; vertical-align: middle; }
 .tarjeta h2 { font-size: 16px; font-weight: 600; margin: 0; }
-
+.tarjeta h3 { font-size: 14.5px; font-weight: 600; margin: 0; }
+.tarjeta-encabezado { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.area-texto {
+  width: 100%; border: 1px solid var(--borde); border-radius: var(--radio); padding: 11px 14px; font-size: 14px;
+  resize: vertical; outline: none; color: var(--tinta);
+}
+.area-texto:focus { border-color: var(--morado); box-shadow: 0 0 0 3px var(--morado-suave); }
+.area-texto::placeholder { color: var(--tenue); }
+.agenda-vacia { padding: 18px 4px; color: var(--tenue); font-size: 13.5px; list-style: none; }
 .contador { display: inline-flex; align-items: center; gap: 16px; }
 .contador > span { font-size: 18px; font-weight: 600; min-width: 112px; text-align: center; }
 .contador-boton {
@@ -13,6 +24,28 @@
   color: var(--gris); display: grid; place-items: center; cursor: pointer;
 }
 .contador-boton:disabled { opacity: 0.4; cursor: not-allowed; }
+.selector-fecha { position: relative; overflow: hidden; cursor: pointer; }
+.selector-fecha input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.selector-fecha input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+.leyenda-estados { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13.5px; color: var(--gris); margin: 4px 0 18px; }
+.leyenda-estados.derecha { margin: 0 0 0 auto; }
+.punto-estado { display: inline-flex; align-items: center; gap: 7px; }
+.punto-estado::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--tenue); }
+.punto-estado.solo { margin-left: auto; }
+.punto-estado.libre::before { background: var(--verde); }
+.punto-estado.reservada::before, .punto-estado.por_atender::before { background: var(--azul); }
+.punto-estado.comanda_abierta::before { background: var(--morado); }
+.punto-estado.por_cobrar::before { background: var(--ambar); }
+.punto-estado.bloqueada::before { background: var(--rojo); }
+.ambar { color: var(--ambar-tinta) !important; }
+.opciones-mesa { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 4px; }
+.opciones-mesa button {
+  display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; text-align: left;
+  border: 1px solid var(--borde); background: var(--blanco); cursor: pointer; color: var(--tinta);
+}
+.opciones-mesa button small { color: var(--tenue); font-size: 12px; }
+.opciones-mesa button.elegida { border-color: var(--morado); background: var(--morado-suave); }
+.opciones-mesa button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ---------- 04 · Mesas ---------- */
 .mesas-filtros { justify-content: space-between; }
@@ -26,6 +59,7 @@
 }
 .tarjeta-mesa:hover:not(:disabled) { border-color: var(--morado-borde); box-shadow: 0 4px 14px rgba(17, 24, 39, 0.06); }
 .tarjeta-mesa:disabled { cursor: default; opacity: 1; }
+.tarjeta-mesa.bloqueada { background: #F7F7F9; }
 .tarjeta-mesa-titulo { display: flex; align-items: center; gap: 8px; width: 100%; font-size: 15.5px; font-weight: 600; }
 .tarjeta-mesa-titulo svg { color: var(--gris); }
 .tarjeta-mesa-personas { display: flex; align-items: center; gap: 7px; color: var(--gris); font-size: 13.5px; }
@@ -35,3 +69,118 @@
 .mesas-baja { margin-top: 22px; }
 .mesas-baja ul { list-style: none; padding: 0; margin: 12px 0 0; }
 .mesas-baja li { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--borde); font-size: 14px; }
+.dialogo-cuerpo .boton.ancho { margin-bottom: 10px; }
+.bloqueo { display: flex; gap: 10px; align-items: flex-end; margin-top: 8px; }
+.bloqueo .campo-form { flex: 1; }
+.bloqueo .boton { height: 42px; }
+
+/* ---------- 03a · Reservaciones y 03b · Lista de espera ---------- */
+.barra-parametros {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px; margin-bottom: 20px;
+  background: var(--superficie); border-radius: 12px; font-size: 14px; color: #374151;
+}
+.barra-parametros > span { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; background: var(--blanco); border: 1px solid var(--borde); border-radius: 9px; }
+.barra-parametros > span svg { color: var(--morado); }
+.barra-parametros > span.sin-borde { background: none; border: 0; padding: 4px 0; color: var(--gris); }
+.barra-parametros > span.sin-borde svg { color: var(--tenue); }
+.barra-parametros small { margin-left: auto; color: var(--tenue); font-size: 13px; }
+.barra-parametros .promedio { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; color: var(--morado); font-weight: 500; }
+.recepcion-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
+.recepcion-rejilla.espera { grid-template-columns: minmax(0, 1fr) 400px; }
+.tarjeta.agenda { padding: 20px 22px; }
+.ahora { display: inline-flex; align-items: center; gap: 7px; color: var(--morado); font-weight: 500; font-size: 14.5px; white-space: nowrap; }
+.agenda-lista { list-style: none; margin: 0; padding: 0; container-type: inline-size; }
+.agenda-fila {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto 150px; gap: 12px; align-items: center;
+  padding: 14px 12px; border-bottom: 1px solid var(--borde);
+}
+.agenda-fila.elegida { box-shadow: inset 3px 0 0 var(--morado); }
+.agenda-fila.apagada .agenda-hora, .agenda-fila.apagada .agenda-nombre { color: var(--tenue); font-weight: 400; }
+.agenda-hora { font-size: 17px; font-weight: 600; }
+.agenda-cliente { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.agenda-cliente small { color: var(--gris); font-size: 13.5px; }
+.agenda-nombre { font-size: 15.5px; font-weight: 500; color: var(--tinta); background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+button.agenda-nombre:hover { color: var(--morado); }
+.agenda-estado { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.agenda-estado small { color: var(--tenue); font-size: 13px; }
+.agenda-accion { display: flex; justify-content: flex-end; }
+/* Si la agenda es angosta (tablet, con el formulario al lado), el estado y el botón pasan debajo del cliente */
+@container (max-width: 560px) {
+  .agenda-fila { grid-template-columns: 56px minmax(0, 1fr); }
+  .agenda-estado, .agenda-accion { grid-column: 2; align-items: flex-start; justify-content: flex-start; text-align: left; }
+}
+.formulario-reservacion { padding: 20px 22px; }
+.formulario-reservacion .rejilla-campos { margin-top: 16px; }
+.formulario-reservacion .boton-primario { margin-top: 18px; }
+.aviso-apartado { display: flex; flex-direction: column; gap: 6px; margin-top: 18px; padding: 14px 16px; background: var(--morado-suave); border-radius: 10px; font-size: 13.5px; color: #3F3A5E; line-height: 1.45; }
+.aviso-apartado strong { display: flex; align-items: center; gap: 8px; color: var(--morado); font-weight: 600; font-size: 14px; }
+.botones-edicion { display: flex; justify-content: space-between; margin-top: 12px; }
+.espera-lista { list-style: none; margin: 0; padding: 0; container-type: inline-size; }
+.espera-lista li { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--borde); }
+.espera-lista li.elegido { background: var(--morado-suave); border-radius: 10px; border-bottom-color: transparent; }
+.espera-grupo { flex: 1; display: flex; align-items: center; gap: 14px; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; color: var(--tinta); min-width: 0; }
+.posicion { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #F2F2F5; color: var(--gris); font-weight: 600; flex: none; }
+.espera-lista li.elegido .posicion { background: var(--morado); color: var(--blanco); }
+.espera-datos { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.espera-datos strong { font-size: 15.5px; font-weight: 500; }
+.espera-datos small { color: var(--gris); font-size: 13.5px; }
+.espera-tiempo { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.espera-tiempo strong { display: inline-flex; align-items: center; gap: 6px; color: var(--ambar-tinta); font-weight: 600; font-size: 14.5px; }
+.espera-tiempo strong svg { color: var(--ambar); }
+.espera-tiempo small { color: var(--tenue); font-size: 13px; }
+/* Lista angosta (tablet): el tiempo de espera pasa debajo del nombre en vez de apretarlo */
+@container (max-width: 480px) {
+  .espera-grupo { flex-wrap: wrap; row-gap: 6px; }
+  .espera-datos { flex-basis: calc(100% - 48px); }
+  .espera-tiempo { flex-basis: 100%; align-items: flex-start; text-align: left; padding-left: 48px; }
+}
+.agregar-espera { padding-top: 18px; margin-top: 6px; }
+.agregar-espera h3 { margin-bottom: 12px; }
+.agregar-espera-campos { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr) minmax(0, 1.3fr) auto; gap: 14px; align-items: end; }
+.agregar-espera-campos .boton { height: 42px; }
+.agregar-espera-opcional { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 14px; margin-top: 12px; }
+.asignar-mesa ul { list-style: none; margin: 16px 0 0; padding: 0; }
+.asignar-mesa li { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--borde); align-items: start; }
+.asignar-mesa li > svg { color: var(--tenue); margin-top: 2px; }
+.asignar-mesa li.apagada .asignar-datos strong, .asignar-mesa li.apagada .asignar-datos small { color: var(--tenue); }
+.asignar-mesa li.apagada .insignia { opacity: 0.6; }
+.asignar-datos { display: flex; flex-direction: column; gap: 4px; }
+.asignar-datos strong { font-weight: 500; font-size: 15px; }
+.asignar-datos small { color: var(--gris); font-size: 13px; line-height: 1.4; }
+.asignar-accion { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.asignar-accion > small { font-size: 13px; }
+
+/* ---------- 05a · Mis mesas ---------- */
+.mis-mesas { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
+.mis-mesas.sin-panel { grid-template-columns: minmax(0, 1fr); }
+.rejilla-mis-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.tarjeta-mi-mesa {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  padding: 16px; border: 1px solid var(--borde); border-radius: 12px; background: var(--blanco);
+}
+.tarjeta-mi-mesa header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.tarjeta-mi-mesa.elegida { border: 2px solid var(--morado); padding: 15px; }
+.tarjeta-mi-mesa.ajena { opacity: 0.55; }
+.tarjeta-mi-mesa-texto { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #374151; width: 100%; }
+.tarjeta-mi-mesa-texto p { margin: 0; line-height: 1.4; }
+.tarjeta-mi-mesa-texto p.tenue { color: var(--tenue); }
+.tarjeta-mi-mesa-texto p.aviso { color: var(--tenue); }
+.tarjeta-mi-mesa-texto p.aviso.ambar { color: var(--ambar-tinta); }
+.tarjeta-mi-mesa-texto p.aviso.verde { color: #0E9F5A; font-weight: 500; }
+.tarjeta-mi-mesa-texto p.aviso.morado { color: var(--morado); }
+.tarjeta-mi-mesa .boton { height: 40px; margin-top: auto; }
+.tarjeta-mi-mesa-operaciones { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.tarjeta-mi-mesa-operaciones .enlace { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; white-space: nowrap; }
+
+/* ---------- Tiempo real: lo que acaba de cambiar se ilumina un momento ---------- */
+@keyframes recien { from { background-color: var(--morado-suave); box-shadow: 0 0 0 3px var(--morado-borde); } }
+@keyframes recien-celda { from { background-color: var(--morado-suave); } }
+.recien { animation: recien 1.8s ease-out; }
+.tabla tr.recien { animation: none; }
+.tabla tr.recien td { animation: recien-celda 1.8s ease-out; }
+@media (max-width: 1280px) {
+  .agregar-espera-campos { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 1100px) {
+  .recepcion-rejilla, .recepcion-rejilla.espera, .mis-mesas { grid-template-columns: minmax(0, 1fr); }
+}

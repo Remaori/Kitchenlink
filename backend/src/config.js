@@ -22,6 +22,17 @@ const booleano = (nombre, defecto) => {
   return v === undefined ? defecto : ['1', 'true', 'si', 'sí', 'yes'].includes(v.toLowerCase());
 };
 
+// RELOJ_INICIO=2026-09-22T19:09:00-06:00 · la aplicación arranca a esa hora (ver reloj.js)
+function relojInicial() {
+  const inicio = texto('RELOJ_INICIO');
+  if (!inicio) return null;
+  const ms = Date.parse(inicio);
+  if (!Number.isFinite(ms) || !/[T ]\d{2}:\d{2}/.test(inicio)) {
+    throw new Error(`RELOJ_INICIO debe ser fecha y hora con zona, ej. 2026-09-22T19:09:00-06:00 (vale "${inicio}")`);
+  }
+  return { inicio: ms, corre: booleano('RELOJ_CORRE', true) };
+}
+
 export const config = {
   entorno: texto('NODE_ENV', 'development'),
   puerto: numero('PORT', 3000),
@@ -40,6 +51,8 @@ export const config = {
     password: texto('DB_ADMIN_PASSWORD'),
   },
   zonaHoraria: texto('ZONA_HORARIA', 'America/Mexico_City'),
+  // Reloj de la aplicación: null = hora real
+  reloj: relojInicial(),
   jwtSecreto: texto('JWT_SECRET'),
   sesionHoras: numero('SESION_HORAS', 12),
   cookieSegura: booleano('COOKIE_SECURE', false),

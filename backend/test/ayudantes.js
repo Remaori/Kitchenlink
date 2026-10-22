@@ -6,6 +6,7 @@ import { pool } from '../src/db.js';
 import { crearApp } from '../src/app.js';
 import { instalarBase } from '../scripts/lib/instalador.js';
 import { reiniciarTodo } from '../src/seguridad/limitador.js';
+import { fijarReloj } from '../src/reloj.js';
 
 export const DEMO = 'Kitchen2026';
 export const TEMPORAL = 'Temporal2026';
@@ -46,9 +47,16 @@ export async function activar(usuario, temporal, nueva = 'Nueva2026x') {
   return { agente, sesion: c.body };
 }
 
+/**
+ * La aplicación a la hora de las pantallas (martes 22 de septiembre, 19:09),
+ * detenida, para que los minutos coincidan con el diseño. `hora` la mueve.
+ */
+export const relojDePantallas = (hora = '19:09') => fijarReloj(`2026-09-22T${hora}:00-06:00`);
+
 export const idDe = async (nombreUsuario) => (await bd('SELECT id FROM usuario WHERE nombre_usuario = $1', [nombreUsuario]))[0].id;
 export const mesaId = async (numero) => (await bd('SELECT id FROM mesa WHERE numero = $1', [numero]))[0].id;
 export const productoId = async (nombre) => (await bd('SELECT id FROM producto WHERE nombre = $1', [nombre]))[0].id;
+export const comandaId = async (folio) => (await bd('SELECT id FROM comanda WHERE folio = $1', [folio]))[0].id;
 export const rolId = async (nombre) => (await bd('SELECT id FROM rol WHERE nombre = $1', [nombre]))[0].id;
 export const ultimaBitacora = async (entidad, id) =>
   (await bd(`SELECT b.accion, b.detalle, u.nombre_usuario AS por FROM bitacora b LEFT JOIN usuario u ON u.id = b.usuario_id

@@ -9,9 +9,25 @@ import * as Ic from './Iconos.jsx';
 
 // `ruta` = módulo ya construido; los demás se muestran como "pronto".
 // `nombre` puede depender de los permisos (el mesero ve "Menú"; cocina, "Productos 86").
+// `ver(tiene)`, si está, decide en lugar de `permisos` (el mesero ve "Mis mesas" y no "Mesas").
 const MODULOS = [
-  { nombre: 'Mesas', icono: Ic.IconoMesa, permisos: ['mesa.ver', 'mesa.administrar'], ruta: () => '/mesas', activo: (r) => r === '/mesas' },
-  { nombre: 'Reservaciones', icono: Ic.IconoCalendario, permisos: ['reservacion.gestionar'] },
+  {
+    nombre: 'Reservaciones', icono: Ic.IconoCalendario, permisos: ['reservacion.gestionar'],
+    ruta: () => '/reservaciones', activo: (r) => r === '/reservaciones',
+  },
+  {
+    nombre: 'Lista de espera', icono: Ic.IconoArena, permisos: ['reservacion.gestionar'],
+    ruta: () => '/lista-espera', activo: (r) => r === '/lista-espera',
+  },
+  // Quien administra o solo consulta el salón ve 04 · Mesas; quien atiende mesas, 05a · Mis mesas
+  {
+    nombre: 'Mesas', icono: Ic.IconoMesa, permisos: ['mesa.ver', 'mesa.administrar'],
+    ver: (t) => t('mesa.administrar') || (t('mesa.ver') && !t('comanda.abrir')), ruta: () => '/mesas', activo: (r) => r === '/mesas',
+  },
+  {
+    nombre: 'Mis mesas', icono: Ic.IconoMesa, permisos: ['comanda.abrir'],
+    ver: (t) => t('comanda.abrir') && !t('mesa.administrar'), ruta: () => '/mis-mesas', activo: (r) => r === '/mis-mesas',
+  },
   { nombre: 'Comandas', icono: Ic.IconoLista, permisos: ['comanda.abrir'] },
   { nombre: 'Cocina y barra', icono: Ic.IconoCocina, permisos: ['produccion.ver'] },
   { nombre: 'Cobro', icono: Ic.IconoRecibo, permisos: ['pago.registrar', 'ticket.pre_ticket'] },
@@ -34,7 +50,7 @@ export default function Marco() {
   const navegar = useNavigate();
   const { pathname } = useLocation();
   const { usuario } = datos;
-  const modulos = MODULOS.filter((m) => m.permisos.some(tienePermiso));
+  const modulos = MODULOS.filter((m) => (m.ver ? m.ver(tienePermiso) : m.permisos.some(tienePermiso)));
 
   // Al cambiar de pantalla se releen los permisos: así el menú refleja los
   // cambios que el gerente haga en 02c sin tener que volver a entrar.
