@@ -12,7 +12,7 @@ npm run reporte --prefix e2e         # el reporte de la última corrida, con cap
 
 | Archivo | Recorrido |
 |---|---|
-| `01-sesion.spec.js` | Entrar con usuario y contraseña; contraseña equivocada; un mesero sin «Usuarios y roles» ve «Sin acceso»; cerrar sesión |
+| `01-sesion.spec.js` | Entrar con usuario y contraseña; contraseña equivocada; un mesero sin «Usuarios y roles» ve «Sin acceso»; cerrar sesión; si la cookie venció, la siguiente acción regresa al inicio de sesión |
 | `02-usuarios.spec.js` | El gerente da de alta a una mesera (02b); ella entra con su temporal, crea su contraseña (01b) y queda Activa |
 
 ## Pruebas de validación (con la ventana visible)

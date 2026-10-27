@@ -75,10 +75,10 @@ export function revisor() {
       return n;
     },
 
-    // Nombre de una persona (cliente de una reservación o de la lista de espera): letras,
+    // Nombre de una persona (usuario, cliente de una reservación o de la lista de espera): letras,
     // espacios, punto, apóstrofo y guion; al menos 2 letras. "12345" o "@@" no son nombres.
-    nombre(campo, valor, { etiqueta, obligatorio = false, max = 120 }) {
-      const t = this.texto(campo, valor, { etiqueta, obligatorio, max });
+    nombre(campo, valor, { etiqueta, obligatorio = false, min, max = 120 }) {
+      const t = this.texto(campo, valor, { etiqueta, obligatorio, min, max });
       if (t && (!/^[\p{L}][\p{L}\p{M} .'-]*$/u.test(t) || (t.match(/\p{L}/gu) ?? []).length < 2)) {
         this.error(campo, `${etiqueta}: usa solo letras (sin números ni símbolos).`);
       }

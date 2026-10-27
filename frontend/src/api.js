@@ -35,7 +35,8 @@ async function pedir(metodo, ruta, cuerpo) {
     if (!datos && r.status >= 500) {
       throw new ErrorApi(r.status, { codigo: 'SIN_API', mensaje: 'El servidor de KitchenLink no responde. Avisa al gerente.' });
     }
-    if (r.status === 401 && datos?.codigo === 'SESION_TERMINADA' && alTerminarSesion) alTerminarSesion(datos.mensaje);
+    // SIN_SESION: la cookie venció (SESION_HORAS) y el navegador ya no la manda
+    if (r.status === 401 && ['SESION_TERMINADA', 'SIN_SESION'].includes(datos?.codigo) && alTerminarSesion) alTerminarSesion(datos.mensaje, datos.codigo);
     throw new ErrorApi(r.status, datos);
   }
   return datos;

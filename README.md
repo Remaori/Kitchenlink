@@ -123,6 +123,7 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 | `npm run build` | Compila la aplicación para Nginx (`frontend/dist`) |
 | `npm run db:instalar [-- --recrear \| --sin-demo]` | Crea o actualiza la base |
 | `npm run db:conectividad [-- --api URL]` | Verifica la conexión API ↔ PostgreSQL y genera un reporte |
+| `npm run db:respaldar [-- <carpeta>]` | Copia completa de la base con `pg_dump` (restaurar: [guía](docs/GUIA_ENTORNO.md), 8.4) |
 | `npm run usuario:gerente -- <usuario> "<Nombre>"` | Primer gerente de una base vacía |
 | `npm run usuario:restablecer -- <usuario>` | Contraseña temporal nueva desde el servidor |
 

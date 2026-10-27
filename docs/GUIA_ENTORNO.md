@@ -243,7 +243,8 @@ En la laptop servidor:
    $env:NODE_ENV='production'; $env:COOKIE_SECURE='true'; npm start -w backend
    ```
    Debe decir `entorno: production` y `Base de datos: kitchenlink como kitchenlink_app ✓`.
-   - `COOKIE_SECURE=true`: la cookie de sesión solo viaja por HTTPS.
+   - `COOKIE_SECURE=true`: la cookie de sesión solo viaja por HTTPS. Con `NODE_ENV=production` ya es
+     así aunque se olvide, salvo que `backend/.env` diga `COOKIE_SECURE=false`.
    - `NODE_ENV=production`: los errores no muestran detalles internos.
    - Esas variables solo valen en esa ventana y tienen prioridad sobre `backend/.env`, así que
      **no hay que editar el `.env`**. Para volver a programar con `npm run dev`, usa otra terminal.
@@ -285,6 +286,32 @@ y `Ctrl+C` en la terminal de la API. Nginx **no** se detiene al cerrar la termin
 plano hasta `.\nginx -s stop` o hasta reiniciar la laptop, y mientras corre cualquier equipo de la
 misma red puede abrir la pantalla de inicio de sesión. Tampoco arranca solo al encender la laptop.
 Después de editar `nginx.conf` con Nginx corriendo: `.\nginx -s reload`.
+
+### 8.4 Respaldo de la base
+
+`npm run db:respaldar` guarda una copia completa de la base (esquema, datos, permisos y hashes de las
+contraseñas) en `backend/respaldos/kitchenlink_AAAA-MM-DD_HHMMSS.dump`. Para guardarla en el disco
+externo: `npm run db:respaldar -- E:\respaldos`. Usa `DB_ADMIN_PASSWORD` de `backend/.env` y encuentra
+solo el `pg_dump` de PostgreSQL. Los respaldos no se suben al repositorio (`.gitignore`).
+
+**Cada noche, sin hacer nada** (Programador de tareas de Windows; una sola vez en la laptop servidor,
+con la ruta de tu carpeta del repo):
+
+```powershell
+schtasks /Create /TN "KitchenLink respaldo" /SC DAILY /ST 23:30 /TR "cmd /c cd /d C:\ruta\kitchenlink && npm run db:respaldar -- E:\respaldos"
+```
+
+Corre si la laptop está encendida con la sesión iniciada. No borra los respaldos viejos (cada uno pesa
+unos cientos de KB).
+
+**Restaurar**, con la API detenida:
+
+1. En una laptop nueva, primero `npm run db:instalar` (crea la base y el rol de la aplicación).
+2. Reemplaza el contenido con la copia:
+   ```powershell
+   & "C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" -U postgres --clean --if-exists -d kitchenlink E:\respaldos\kitchenlink_AAAA-MM-DD_HHMMSS.dump
+   ```
+3. `npm run db:conectividad` para comprobar.
 
 ### Problemas con Nginx
 

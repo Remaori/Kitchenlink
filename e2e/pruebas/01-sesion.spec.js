@@ -40,4 +40,15 @@ test.describe('01 · Iniciar sesión', () => {
     await expect(page).toHaveURL(/\/iniciar-sesion$/);
     expect((await page.request.get('/api/auth/sesion')).status()).toBe(401);
   });
+
+  test('si la cookie venció, la siguiente acción regresa al inicio de sesión con el aviso', async ({ page }) => {
+    await entrarComo(page, 'lsaenz');
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Hola, Luis' })).toBeVisible();
+    // Lo que hace el navegador cuando pasan las SESION_HORAS: ya no manda la cookie
+    await page.context().clearCookies();
+    await page.getByRole('link', { name: 'Usuarios y roles' }).click();
+    await expect(page).toHaveURL(/\/iniciar-sesion$/);
+    await expect(page.getByText('Inicia sesión para continuar.')).toBeVisible();
+  });
 });

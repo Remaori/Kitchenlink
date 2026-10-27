@@ -59,12 +59,11 @@ async function leerParaCambiar(c, id) {
 function revisarDatos(cuerpo, { nuevo }) {
   const v = revisor();
   const d = {
-    nombre_completo: v.texto('nombre_completo', cuerpo.nombre_completo, { etiqueta: 'El nombre completo', obligatorio: true, min: 3, max: 120 }),
-    telefono: v.texto('telefono', cuerpo.telefono, { etiqueta: 'El teléfono', max: 20 }),
+    nombre_completo: v.nombre('nombre_completo', cuerpo.nombre_completo, { etiqueta: 'El nombre completo', obligatorio: true, min: 3, max: 120 }),
+    telefono: v.telefono('telefono', cuerpo.telefono),
     correo: v.texto('correo', cuerpo.correo, { etiqueta: 'El correo', max: 120 })?.toLowerCase() ?? null,
     rol_id: Number(cuerpo.rol_id),
   };
-  if (d.telefono && !/^[0-9 +()-]{7,20}$/.test(d.telefono)) v.error('telefono', 'Usa solo números, espacios y + ( ) -.');
   if (d.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.correo)) v.error('correo', 'El correo no tiene un formato válido.');
   if (!Number.isSafeInteger(d.rol_id) || d.rol_id <= 0) v.error('rol_id', 'Elige un rol.');
 

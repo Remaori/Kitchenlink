@@ -15,6 +15,7 @@
     "env:crear": "node scripts/crear-env.js",
     "db:instalar": "node scripts/instalar-bd.js",
     "db:conectividad": "node scripts/conectividad.js",
+    "db:respaldar": "node scripts/respaldar.js",
     "usuario:gerente": "node scripts/usuarios.js crear-gerente",
     "usuario:restablecer": "node scripts/usuarios.js restablecer"
   },

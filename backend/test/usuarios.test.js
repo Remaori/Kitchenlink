@@ -86,6 +86,13 @@ describe('02b · Nuevo usuario', () => {
       ['contrasena_temporal', 'correo', 'nombre_completo', 'nombre_usuario', 'rol_id', 'telefono']);
     const x = await alta({ nombre_completo: 'Rol Fantasma', nombre_usuario: 'fantasma', rol_id: 999999, contrasena_temporal: await temporal() }).expect(400);
     assert.equal(x.body.campos.rol_id, 'Ese rol no existe.');
+    // Las mismas reglas que en recepción: "123" no es un nombre y "+++++++" no es un teléfono
+    const y = await alta({ nombre_completo: '123', telefono: '+++++++', nombre_usuario: 'raro', rol_id: await rolId('Mesero'),
+      contrasena_temporal: await temporal() }).expect(400);
+    assert.deepEqual(y.body.campos, {
+      nombre_completo: 'El nombre completo: usa solo letras (sin números ni símbolos).',
+      telefono: 'El teléfono: 10 dígitos (ej. 55 1234 5678).',
+    });
   });
 });
 

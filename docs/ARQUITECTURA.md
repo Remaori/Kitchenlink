@@ -140,5 +140,6 @@ Piezas de la arquitectura que todavía no forman parte de esta versión:
 
 - **Tiempo real:** avisos instantáneos a cocina, barra y meseros. Nginx ya reserva la ruta `/socket.io/`.
 - **Impresión:** tickets, pre-tickets y cortes en la impresora térmica de caja (ESC/POS).
-- **Respaldo:** copia nocturna de la base (`pg_dump`) en un disco externo y en la nube. La nube solo guarda
-  respaldos y no participa en la operación.
+- **Respaldo en la nube:** subir la copia nocturna a la nube, que solo guarda respaldos y no participa en la
+  operación. La copia local ya existe: `npm run db:respaldar` (`pg_dump`) a un disco externo, programada
+  cada noche (ver [GUIA_ENTORNO.md](GUIA_ENTORNO.md), 8.4).

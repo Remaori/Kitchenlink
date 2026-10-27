@@ -9,7 +9,9 @@ export function ProveedorSesion({ children }) {
   const [estado, setEstado] = useState({ cargando: true, datos: null, aviso: null });
 
   useEffect(() => {
-    cuandoTermineLaSesion((mensaje) => setEstado({ cargando: false, datos: null, aviso: mensaje }));
+    // SIN_SESION al abrir la app sin haber entrado: no hay nada que avisar
+    cuandoTermineLaSesion((mensaje, codigo) => setEstado((e) => (
+      codigo === 'SIN_SESION' && !e.datos ? e : { cargando: false, datos: null, aviso: mensaje })));
     api.get('/auth/sesion')
       .then((datos) => setEstado({ cargando: false, datos, aviso: null }))
       .catch(() => setEstado((e) => ({ cargando: false, datos: null, aviso: e.aviso }))); // conserva "Tu sesión terminó…"

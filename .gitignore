@@ -10,6 +10,10 @@ frontend/dist/
 # Reportes generados en cada equipo (copia a docs/evidencias/ los que quieras entregar)
 backend/reportes/
 
+# Respaldos de la base (npm run db:respaldar): traen hashes de contraseñas y datos de clientes
+backend/respaldos/
+*.dump
+
 # Pruebas de pantalla: reportes, capturas y resultados de cada corrida
 e2e/reporte/
 e2e/resultados/

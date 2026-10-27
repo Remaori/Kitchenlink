@@ -55,7 +55,8 @@ export const config = {
   reloj: relojInicial(),
   jwtSecreto: texto('JWT_SECRET'),
   sesionHoras: numero('SESION_HORAS', 12),
-  cookieSegura: booleano('COOKIE_SECURE', false),
+  // En producción la app va por HTTPS (Nginx): sin Secure, la cookie viajaría en claro por el puerto 80
+  cookieSegura: booleano('COOKIE_SECURE', process.env.NODE_ENV === 'production'),
   bcryptCosto: numero('BCRYPT_COSTO', 12),
   intentos: {
     maxPorUsuario: numero('INTENTOS_MAX', 5),

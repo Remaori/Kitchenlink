@@ -22,6 +22,7 @@
     "env:crear": "npm run env:crear -w backend",
     "db:instalar": "npm run db:instalar -w backend --",
     "db:conectividad": "npm run db:conectividad -w backend --",
+    "db:respaldar": "npm run db:respaldar -w backend --",
     "usuario:gerente": "npm run usuario:gerente -w backend --",
     "usuario:restablecer": "npm run usuario:restablecer -w backend --"
   }

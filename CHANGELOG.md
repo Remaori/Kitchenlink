@@ -36,6 +36,9 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
   guarda una captura de cada uno. Los resultados del menú, las mesas, la recepción y las operaciones de mesas,
   con sus capturas, están en `docs/PRUEBAS_DE_VALIDACION.md`.
 - Diagrama entidad-relación actualizado (20 tablas y 35 relaciones).
+- **Respaldo de la base** (`npm run db:respaldar`): copia completa con `pg_dump` en `backend/respaldos/` o en
+  la carpeta que se indique (el disco externo). Cómo programarla cada noche y cómo restaurar:
+  `docs/GUIA_ENTORNO.md`, sección 8.4.
 
 ### Cambiado
 
@@ -65,6 +68,11 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 - **Límite de intentos:** muchos intentos de inicio de sesión al mismo tiempo pasaban todos antes de que el
   límite los contara.
 - Un bloqueo mutuo en la base ahora se explica ("Vuelve a intentarlo") en lugar de un error del servidor.
+- Cuando la sesión vencía (a las 12 h), la pantalla seguía abierta y cada botón fallaba con "Inicia sesión
+  para continuar.". Ahora regresa al inicio de sesión con ese aviso.
+- El alta y la edición de usuarios aceptaban "123" como nombre y "+++++++" como teléfono. Ahora siguen las
+  mismas reglas que recepción: solo letras, y 10 dígitos guardados como "55 1234 5678".
+- Con `NODE_ENV=production`, la cookie de sesión solo viaja por HTTPS aunque falte `COOKIE_SECURE=true`.
 
 ## [0.2.0] · 2026-10-14
 
