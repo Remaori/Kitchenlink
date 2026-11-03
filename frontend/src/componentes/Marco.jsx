@@ -28,8 +28,12 @@ const MODULOS = [
     nombre: 'Mis mesas', icono: Ic.IconoMesa, permisos: ['comanda.abrir'],
     ver: (t) => t('comanda.abrir') && !t('mesa.administrar'), ruta: () => '/mis-mesas', activo: (r) => r === '/mis-mesas',
   },
-  { nombre: 'Comandas', icono: Ic.IconoLista, permisos: ['comanda.abrir'] },
-  { nombre: 'Cocina y barra', icono: Ic.IconoCocina, permisos: ['produccion.ver'] },
+  {
+    nombre: 'Comandas', icono: Ic.IconoLista, permisos: ['comanda.abrir'],
+    ruta: () => '/comandas', activo: (r) => /^\/comandas(\/|$)/.test(r),
+  },
+  { nombre: 'Panel de cocina', icono: Ic.IconoCocina, permisos: ['produccion.ver'], ruta: () => '/cocina', activo: (r) => r === '/cocina' },
+  { nombre: 'Barra', icono: Ic.IconoVaso, permisos: ['produccion.ver'], ruta: () => '/barra', activo: (r) => r === '/barra' },
   { nombre: 'Cobro', icono: Ic.IconoRecibo, permisos: ['pago.registrar', 'ticket.pre_ticket'] },
   { nombre: 'Cortes de caja', icono: Ic.IconoCaja, permisos: ['caja.corte'] },
   {

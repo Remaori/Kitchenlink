@@ -9,6 +9,9 @@ import Roles from './paginas/roles/Roles.jsx';
 import Menu from './paginas/menu/Menu.jsx';
 import Mesas from './paginas/mesas/Mesas.jsx';
 import MisMesas from './paginas/mesas/MisMesas.jsx';
+import Comandas from './paginas/comandas/Comandas.jsx';
+import Comanda from './paginas/comandas/Comanda.jsx';
+import Panel from './paginas/produccion/Panel.jsx';
 import Reservaciones from './paginas/recepcion/Reservaciones.jsx';
 import ListaEspera from './paginas/recepcion/ListaEspera.jsx';
 import Marco, { ConPermiso } from './componentes/Marco.jsx';
@@ -52,11 +55,17 @@ export default function App() {
         <Route path="menu" element={<ConPermiso alguno={['menu.administrar', 'menu.asignar_86', 'comanda.abrir', 'produccion.ver']}><Menu /></ConPermiso>} />
         {/* 04 · Mesas (Crear mesa) */}
         <Route path="mesas" element={<ConPermiso alguno={['mesa.ver', 'mesa.administrar', 'reservacion.gestionar']}><Mesas /></ConPermiso>} />
-        {/* 05a · Mis mesas (operaciones de mesas: cambiar mesa o personas) */}
+        {/* 05a · Mis mesas (abrir comanda y operaciones de mesas) */}
         <Route path="mis-mesas" element={<ConPermiso alguno={['comanda.abrir']}><MisMesas /></ConPermiso>} />
         {/* 03a · Reservaciones y 03b · Lista de espera */}
         <Route path="reservaciones" element={<ConPermiso alguno={['reservacion.gestionar']}><Reservaciones /></ConPermiso>} />
         <Route path="lista-espera" element={<ConPermiso alguno={['reservacion.gestionar']}><ListaEspera /></ConPermiso>} />
+        {/* 05b · Comanda y la lista de comandas */}
+        <Route path="comandas" element={<ConPermiso alguno={['comanda.abrir']}><Comandas /></ConPermiso>} />
+        <Route path="comandas/:id" element={<ConPermiso alguno={['comanda.abrir', 'reporte.ver']}><Comanda /></ConPermiso>} />
+        {/* 06 · Panel de cocina y barra */}
+        <Route path="cocina" element={<ConPermiso alguno={['produccion.ver']}><Panel key="cocina" destino="cocina" /></ConPermiso>} />
+        <Route path="barra" element={<ConPermiso alguno={['produccion.ver']}><Panel key="barra" destino="barra" /></ConPermiso>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

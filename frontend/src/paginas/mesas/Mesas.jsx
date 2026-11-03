@@ -1,7 +1,8 @@
 // 04 · Mesas (gerente, hostess, caja): las mesas del salón con su capacidad
 // y su zona. «Crear mesa», editar, dar de baja y bloquear o desbloquear (con
-// motivo): «Crear y bloquear mesas».
+// motivo): «Crear y bloquear mesas». El gerente también abre o ve la comanda de una mesa.
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../api.js';
 import { useSesion } from '../../sesion/ContextoSesion.jsx';
 import { contar, sinAcentos } from '../../formato.js';
@@ -12,6 +13,7 @@ import { Entrada } from '../../componentes/Formulario.jsx';
 import { Dialogo } from '../../componentes/Dialogo.jsx';
 import * as Ic from '../../componentes/Iconos.jsx';
 import { useAccion, useFormulario } from '../../usos.js';
+import { AbrirComanda } from '../comandas/AbrirComanda.jsx';
 
 export default function Mesas() {
   const { tienePermiso } = useSesion();
@@ -171,16 +173,26 @@ function DialogoMesa({ mesa, zonas, alCerrar, alTerminar }) {
   );
 }
 
-/** Una tarjeta: editar la mesa y bloquearla (si está libre) o desbloquearla */
+/** Una tarjeta: su comanda, editar la mesa y bloquearla (si está libre) o desbloquearla */
 function DialogoDetalle({ mesa: m, alEditar, alCerrar, alTerminar }) {
+  const { tienePermiso } = useSesion();
   const accion = useAccion(alTerminar);
   const [motivo, setMotivo] = useState('');
+  const [abrir, setAbrir] = useState(false);
+  const comandas = tienePermiso('comanda.abrir');
+  if (abrir) return <AbrirComanda mesa={m} alCerrar={alCerrar} />;
   return (
     <Dialogo titulo={`Mesa ${m.numero} · ${contar(m.capacidad, 'lugar', 'lugares')}`} alCerrar={alCerrar} ancho={520}
       acciones={<>
         <button className="boton boton-secundario" onClick={alEditar}><Ic.IconoLapiz width={16} height={16} />Editar mesa</button>
         <button className="boton boton-primario compacto" onClick={alCerrar} data-foco>Listo</button>
       </>}>
+      {comandas && m.comanda_id && (
+        <Link className="boton boton-secundario ancho" to={`/comandas/${m.comanda_id}`}><Ic.IconoLista width={16} height={16} />Ver comanda {m.folio}</Link>
+      )}
+      {comandas && ['libre', 'por_atender'].includes(m.estado) && (
+        <button className="boton boton-suave ancho" onClick={() => setAbrir(true)}><Ic.IconoMas width={16} height={16} />Abrir comanda</button>
+      )}
       {m.estado === 'libre' && (
         <form className="bloqueo" onSubmit={(e) => {
           e.preventDefault();

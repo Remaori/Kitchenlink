@@ -138,7 +138,8 @@ herramientas según la regla:
 
 Piezas de la arquitectura que todavía no forman parte de esta versión:
 
-- **Tiempo real:** avisos instantáneos a cocina, barra y meseros. Nginx ya reserva la ruta `/socket.io/`.
+- **Tiempo real:** avisos instantáneos a cocina, barra y meseros. Mientras tanto, esas pantallas se refrescan
+  solas cada 5 s. Nginx ya reserva la ruta `/socket.io/`.
 - **Impresión:** tickets, pre-tickets y cortes en la impresora térmica de caja (ESC/POS).
 - **Respaldo en la nube:** subir la copia nocturna a la nube, que solo guarda respaldos y no participa en la
   operación. La copia local ya existe: `npm run db:respaldar` (`pg_dump`) a un disco externo, programada

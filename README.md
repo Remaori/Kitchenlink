@@ -39,9 +39,19 @@ internet.
   no llega dentro de la tolerancia, pasa solo a "No se presentó" y la mesa se libera.
 - **Lista de espera:** en orden de llegada, con lo que lleva esperando cada grupo y el estimado; al asignar
   mesa, la reservación tiene prioridad y la mesa debe ser de su tamaño.
-- **Mis mesas (mesero):** sus mesas primero; cambia su comanda de mesa (a una libre donde quepan) o ajusta
-  las personas.
+- **Mis mesas (mesero):** sus mesas primero; abre o continúa la comanda de cada mesa, la cambia de mesa (a una
+  libre donde quepan) o ajusta las personas, y ve cuántos platillos tiene listos por entregar.
 - Los cambios del menú y de las mesas quedan en la bitácora con quién los hizo.
+
+**Comandas, cocina y barra**
+
+- **Comandas:** el mesero captura por tiempos (1er, 2º, 3er) y con nota; lo capturado queda "Sin enviar" hasta
+  que lo envía, y si la mesa pide más se hace un envío nuevo. El precio se congela al capturar. Entrega lo que
+  está listo y pide la cuenta. Transferir la comanda a otro mesero y cancelar un producto o la comanda (con
+  motivo y autorización del gerente) quedan registrados.
+- **Panel de cocina y de barra:** cada envío es una tarjeta que avanza de Por preparar a En preparación y a
+  Listo; la categoría decide si va a cocina o a barra. La nota de mesa (alergias) sale en rojo, el tiempo cambia
+  de color y los envíos nuevos se marcan y suenan.
 
 **Modelo de datos**
 
@@ -119,7 +129,7 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 | `npm run dev:red` | Igual, y la aplicación se abre desde otros equipos de la red local |
 | `npm test` | Pruebas automáticas (usan la base `kitchenlink_pruebas`) |
 | `npm run e2e:validacion` | Pruebas de validación en Microsoft Edge, con una captura por caso |
-| `npm run e2e` | Pruebas de pantalla (inicio de sesión y alta de usuarios) |
+| `npm run e2e` | Pruebas de pantalla (inicio de sesión, alta de usuarios y una mesa de mesero a cocina) |
 | `npm run build` | Compila la aplicación para Nginx (`frontend/dist`) |
 | `npm run db:instalar [-- --recrear \| --sin-demo]` | Crea o actualiza la base |
 | `npm run db:conectividad [-- --api URL]` | Verifica la conexión API ↔ PostgreSQL y genera un reporte |
@@ -129,9 +139,10 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 
 ## Pruebas
 
-- `npm test`: 123 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
+- `npm test`: 149 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
   permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú, las mesas, las
-  reservaciones y la lista de espera, incluidas peticiones que llegan al mismo tiempo.
+  reservaciones y la lista de espera, las comandas y el panel de cocina y barra, incluidas peticiones que
+  llegan al mismo tiempo.
 - `npm run db:conectividad`: 24 verificaciones de la conexión entre la API y PostgreSQL.
 - `npm run e2e:validacion`: las pruebas de validación en pantalla. Microsoft Edge recorre solo 37 casos como
   una persona (escribe, hace clic y espera el texto exacto del diseño) y guarda una captura por caso. Detalles
@@ -148,8 +159,8 @@ kitchenlink/
 │   ├── src/
 │   │   ├── seguridad/  inicio de sesión, sesiones, contraseñas, permisos, roles y usuarios
 │   │   ├── rutas/      /api/salud, /api/usuarios, /api/roles, /api/menu, /api/mesas, /api/reservaciones,
-│   │   │               /api/lista-espera, /api/comandas (cambiar mesa o personas)
-│   │   ├── servicios/  reglas del menú, las mesas y la recepción
+│   │   │               /api/lista-espera, /api/comandas, /api/produccion
+│   │   ├── servicios/  reglas del menú, las mesas, la recepción, las comandas y cocina y barra
 │   │   ├── app.js      aplicación Express
 │   │   ├── db.js       conexión a PostgreSQL y transacciones con el usuario que opera
 │   │   └── server.js   punto de entrada
@@ -174,6 +185,7 @@ kitchenlink/
 - [Menú y productos](docs/MENU.md): categorías, productos y 86
 - [Mesas](docs/MESAS.md): crear, editar, bloquear y dar de baja mesas; Mis mesas
 - [Recepción](docs/RECEPCION.md): reservaciones y lista de espera
+- [Comandas](docs/COMANDAS.md): abrir, capturar y enviar comandas; panel de cocina y barra
 - [Pruebas de validación](docs/PRUEBAS_DE_VALIDACION.md): menú, mesas, recepción y operaciones, con capturas
 - [Diagrama entidad-relación](docs/erd/)
 - [Cambios por versión](CHANGELOG.md) · [Cómo contribuir](CONTRIBUTING.md)

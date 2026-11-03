@@ -46,6 +46,21 @@ export async function mapa({ conBajas = false } = {}) {
   return { mesas, ...(bajas ? { dadas_de_baja: bajas } : {}) };
 }
 
+/** Una mesa con las comandas que ya tuvo hoy ("Comandas de hoy en esta mesa", 05a) */
+export async function detalle(id) {
+  const { rows: [mesa] } = await consulta(`${SQL_MAPA} WHERE v.id = $1`, [id]);
+  if (!mesa) throw noExiste('esa mesa');
+  const { rows: comandas } = await consulta(
+    `SELECT c.id, c.folio, c.estado::text AS estado, fn_etiqueta('estado_comanda', c.estado::text) AS estado_etiqueta,
+            c.abierta_en, COALESCE(c.cerrada_en, c.cancelada_en) AS terminada_en, c.numero_personas,
+            fn_total_comanda(c.id) AS total, u.nombre_completo AS mesero
+     FROM comanda c JOIN usuario u ON u.id = c.mesero_usuario_id
+     WHERE c.mesa_id = $1 AND c.estado IN ('cerrada','cancelada')
+       AND date_trunc('day', c.abierta_en) = date_trunc('day', fn_ahora())
+     ORDER BY c.abierta_en`, [id]);
+  return { ...mesa, comandas_de_hoy: comandas };
+}
+
 // ------------------------------------------------------- Crear y editar mesa
 
 // El número de mesa es un entero del 1 al 999, sin letras ni signos ("T1", "-3", "+5" o

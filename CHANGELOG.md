@@ -26,12 +26,19 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
   reservaciones y el tamaño de la mesa.
 - **Operaciones de mesas:** bloquear y desbloquear con motivo; en "Mis mesas" el mesero cambia su comanda de
   mesa o de personas.
+- **Comandas:** abrir la comanda de una mesa (el mesero, o el gerente a nombre de alguien), capturar por tiempos
+  y con nota, enviar a cocina y barra (cada envío nuevo es un pedido adicional), entregar lo que está listo y
+  pedir la cuenta. Transferir la comanda y cancelar un producto o la comanda con motivo y autorización del
+  gerente.
+- **Panel de cocina y de barra:** tarjetas por envío en Por preparar, En preparación y Listo, con la nota de
+  mesa, los minutos y un aviso cuando llega un envío nuevo. El mesero ve en Mis mesas lo que tiene listo por
+  entregar. Las pantallas de comanda, cocina y Mis mesas se refrescan solas cada 5 s.
 - Los nombres de clientes solo aceptan letras, el teléfono pide 10 dígitos y se guarda con un solo formato, y
   una fecha que no existe se rechaza.
 - **Hora de la aplicación:** la da el servidor en cada respuesta, para que los minutos de espera y las
   tolerancias se vean igual en todas las tablets.
-- **Pruebas automáticas:** pasan de 71 a 123, incluidas peticiones al mismo tiempo en el menú, las mesas y la
-  recepción.
+- **Pruebas automáticas:** pasan de 71 a 149, incluidas peticiones al mismo tiempo en el menú, las mesas, la
+  recepción y las comandas.
 - **Pruebas de validación en pantalla** (`npm run e2e:validacion`): Microsoft Edge recorre solo 37 casos y
   guarda una captura de cada uno. Los resultados del menú, las mesas, la recepción y las operaciones de mesas,
   con sus capturas, están en `docs/PRUEBAS_DE_VALIDACION.md`.

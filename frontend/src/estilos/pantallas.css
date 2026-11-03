@@ -1,11 +1,18 @@
-/* KitchenLink · pantallas de operación: 03a, 03b, 04 y 05a.
+/* KitchenLink · pantallas de operación: 03a, 03b, 04, 05a, 05b y 06.
    Usa los colores y medidas de app.css (tomados del diseño en Figma). */
 
 /* ---------- Piezas comunes de operación ---------- */
 .boton.ancho { width: 100%; }
+.boton-morado { background: var(--morado); color: var(--blanco); }
+.boton-morado:hover:not(:disabled) { background: var(--morado-hover); }
+.boton-verde { background: var(--verde-suave); color: #0E9F5A; font-weight: 500; }
+.boton-verde:hover:not(:disabled) { background: #D5F2E4; }
 .boton:disabled { cursor: not-allowed; opacity: 0.6; }
 .enlace.peligro { color: var(--rojo-tinta); }
+.enlace.centrado { display: block; margin: 14px auto 0; font-size: 13.5px; }
+.texto-ok { color: #0E9F5A; }
 .insignia { white-space: nowrap; }
+.insignia.grande { font-size: 13.5px; padding: 7px 14px; }
 .insignia.chica { font-size: 11px; padding: 1px 8px; margin-left: 8px; vertical-align: middle; }
 .tarjeta h2 { font-size: 16px; font-weight: 600; margin: 0; }
 .tarjeta h3 { font-size: 14.5px; font-weight: 600; margin: 0; }
@@ -17,13 +24,23 @@
 .area-texto:focus { border-color: var(--morado); box-shadow: 0 0 0 3px var(--morado-suave); }
 .area-texto::placeholder { color: var(--tenue); }
 .agenda-vacia { padding: 18px 4px; color: var(--tenue); font-size: 13.5px; list-style: none; }
+.panel-lateral { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 16px; }
+.panel-lateral > h2 + .tarjeta-sub { margin-top: -12px; }
 .contador { display: inline-flex; align-items: center; gap: 16px; }
 .contador > span { font-size: 18px; font-weight: 600; min-width: 112px; text-align: center; }
 .contador-boton {
   width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--borde); background: var(--blanco);
   color: var(--gris); display: grid; place-items: center; cursor: pointer;
 }
+.contador-boton.mas { background: var(--morado-suave); border-color: var(--morado-suave); color: var(--morado); }
 .contador-boton:disabled { opacity: 0.4; cursor: not-allowed; }
+.caja-gris, .caja-morada { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; font-size: 14.5px; }
+.caja-gris { background: var(--superficie); }
+.caja-gris .enlace { margin-left: auto; }
+.caja-morada { background: var(--morado-suave); }
+.caja-morada strong { display: block; font-weight: 500; }
+.caja-morada small { display: block; color: var(--morado); font-size: 13px; margin-top: 2px; }
+.avatar.blanco { background: var(--blanco); width: 36px; height: 36px; font-size: 12px; }
 .selector-fecha { position: relative; overflow: hidden; cursor: pointer; }
 .selector-fecha input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
 .selector-fecha input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
@@ -46,6 +63,12 @@
 .opciones-mesa button small { color: var(--tenue); font-size: 12px; }
 .opciones-mesa button.elegida { border-color: var(--morado); background: var(--morado-suave); }
 .opciones-mesa button:disabled { opacity: 0.45; cursor: not-allowed; }
+.totales { display: grid; grid-template-columns: 1fr auto; gap: 9px 12px; margin: 16px 0 0; font-size: 14px; }
+.totales dt { color: var(--gris); }
+.totales dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.totales .total { font-size: 17px; font-weight: 600; color: var(--tinta); }
+.totales dd.total { font-size: 22px; color: var(--morado); }
+.totales .tenue { color: var(--tenue); }
 
 /* ---------- 04 · Mesas ---------- */
 .mesas-filtros { justify-content: space-between; }
@@ -151,8 +174,12 @@ button.agenda-nombre:hover { color: var(--morado); }
 .asignar-accion > small { font-size: 13px; }
 
 /* ---------- 05a · Mis mesas ---------- */
+.aviso-cocina {
+  display: inline-flex; align-items: center; gap: 9px; padding: 10px 16px; border-radius: 10px; border: 0;
+  background: var(--superficie); color: var(--gris); font-size: 14px;
+}
+.aviso-cocina.listo { background: var(--verde-suave); color: #067647; font-weight: 500; cursor: pointer; }
 .mis-mesas { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
-.mis-mesas.sin-panel { grid-template-columns: minmax(0, 1fr); }
 .rejilla-mis-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
 .tarjeta-mi-mesa {
   display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
@@ -171,6 +198,113 @@ button.agenda-nombre:hover { color: var(--morado); }
 .tarjeta-mi-mesa .boton { height: 40px; margin-top: auto; }
 .tarjeta-mi-mesa-operaciones { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .tarjeta-mi-mesa-operaciones .enlace { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; white-space: nowrap; }
+.abrir-comanda .campo-form .etiqueta { margin-bottom: 8px; }
+.abrir-comanda .campo-ayuda { margin-top: 8px; }
+.abrir-comanda .boton-primario { margin-top: 0; }
+.dialogo-cuerpo .abrir-comanda { display: flex; flex-direction: column; gap: 16px; }
+.comandas-de-hoy { border-top: 1px solid var(--borde); padding-top: 16px; }
+.comandas-de-hoy h3 { margin-bottom: 8px; }
+.comandas-de-hoy ul { list-style: none; margin: 0; padding: 0; }
+.comandas-de-hoy li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; }
+.comandas-de-hoy li small { display: block; color: var(--tenue); font-size: 13px; margin-top: 2px; }
+.comandas-de-hoy li > span { font-weight: 600; }
+
+/* ---------- 05b · Comanda ---------- */
+.contenido.comanda { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 22px; align-items: start; }
+.comanda-captura { min-width: 0; }
+.comanda-captura > .explicacion:first-child, .comanda-captura > .aviso-exito + .explicacion { margin-top: 0; margin-bottom: 16px; }
+.comanda-barra { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.comanda-tiempo { display: flex; align-items: center; gap: 12px; font-size: 14.5px; color: #374151; }
+.comanda-captura > .fichas { margin-bottom: 18px; }
+.rejilla-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; align-items: start; }
+.tarjeta-producto {
+  display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 16px 18px; min-height: 132px;
+  border: 1px solid var(--borde); border-radius: 12px; background: var(--blanco); color: var(--tinta); cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tarjeta-producto:hover:not(:disabled) { border-color: var(--morado-borde); box-shadow: 0 4px 14px rgba(17, 24, 39, 0.06); }
+.tarjeta-producto strong { font-size: 15.5px; font-weight: 500; }
+.tarjeta-producto small { color: var(--tenue); font-size: 13px; }
+.tarjeta-producto-pie { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.tarjeta-producto .precio { color: var(--morado); font-weight: 600; font-size: 17px; }
+.tarjeta-producto .mas { width: 32px; height: 32px; border-radius: 50%; background: var(--morado-suave); color: var(--morado); display: grid; place-items: center; }
+.tarjeta-producto.agotado { cursor: not-allowed; opacity: 1; min-height: 0; }
+.tarjeta-producto.agotado strong, .tarjeta-producto.agotado .precio { color: var(--tenue); }
+.detalle-comanda { padding: 0; overflow: hidden; position: sticky; top: 16px; }
+.detalle-comanda-encabezado { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px 12px; }
+.detalle-comanda-encabezado span { color: var(--gris); font-size: 14px; }
+.nota-mesa {
+  display: flex; align-items: center; gap: 9px; margin: 0 20px 12px; padding: 8px 14px; border: 0; border-radius: 8px;
+  background: var(--rojo-suave); color: var(--rojo-tinta); font-size: 13.5px; text-align: left; cursor: pointer;
+}
+.nota-mesa:disabled { cursor: default; }
+.agregar-nota { display: block; margin: 0 20px 12px; font-size: 13.5px; }
+.seccion-comanda { padding: 12px 20px 4px; font-size: 12.5px !important; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tenue); border-top: 1px solid var(--borde); }
+.envio { padding: 0 20px 6px; }
+.envio h4 { font-size: 13.5px; font-weight: 600; color: var(--gris); margin: 10px 0 4px; }
+.linea-comanda { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; padding: 9px 0; align-items: start; }
+.linea-comanda.cancelada .linea-texto strong { text-decoration: line-through; color: var(--tenue); }
+.linea-comanda .cantidad { height: 28px; border-radius: 7px; background: var(--superficie); color: var(--gris); font-size: 13px; font-weight: 600; display: grid; place-items: center; }
+.linea-comanda .cantidad.morado { background: var(--blanco); color: var(--morado); }
+.linea-texto { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.linea-texto strong { font-weight: 500; font-size: 14.5px; }
+.linea-texto small { color: var(--tenue); font-size: 13px; line-height: 1.35; }
+.linea-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.linea-derecha > strong { font-weight: 600; font-size: 14.5px; }
+.linea-acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.linea-acciones .enlace { font-size: 13px; }
+.linea-acciones.izquierda { justify-content: flex-start; margin-top: 2px; }
+.linea-acciones.izquierda .enlace { font-size: 12.5px; }
+.sin-enviar { background: var(--morado-suave); padding: 0 20px 6px; }
+.sin-enviar .seccion-comanda { color: var(--morado); padding-left: 0; padding-right: 0; border-top: 0; }
+.detalle-vacio { padding: 8px 20px; }
+.detalle-comanda .totales { margin: 0; padding: 16px 20px; border-top: 1px solid var(--borde); }
+.detalle-comanda > .boton, .detalle-comanda > .alerta { margin-left: 20px; margin-right: 20px; width: calc(100% - 40px); }
+.detalle-comanda > .boton-primario { margin-top: 0; }
+.detalle-comanda > .boton-secundario { margin-top: 10px; height: 46px; }
+.detalle-comanda > .enlace.centrado { margin: 14px auto 18px; }
+.detalle-comanda > .boton:last-child { margin-bottom: 20px; }
+.movimientos { margin-top: 20px; }
+.movimientos h2 { margin-bottom: 14px; }
+.formulario-linea { display: flex; flex-direction: column; gap: 18px; }
+.formulario-cancelar { display: flex; flex-direction: column; gap: 16px; margin-top: 4px; }
+.autoriza { border: 1px solid var(--borde); border-radius: 10px; padding: 12px 16px 16px; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.autoriza legend { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; padding: 0 6px; color: #374151; }
+.autoriza .campo-error { grid-column: 1 / -1; margin: 0; }
+
+/* ---------- 06 · Panel de cocina y barra ---------- */
+.aviso-nuevos {
+  display: inline-flex; align-items: center; gap: 9px; height: 44px; padding: 0 16px; border-radius: 10px; border: 0;
+  background: var(--superficie); color: var(--gris); font-size: 14.5px; font-weight: 500;
+}
+.aviso-nuevos.hay { background: var(--morado-suave); color: var(--morado); cursor: pointer; }
+.panel-columnas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: start; }
+.panel-columna-encabezado { display: flex; justify-content: space-between; align-items: center; }
+.panel-columna-encabezado h2 { font-size: 16.5px; font-weight: 600; margin: 0; }
+.panel-columna-sub { color: var(--tenue); font-size: 14px; margin: 8px 0 14px; }
+.panel-vacio { color: var(--tenue); font-size: 14px; padding: 26px 0; text-align: center; border: 1px dashed var(--borde); border-radius: 12px; }
+.tarjeta-envio { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border: 1px solid var(--borde); border-radius: 12px; background: var(--blanco); margin-bottom: 14px; }
+.tarjeta-envio.por_preparar { border-color: var(--morado-borde); }
+.tarjeta-envio.nueva { box-shadow: 0 0 0 3px var(--morado-suave); }
+/* "Mesa 08 · Envío 2" nunca se parte; si no cabe junto con el tiempo, el tiempo baja */
+.tarjeta-envio header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+.tarjeta-envio-titulo { display: flex; align-items: center; gap: 8px; font-size: 16px; white-space: nowrap; }
+.tarjeta-envio-titulo svg { color: var(--gris); }
+.tarjeta-envio-titulo span { color: var(--tenue); font-size: 14px; }
+.tiempo { display: inline-flex; align-items: center; gap: 6px; color: var(--gris); font-size: 14px; white-space: nowrap; }
+.tiempo.ambar { color: var(--ambar-tinta); }
+.tiempo.ambar svg { color: var(--ambar); }
+.tiempo.rojo { color: var(--rojo); }
+.tarjeta-envio-sub { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0; color: var(--tenue); font-size: 13.5px; padding-bottom: 12px; border-bottom: 1px solid var(--borde); }
+.tarjeta-envio-productos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.tarjeta-envio-productos li { display: flex; gap: 10px; }
+.cantidad-panel { color: var(--morado); font-weight: 600; font-size: 15px; min-width: 22px; }
+.tarjeta-envio-productos strong { display: block; font-weight: 500; font-size: 15.5px; }
+.tarjeta-envio-productos small { display: block; color: var(--tenue); font-size: 13px; margin-top: 2px; }
+.tarjeta-envio-resto { margin: 0; color: var(--tenue); font-size: 13px; line-height: 1.45; }
+.alergia { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; margin: 0; padding: 6px 12px; border-radius: 7px; background: var(--rojo-suave); color: var(--rojo-tinta); font-size: 13.5px; }
+.se-aviso { display: flex; align-items: center; gap: 8px; margin: 0; color: #0E9F5A; font-size: 14px; }
+.tarjeta-envio .boton { height: 42px; margin-top: 4px; }
 
 /* ---------- Tiempo real: lo que acaba de cambiar se ilumina un momento ---------- */
 @keyframes recien { from { background-color: var(--morado-suave); box-shadow: 0 0 0 3px var(--morado-borde); } }
@@ -178,9 +312,13 @@ button.agenda-nombre:hover { color: var(--morado); }
 .recien { animation: recien 1.8s ease-out; }
 .tabla tr.recien { animation: none; }
 .tabla tr.recien td { animation: recien-celda 1.8s ease-out; }
+/* Dinero con cifras del mismo ancho: los totales no "brincan" al actualizarse */
+.precio, .linea-derecha > strong, .comandas-de-hoy li > span { font-variant-numeric: tabular-nums; }
 @media (max-width: 1280px) {
   .agregar-espera-campos { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 1100px) {
-  .recepcion-rejilla, .recepcion-rejilla.espera, .mis-mesas { grid-template-columns: minmax(0, 1fr); }
+  .recepcion-rejilla, .recepcion-rejilla.espera, .mis-mesas, .contenido.comanda { grid-template-columns: minmax(0, 1fr); }
+  .panel-columnas { grid-template-columns: minmax(0, 1fr); }
+  .detalle-comanda, .panel-lateral { position: static; }
 }

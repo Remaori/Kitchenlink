@@ -1,4 +1,4 @@
-# Mesas: crear mesa y operaciones de mesas (pantallas 04 y 05a)
+# Mesas: crear mesa, operaciones de mesas y Mis mesas (pantallas 04 y 05a)
 
 Casos de uso **Crear mesa** (el catálogo de mesas: número, capacidad y zona) y **Operaciones de mesas**
 (bloquear y desbloquear con motivo; cambiar de mesa o de personas una comanda abierta).
@@ -10,10 +10,12 @@ crea, edita, da de baja y bloquea mesas en **04 · Mesas**; quien atiende mesas 
 04 Mesas ── buscar mesa ── tarjetas: número, capacidad y zona (una bloqueada dice por qué y quién)
    ├─ Crear mesa ── número ("7" → Mesa 07), capacidad 1–30, zona ──► nace Libre
    ├─ Tarjeta ──► editar ── Dar de baja (solo libre y sin reservaciones por venir) · bloquear (motivo) / desbloquear
+   │              gerente: Abrir comanda · Ver comanda
    ├─ Bloquear / desbloquear ── solo una mesa libre, con motivo
    └─ Mesas dadas de baja ──► Reactivar
 05a Mis mesas ── Todas · Mis mesas · Libres
-   ├─ mi comanda ── Cambiar mesa (a una libre donde quepan) · Personas
+   ├─ libre o sentada por la hostess ── Abrir comanda (ver COMANDAS.md)
+   ├─ mi comanda ── Continuar comanda · Cambiar mesa (a una libre donde quepan) · Personas
    └─ de otro mesero ── "La atiende otro mesero"
 ```
 
@@ -57,10 +59,9 @@ de personas) queda en la bitácora.
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/mesas.test.js` — 16 pruebas: las mesas en servicio, quién consulta, quién ve las dadas de
+`backend/test/mesas.test.js` — 13 pruebas: las mesas en servicio, quién consulta, quién ve las dadas de
 baja, crear mesa (bitácora, "7" = 07, capacidad), el número solo entero (en la API y en la base), el mesero
 no crea mesas, editar sin dejar fuera una
 reservación, dar de baja y reactivar, y la misma mesa creada dos veces a la vez. Operaciones (a las 19:09):
-bloquear pide motivo y queda quién lo hizo, solo se bloquea una mesa libre, desbloquear la deja libre desde
-ese momento, cambiar mesa (solo a una libre donde quepan), cambiar personas hasta la capacidad y otro mesero
-no cambia una comanda que no es suya.
+bloquear pide motivo y queda quién lo hizo, solo se bloquea una mesa libre y desbloquear la deja libre desde
+ese momento. Cambiar de mesa o de personas se prueba en `backend/test/comandas.test.js`.

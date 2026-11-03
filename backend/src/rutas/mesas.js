@@ -14,6 +14,7 @@ const consulta = exigirPermiso('mesa.ver', 'mesa.administrar', 'comanda.abrir', 
 const administra = exigirPermiso('mesa.administrar');
 
 router.get('/', consulta, async (req, res) => res.json(await mesas.mapa({ conBajas: tiene(req, 'mesa.administrar') })));
+router.get('/:id', consulta, async (req, res) => res.json(await mesas.detalle(mesa(req))));
 
 // Crear mesa
 router.post('/', administra, cambia(['mesas'], (req) => mesas.crear(req.body, yo(req)), 201));
