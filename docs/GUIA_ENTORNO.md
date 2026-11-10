@@ -248,6 +248,8 @@ En la laptop servidor:
    - `NODE_ENV=production`: los errores no muestran detalles internos.
    - Esas variables solo valen en esa ventana y tienen prioridad sobre `backend/.env`, así que
      **no hay que editar el `.env`**. Para volver a programar con `npm run dev`, usa otra terminal.
+   - Para presentar con los datos de demostración a la hora de las pantallas, agrega también
+     `$env:RELOJ_INICIO='2026-09-22T19:09:00-06:00';` antes de `npm start` (ver [CRONOGRAMA.md](CRONOGRAMA.md)).
    - En "Símbolo del sistema": `set NODE_ENV=production`, `set COOKIE_SECURE=true` (cada uno en su
      línea) y luego `npm start -w backend`.
 4. **Nginx**, en la terminal 2:

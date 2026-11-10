@@ -1,4 +1,4 @@
-/* KitchenLink · piezas de las pantallas de operación (03a a 09).
+/* KitchenLink · piezas de las pantallas de operación (03a a 10).
    Usa los colores y medidas de app.css (tomados del diseño en Figma). */
 
 /* ---------- Pestañas como botones, fichas, segmentos ---------- */
@@ -9,7 +9,6 @@
 }
 .pestanas button:hover { color: var(--tinta); }
 .pestanas button.activa { color: var(--morado); border-bottom-color: var(--morado); font-weight: 500; }
-
 
 .fichas { display: flex; flex-wrap: wrap; gap: 10px; }
 .ficha {
@@ -27,6 +26,20 @@
 .segmentos button.activo { background: var(--blanco); color: var(--morado); font-weight: 500; box-shadow: 0 1px 3px rgba(17, 24, 39, 0.1); }
 .segmentos.chico button { height: 30px; padding: 0 12px; font-size: 13px; }
 .campo-form .segmentos { align-self: flex-start; }
+
+/* ---------- Indicadores (tarjetas con número grande) ---------- */
+.indicadores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-bottom: 26px; }
+.indicador { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; border: 1px solid var(--borde); border-radius: 12px; background: var(--blanco); min-width: 0; }
+.indicador-titulo { font-size: 13.5px; color: var(--gris); }
+.indicador-valor { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; font-variant-numeric: tabular-nums; }
+.indicador-valor.ok { color: var(--verde); }
+.indicador-valor.morado { color: var(--morado); }
+.indicador-valor.info { color: var(--azul); }
+.indicador-valor.bad { color: var(--rojo); }
+.indicador-valor.warn { color: var(--ambar); }
+.indicador-detalle { font-size: 12.5px; color: var(--tenue); }
+.indicador-detalle.sube { color: #0E9F5A; }
+.indicador-detalle.baja { color: var(--rojo-tinta); }
 
 /* ---------- Explicaciones (recuadros de ayuda del diseño) ---------- */
 .explicacion {
@@ -95,5 +108,9 @@
 
 @media (max-width: 1100px) {
   .menu-rejilla { grid-template-columns: minmax(0, 1fr); }
+  .indicadores { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .categoria-campos, .dos-explicaciones { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

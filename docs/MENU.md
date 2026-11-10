@@ -1,7 +1,7 @@
 # Menú, categorías y productos (pantalla 09)
 
-Caso de uso **Gestionar menú, categorías y productos**. La misma pantalla tiene tres usos, según los
-permisos del rol:
+Tarea del cronograma: **Codificación de Gestionar menú, categorías y productos** (16–19 oct · se revisa el
+mié 21 oct). La misma pantalla tiene tres usos, según los permisos del rol:
 
 | Quién | Menú lateral | Qué puede hacer |
 |---|---|---|
@@ -55,8 +55,8 @@ lo más un 86 abierto (índice único) y la base revisa el permiso «Asignar 86 
 
 **Todo cambio queda en la bitácora**: altas, ediciones (con el valor anterior y el nuevo) y bajas.
 
-**El término de la carne o "sin cebolla" no son productos**: van en la nota de cada producto al tomar la
-orden (05b). Un extra con costo se da de alta como producto.
+*Pregunta probable: "¿dónde van el término de la carne o 'sin cebolla'?"* En la nota de cada producto al
+tomar la orden (05b). Un extra con costo se da de alta como producto.
 
 ## Pruebas automáticas (`npm test`)
 

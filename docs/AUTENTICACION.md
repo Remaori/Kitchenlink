@@ -109,4 +109,4 @@ npm run usuario:gerente -- lsaenz "Luis Sáenz Jiménez"   # primer gerente de u
 
 02a/02b (alta, edición, baja y restablecimiento por el gerente) y 02c (roles y permisos) ya están hechas:
 ver [ROLES_Y_USUARIOS.md](ROLES_Y_USUARIOS.md). Ahí quedó resuelto el pendiente de guardar `nombre_usuario`
-siempre en minúsculas. Socket.IO va con las comandas.
+siempre en minúsculas. El tiempo real (Socket.IO) quedó con las comandas: ver [CRONOGRAMA.md](CRONOGRAMA.md).

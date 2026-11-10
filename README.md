@@ -33,7 +33,8 @@ internet.
   menú con lo que está disponible.
 - **Mesas:** alta con número (entero, del 1 al 999), capacidad y zona; edición, baja y reactivación sin
   perder su historial. La capacidad no baja de una reservación ya hecha. Una mesa libre se bloquea con
-  motivo (limpieza, reparación…) y la tarjeta dice por qué y quién la bloqueó.
+  motivo (limpieza, reparación…) y la tarjeta dice por qué y quién la bloqueó. El monitoreo cuenta las mesas
+  libres, ocupadas, reservadas y bloqueadas, filtra por estado y muestra lo que pasó hoy en cada mesa.
 - **Reservaciones:** agenda del día con la tolerancia de llegada y la duración; la nueva reservación sugiere
   la mesa que cabe y no se empalma, y queda Por confirmar. Confirmar, marcar llegada o cancelar; si el cliente
   no llega dentro de la tolerancia, pasa solo a "No se presentó" y la mesa se libera.
@@ -52,6 +53,10 @@ internet.
 - **Panel de cocina y de barra:** cada envío es una tarjeta que avanza de Por preparar a En preparación y a
   Listo; la categoría decide si va a cocina o a barra. La nota de mesa (alergias) sale en rojo, el tiempo cambia
   de color y los envíos nuevos se marcan y suenan.
+- **Historial de comandas:** las comandas de cualquier día, abiertas, cerradas y canceladas, con sus envíos,
+  pagos, cancelaciones y movimientos.
+- **Tiempo real:** comandas, cocina, mesas y recepción se actualizan al instante en todas las pantallas
+  (Socket.IO), sin recargar.
 
 **Modelo de datos**
 
@@ -127,6 +132,8 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 |---|---|
 | `npm run dev` | API y aplicación en este equipo |
 | `npm run dev:red` | Igual, y la aplicación se abre desde otros equipos de la red local |
+| `npm run demo` · `npm run demo:todo` | Igual que `dev`, a la hora de los datos de demostración (22 sep, 19:09); `demo:todo` con todos los módulos |
+| `npm run cronograma [-- AAAA-MM-DD]` | Qué módulos se ven hoy o en esa revisión ([cronograma](docs/CRONOGRAMA.md)) |
 | `npm test` | Pruebas automáticas (usan la base `kitchenlink_pruebas`) |
 | `npm run e2e:validacion` | Pruebas de validación en Microsoft Edge, con una captura por caso |
 | `npm run e2e` | Pruebas de pantalla (inicio de sesión, alta de usuarios y una mesa de mesero a cocina) |
@@ -139,10 +146,10 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 
 ## Pruebas
 
-- `npm test`: 149 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
+- `npm test`: 184 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
   permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú, las mesas, las
   reservaciones y la lista de espera, las comandas y el panel de cocina y barra, incluidas peticiones que
-  llegan al mismo tiempo.
+  llegan al mismo tiempo, el cronograma y el tiempo real.
 - `npm run db:conectividad`: 24 verificaciones de la conexión entre la API y PostgreSQL.
 - `npm run e2e:validacion`: las pruebas de validación en pantalla. Microsoft Edge recorre solo 37 casos como
   una persona (escribe, hace clic y espera el texto exacto del diseño) y guarda una captura por caso. Detalles
@@ -185,7 +192,8 @@ kitchenlink/
 - [Menú y productos](docs/MENU.md): categorías, productos y 86
 - [Mesas](docs/MESAS.md): crear, editar, bloquear y dar de baja mesas; Mis mesas
 - [Recepción](docs/RECEPCION.md): reservaciones y lista de espera
-- [Comandas](docs/COMANDAS.md): abrir, capturar y enviar comandas; panel de cocina y barra
+- [Comandas](docs/COMANDAS.md): abrir, capturar y enviar comandas; panel de cocina y barra; historial
+- [Cronograma](docs/CRONOGRAMA.md): qué módulo aparece en cada revisión, reloj de demostración y tiempo real
 - [Pruebas de validación](docs/PRUEBAS_DE_VALIDACION.md): menú, mesas, recepción y operaciones, con capturas
 - [Diagrama entidad-relación](docs/erd/)
 - [Cambios por versión](CHANGELOG.md) · [Cómo contribuir](CONTRIBUTING.md)

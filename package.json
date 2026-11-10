@@ -13,6 +13,8 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:red": "node scripts/dev.mjs --red",
+    "demo": "node scripts/dev.mjs --demo",
+    "demo:todo": "node scripts/dev.mjs --demo --todo",
     "dev:api": "npm run dev -w backend",
     "dev:web": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
@@ -23,6 +25,7 @@
     "db:instalar": "npm run db:instalar -w backend --",
     "db:conectividad": "npm run db:conectividad -w backend --",
     "db:respaldar": "npm run db:respaldar -w backend --",
+    "cronograma": "npm run cronograma -w backend --",
     "usuario:gerente": "npm run usuario:gerente -w backend --",
     "usuario:restablecer": "npm run usuario:restablecer -w backend --"
   }

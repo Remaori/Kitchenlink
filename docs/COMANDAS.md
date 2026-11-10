@@ -1,12 +1,15 @@
-# Comandas, cocina y barra (pantallas 05a, 05b y 06)
+# Comandas, cocina y barra (pantallas 05a, 05b y 06) e historial de comandas
 
-Casos de uso **Gestionar comanda** (abrir la comanda de una mesa, capturar, enviar, entregar y pedir la
-cuenta) y **Consultar comandas pendientes y cambiar estado** (el panel de cocina y de barra).
+| Se revisa | Tarea del cronograma | Qué agrega |
+|---|---|---|
+| mié 4 nov | **Gestionar comanda** (29 oct–3 nov) | 05a · Abrir comanda · 05b · Comanda · Comandas (abiertas) |
+| mié 4 nov | **Consultar comandas pendientes y cambiar estado** (4–6 nov) | 06 · Panel de cocina y de barra · aviso de "listo" al mesero |
+| mié 11 nov | **Consultar historial de comandas** (9–10 nov) | Comandas › Historial del día, con pagos, cancelaciones y movimientos |
 
 Ciclo (pantalla 12): la hostess sienta al grupo → el mesero **abre** la comanda (queda como su mesero) →
 **captura** con tiempo y nota (quedan "Sin enviar") → **envía** (un envío nuevo; la comanda sigue abierta)
 → cocina y barra **preparan y marcan listo** (el mesero recibe el aviso) → el mesero **entrega** → **pide la
-cuenta** (Por cobrar). El cobro llega con su módulo.
+cuenta** (Por cobrar) → caja cobra (ver [CAJA.md](CAJA.md)).
 
 ```
 05a Abrir comanda ── mesa · personas (las que registró la hostess) · mesero (tú) · reservación vinculada (sola)
@@ -24,10 +27,8 @@ cuenta** (Por cobrar). El cobro llega con su módulo.
 
 | Método y ruta | Permiso | Qué hace |
 |---|---|---|
-| `GET /api/comandas` | comandas (y caja/reportes para ver) | Abiertas o por cobrar; el mesero ve las suyas |
+| `GET /api/comandas` · `?vista=historial&fecha=` | comandas (y caja/reportes para ver) | Abiertas o el historial del día; el mesero ve las suyas |
 | `GET /api/comandas/:id` | ídem | Encabezado, productos por envío, pagos, cancelaciones y movimientos |
-| `GET /api/comandas/meseros` | `comanda.abrir` | Quién puede atender comandas (transferir, o el gerente al abrir) |
-| `GET /api/mesas/:id` | ver mesas | La mesa y las comandas que ya tuvo hoy |
 | `POST /api/comandas` | `comanda.abrir` | `{ mesa_id, numero_personas, mesero_usuario_id? }` (folio C-1046…) |
 | `POST /api/comandas/:id/productos` · `PUT` y `DELETE …/productos/:linea` | `comanda.abrir` | Capturar, nota, quitar |
 | `POST /api/comandas/:id/enviar` · `/entregar` · `/pedir-cuenta` | comandas · pedir cuenta | |
@@ -64,26 +65,25 @@ Los botones mueven todos los productos de la tarjeta un paso. La tarjeta explica
 envío ("De este envío ya se entregó: Pasta Alfredo; 3× Limonada natural lo hizo barra."). El tiempo se pone
 ámbar a los 8 min y rojo a los 15. Los envíos nuevos se marcan y suenan.
 
-**Aviso al mesero**: al marcar "Listo", su pantalla 05a muestra "N platillos listos por entregar". El panel,
-la comanda y Mis mesas se refrescan solos cada 5 s, así que nadie recarga la página.
+**Aviso al mesero**: al marcar "Listo", su pantalla 05a muestra "N platillos listos por entregar" al instante
+(Socket.IO, ver [CRONOGRAMA.md](CRONOGRAMA.md)).
 
-**Cambio de turno:** "Transferir" pasa la comanda a otro mesero, que desde ese momento la trabaja, y queda en
-la bitácora. El gerente también la puede transferir.
+*Pregunta probable: "¿qué pasa si el mesero cambia de turno?"* Usa "Transferir": la comanda pasa a otro
+mesero, que desde ese momento la trabaja, y queda en la bitácora. El gerente también la puede transferir.
 
-## Pendiente
+## Pendiente de hablar en la revisión
 
 - El menú del mesero en el diseño tiene **"Cuentas"**, sin pantalla dibujada. Sus cuentas están en
-  **Comandas** (abiertas y por cobrar).
+  **Comandas** (abiertas, por cobrar y el historial del día).
 - El **gerente** también puede trabajar una comanda (desde 04 › tarjeta › "Ver comanda" o "Abrir comanda").
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/comandas.test.js` — 23 pruebas: la comanda de la Mesa 08 como en el diseño, lista por
+`backend/test/comandas.test.js` — 22 pruebas: la comanda de la Mesa 08 como en el diseño, lista por
 mesero, abrir en la mesa que sentó la hostess (se vincula sola), mesas que no se pueden abrir, abrir a nombre
-de otro, las comandas de hoy en una mesa, capturar y sumar, 86, mesa de otro mesero, nota y quitar, enviar,
-pedir la cuenta, entregar, cambiar mesa, cambiar personas, otro mesero no cambia una comanda que no es suya,
-transferir, cancelar un producto con autorización, cancelar la comanda y el detalle de una comanda cerrada.
-Y el gerente y el mesero al mismo tiempo: abrir comanda en la misma mesa (se abre una),
+de otro, capturar y sumar, 86, mesa de otro mesero, nota y quitar, enviar, pedir la cuenta, entregar,
+cambiar mesa, cambiar personas, transferir, cancelar un producto con autorización, cancelar la comanda e
+historial del día. Y el gerente y el mesero al mismo tiempo: abrir comanda en la misma mesa (se abre una),
 presionar Enviar a la vez (llega a cocina una vez) y abrir en una mesa que se está dando de baja.
 
 `backend/test/produccion.test.js` — 6 pruebas: las tarjetas de cocina de las 19:09 en su columna, el

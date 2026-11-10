@@ -23,7 +23,7 @@ const booleano = (nombre, defecto) => {
 };
 
 // RELOJ_INICIO=2026-09-22T19:09:00-06:00 · la aplicación arranca a esa hora (ver reloj.js)
-function relojInicial() {
+function relojDemo() {
   const inicio = texto('RELOJ_INICIO');
   if (!inicio) return null;
   const ms = Date.parse(inicio);
@@ -51,8 +51,6 @@ export const config = {
     password: texto('DB_ADMIN_PASSWORD'),
   },
   zonaHoraria: texto('ZONA_HORARIA', 'America/Mexico_City'),
-  // Reloj de la aplicación: null = hora real
-  reloj: relojInicial(),
   jwtSecreto: texto('JWT_SECRET'),
   sesionHoras: numero('SESION_HORAS', 12),
   // En producción la app va por HTTPS (Nginx): sin Secure, la cookie viajaría en claro por el puerto 80
@@ -63,6 +61,12 @@ export const config = {
     maxPorEquipo: numero('INTENTOS_MAX_EQUIPO', 20),
     ventanaMin: numero('INTENTOS_VENTANA_MIN', 15),
   },
+  // Reloj de demostración: null = hora real
+  reloj: relojDemo(),
+  // Fecha de revisión del cronograma (YYYY-MM-DD). Vacío = hoy. Ver cronograma.js
+  fechaRevision: texto('FECHA_REVISION'),
+  // Impresora térmica de caja (ESC/POS por red, puerto 9100). Vacío = imprime el navegador
+  impresora: { host: texto('IMPRESORA_HOST'), puerto: numero('IMPRESORA_PUERTO', 9100) },
 };
 
 // Detiene el arranque con un mensaje claro si falta algo
@@ -73,6 +77,9 @@ export function validarConfig({ admin = false } = {}) {
     faltan.push('JWT_SECRET (mínimo 32 caracteres; `npm run env:crear` genera uno)');
   }
   if (admin && config.bdAdmin.password === undefined) faltan.push('DB_ADMIN_PASSWORD');
+  if (config.fechaRevision && !/^\d{4}-\d{2}-\d{2}$/.test(config.fechaRevision)) {
+    faltan.push(`FECHA_REVISION con formato AAAA-MM-DD (vale "${config.fechaRevision}")`);
+  }
   if (faltan.length) {
     throw new Error('Falta configurar en backend/.env: ' + faltan.join(', '));
   }

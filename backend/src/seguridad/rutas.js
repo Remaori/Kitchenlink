@@ -4,10 +4,16 @@ import * as servicio from './servicio.js';
 import { autenticar } from './middleware.js';
 import { COOKIE, opcionesCookie, verificar } from './tokens.js';
 import { ErrorHttp } from '../errores.js';
+import { fechaDeCorte, modulosHabilitados } from '../cronograma.js';
 
 const router = Router();
 
-const respuesta = (r) => ({ usuario: r.usuario, permisos: r.permisos, sesion: { emitida_en: r.sesion.emitidaEn, expira_en: r.sesion.expiraEn } });
+// `modulos`: los del cronograma que ya se revisaron (interruptor por fecha, ver cronograma.js)
+const respuesta = (r) => ({
+  usuario: r.usuario, permisos: r.permisos,
+  sesion: { emitida_en: r.sesion.emitidaEn, expira_en: r.sesion.expiraEn },
+  modulos: modulosHabilitados(), revision: fechaDeCorte(),
+});
 
 // 01 · Iniciar sesión
 router.post('/iniciar-sesion', async (req, res) => {

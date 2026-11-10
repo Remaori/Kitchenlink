@@ -62,7 +62,7 @@ export default function Panel({ destino }) {
     setError(null);
   }).catch((e) => setError(e.message)), [destino]);
   useEffect(() => { vistos.current = null; anteriores.current = []; setNuevos([]); setDatos(null); cargar(); }, [cargar]);
-  useCambios(['produccion', 'comandas'], cargar, { respaldoMs: 5_000 });
+  useCambios(['produccion', 'comandas'], cargar, { respaldoMs: 20_000 });
 
   const verNuevos = () => { for (const i of nuevos) vistos.current.add(i); anteriores.current = []; setNuevos([]); };
   async function avanzar(tarjeta) {

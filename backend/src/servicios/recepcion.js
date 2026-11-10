@@ -7,6 +7,7 @@
 // Aquí se arman las consultas de las pantallas y se validan los formularios.
 import { consulta, conTransaccion } from '../db.js';
 import { revisor } from '../validacion.js';
+import { avisar } from '../tiempoReal.js';
 import { config } from '../config.js';
 import { ahora } from '../reloj.js';
 import { mapa } from './mesas.js';
@@ -179,7 +180,9 @@ export async function pasarALista(id, cuerpo, actorId) {
 
 /** Proceso de cada minuto (server.js): tolerancias vencidas y mesas que se apartan */
 export async function revisarReservaciones() {
-  return conTransaccion(null, async (c) => (await c.query('SELECT fn_revisar_reservaciones() AS n')).rows[0].n);
+  const n = await conTransaccion(null, async (c) => (await c.query('SELECT fn_revisar_reservaciones() AS n')).rows[0].n);
+  if (n > 0) avisar('reservaciones', 'mesas');
+  return n;
 }
 
 // ---------------------------------------------------------- Lista de espera

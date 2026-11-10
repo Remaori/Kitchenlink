@@ -13,7 +13,9 @@ import rutasMesas from './rutas/mesas.js';
 import { reservaciones, listaEspera } from './rutas/recepcion.js';
 import rutasComandas from './rutas/comandas.js';
 import rutasProduccion from './rutas/produccion.js';
+import { rutasCaja, rutasVentas, rutasReportes } from './rutas/caja.js';
 import { ahora } from './reloj.js';
+import { exigirModulo } from './cronograma.js';
 
 export function crearApp() {
   const app = express();
@@ -42,12 +44,16 @@ export function crearApp() {
   app.use('/api/auth', rutasAuth);
   app.use('/api/usuarios', rutasUsuarios);
   app.use('/api/roles', rutasRoles);
-  app.use('/api/menu', rutasMenu);
-  app.use('/api/mesas', rutasMesas);
-  app.use('/api/reservaciones', reservaciones);
-  app.use('/api/lista-espera', listaEspera);
-  app.use('/api/comandas', rutasComandas);
-  app.use('/api/produccion', rutasProduccion);
+  // Módulos del cronograma: cada uno aparece el miércoles en que se revisa (cronograma.js)
+  app.use('/api/menu', exigirModulo('menu'), rutasMenu);
+  app.use('/api/mesas', exigirModulo('mesas'), rutasMesas);
+  app.use('/api/reservaciones', exigirModulo('recepcion'), reservaciones);
+  app.use('/api/lista-espera', exigirModulo('recepcion'), listaEspera);
+  app.use('/api/comandas', rutasComandas); // cada ruta revisa su módulo: comandas, operaciones de mesas o historial
+  app.use('/api/produccion', exigirModulo('produccion'), rutasProduccion);
+  app.use('/api/caja', exigirModulo('cobro'), rutasCaja);
+  app.use('/api/ventas', exigirModulo('ventas'), rutasVentas);
+  app.use('/api/reportes', exigirModulo('reportes'), rutasReportes);
   app.use('/api', rutaNoEncontrada);
   app.use(manejadorErrores);
   return app;

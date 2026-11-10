@@ -1,60 +1,51 @@
 // Marco de la aplicación: menú lateral + la pantalla de la ruta.
 // El menú se arma con los PERMISOS del rol (no con el nombre del rol),
 // porque en 02c el gerente puede crear roles y cambiar sus casillas.
+// Cada módulo aparece cuando llega el miércoles en que se revisa
+// (interruptor por fecha del servidor); antes, quien tenga el permiso lo ve
+// como "pronto".
 import { useEffect } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSesion } from '../sesion/ContextoSesion.jsx';
 import { Logo } from './Campos.jsx';
 import * as Ic from './Iconos.jsx';
 
-// `ruta` = módulo ya construido; los demás se muestran como "pronto".
-// `nombre` puede depender de los permisos (el mesero ve "Menú"; cocina, "Productos 86").
-// `ver(tiene)`, si está, decide en lugar de `permisos` (el mesero ve "Mis mesas" y no "Mesas").
-const MODULOS = [
+const alguno = (...claves) => (t) => claves.some(t);
+const caja = alguno('pago.registrar', 'ticket.pre_ticket');
+
+// Orden pensado para que cada rol vea sus módulos en el orden del diseño.
+// `ver(t)` decide con los permisos (t = tienePermiso); `modulo` es la clave del cronograma.
+export const MODULOS = [
+  { nombre: 'Reservaciones', icono: Ic.IconoCalendario, modulo: 'recepcion', ver: alguno('reservacion.gestionar'), ruta: '/reservaciones' },
+  { nombre: 'Lista de espera', icono: Ic.IconoArena, modulo: 'recepcion', ver: alguno('reservacion.gestionar'), ruta: '/lista-espera' },
+  { nombre: 'Cobro', icono: Ic.IconoRecibo, modulo: 'cobro', ver: caja, ruta: '/cobro' },
+  // La cajera ve las cuentas abiertas de todas las mesas; el mesero las suyas en Comandas
+  { nombre: 'Cuentas abiertas', icono: Ic.IconoLista, modulo: 'cobro', ver: (t) => caja(t) && !t('comanda.abrir'), ruta: '/cuentas' },
+  { nombre: 'Cortes de caja', icono: Ic.IconoGrafica, modulo: 'ventas', ver: alguno('caja.corte', 'ticket.emitir'), ruta: '/ventas' },
+  // Quien administra o solo consulta el salón ve el mapa completo (04); quien atiende mesas, "Mis mesas" (05a)
+  { nombre: 'Mesas', icono: Ic.IconoMesa, modulo: 'mesas', ver: (t) => t('mesa.administrar') || (t('mesa.ver') && !t('comanda.abrir')), ruta: '/mesas' },
+  { nombre: 'Mis mesas', icono: Ic.IconoMesa, modulo: 'operaciones_mesas', ver: (t) => t('comanda.abrir') && !t('mesa.administrar'), ruta: '/mis-mesas' },
+  { nombre: 'Comandas', icono: Ic.IconoLista, modulo: 'comandas', ver: alguno('comanda.abrir'), ruta: '/comandas' },
+  { nombre: 'Panel de cocina', icono: Ic.IconoCocina, modulo: 'produccion', ver: alguno('produccion.ver'), ruta: '/cocina' },
+  { nombre: 'Barra', icono: Ic.IconoVaso, modulo: 'produccion', ver: alguno('produccion.ver'), ruta: '/barra' },
   {
-    nombre: 'Reservaciones', icono: Ic.IconoCalendario, permisos: ['reservacion.gestionar'],
-    ruta: () => '/reservaciones', activo: (r) => r === '/reservaciones',
+    nombre: (t) => (t('menu.administrar') ? 'Menú y productos' : t('menu.asignar_86') ? 'Productos 86' : 'Menú'),
+    icono: Ic.IconoMenu, modulo: 'menu', ver: alguno('menu.administrar', 'menu.asignar_86', 'comanda.abrir'), ruta: '/menu',
   },
   {
-    nombre: 'Lista de espera', icono: Ic.IconoArena, permisos: ['reservacion.gestionar'],
-    ruta: () => '/lista-espera', activo: (r) => r === '/lista-espera',
-  },
-  // Quien administra o solo consulta el salón ve 04 · Mesas; quien atiende mesas, 05a · Mis mesas
-  {
-    nombre: 'Mesas', icono: Ic.IconoMesa, permisos: ['mesa.ver', 'mesa.administrar'],
-    ver: (t) => t('mesa.administrar') || (t('mesa.ver') && !t('comanda.abrir')), ruta: () => '/mesas', activo: (r) => r === '/mesas',
-  },
-  {
-    nombre: 'Mis mesas', icono: Ic.IconoMesa, permisos: ['comanda.abrir'],
-    ver: (t) => t('comanda.abrir') && !t('mesa.administrar'), ruta: () => '/mis-mesas', activo: (r) => r === '/mis-mesas',
-  },
-  {
-    nombre: 'Comandas', icono: Ic.IconoLista, permisos: ['comanda.abrir'],
-    ruta: () => '/comandas', activo: (r) => /^\/comandas(\/|$)/.test(r),
-  },
-  { nombre: 'Panel de cocina', icono: Ic.IconoCocina, permisos: ['produccion.ver'], ruta: () => '/cocina', activo: (r) => r === '/cocina' },
-  { nombre: 'Barra', icono: Ic.IconoVaso, permisos: ['produccion.ver'], ruta: () => '/barra', activo: (r) => r === '/barra' },
-  { nombre: 'Cobro', icono: Ic.IconoRecibo, permisos: ['pago.registrar', 'ticket.pre_ticket'] },
-  { nombre: 'Cortes de caja', icono: Ic.IconoCaja, permisos: ['caja.corte'] },
-  {
-    nombre: (tiene) => (tiene('menu.administrar') ? 'Menú y productos' : tiene('menu.asignar_86') ? 'Productos 86' : 'Menú'),
-    icono: Ic.IconoMenu, permisos: ['menu.administrar', 'menu.asignar_86', 'comanda.abrir'],
-    ruta: () => '/menu', activo: (r) => r === '/menu',
-  },
-  { nombre: 'Reportes', icono: Ic.IconoGrafica, permisos: ['reporte.ver'] },
-  {
-    nombre: 'Usuarios y roles', icono: Ic.IconoPersonas, permisos: ['usuario.administrar', 'rol.administrar'],
-    ruta: (tiene) => (tiene('usuario.administrar') ? '/usuarios' : '/roles'),
+    nombre: 'Usuarios y roles', icono: Ic.IconoPersonas, modulo: 'seguridad', ver: alguno('usuario.administrar', 'rol.administrar'),
+    ruta: (t) => (t('usuario.administrar') ? '/usuarios' : '/roles'),
     activo: (ruta) => /^\/(usuarios|roles)(\/|$)/.test(ruta),
   },
+  { nombre: 'Reportes', icono: Ic.IconoGrafica, modulo: 'reportes', ver: alguno('reporte.ver'), ruta: '/reportes' },
 ];
 
 export default function Marco() {
-  const { datos, cerrarSesion, tienePermiso, refrescar } = useSesion();
+  const { datos, cerrarSesion, tienePermiso, moduloVisible, refrescar } = useSesion();
   const navegar = useNavigate();
   const { pathname } = useLocation();
   const { usuario } = datos;
-  const modulos = MODULOS.filter((m) => (m.ver ? m.ver(tienePermiso) : m.permisos.some(tienePermiso)));
+  const modulos = MODULOS.filter((m) => m.ver(tienePermiso));
 
   // Al cambiar de pantalla se releen los permisos: así el menú refleja los
   // cambios que el gerente haga en 02c sin tener que volver a entrar.
@@ -71,17 +62,18 @@ export default function Marco() {
         <div className="lateral-marca"><Logo tam={32} /><span>KitchenLink</span></div>
         <nav className="lateral-menu" aria-label="Módulos">
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'activo' : '')}><Ic.IconoInicio />Inicio</NavLink>
-          {modulos.map(({ nombre, icono: Icono, ruta, activo }) => {
+          {modulos.map(({ nombre, icono: Icono, ruta, activo, modulo }) => {
             const texto = typeof nombre === 'function' ? nombre(tienePermiso) : nombre;
-            return ruta ? (
-              <NavLink key={texto} to={ruta(tienePermiso)} className={activo(pathname) ? 'activo' : ''}>
-                <Icono />{texto}
-              </NavLink>
-            ) : (
-              <span key={texto} className="deshabilitado" title="Se agrega en las siguientes tareas">
-                <Icono />{texto}<small>pronto</small>
-              </span>
-            );
+            if (!moduloVisible(modulo)) {
+              return (
+                <span key={texto} className="deshabilitado" title="Se agrega en las siguientes tareas">
+                  <Icono />{texto}<small>pronto</small>
+                </span>
+              );
+            }
+            const a = typeof ruta === 'function' ? ruta(tienePermiso) : ruta;
+            const marcado = activo ? activo(pathname) : pathname === a || pathname.startsWith(`${a}/`);
+            return <NavLink key={texto} to={a} className={marcado ? 'activo' : ''}><Icono />{texto}</NavLink>;
           })}
         </nav>
         <div className="lateral-perfil">
@@ -101,9 +93,9 @@ export default function Marco() {
 }
 
 /** Muestra la pantalla solo si el rol tiene alguno de los permisos. */
-export function ConPermiso({ alguno, children }) {
+export function ConPermiso({ alguno: claves, children }) {
   const { tienePermiso } = useSesion();
-  if (alguno.some(tienePermiso)) return children;
+  if (claves.some(tienePermiso)) return children;
   return (
     <div className="pantalla-centrada">
       <div className="tarjeta sin-permiso">
@@ -113,4 +105,14 @@ export function ConPermiso({ alguno, children }) {
       </div>
     </div>
   );
+}
+
+/**
+ * Pantalla de un módulo del cronograma: antes del miércoles en que se revisa
+ * no existe (regresa al inicio); después, pide alguno de los permisos.
+ */
+export function Pantalla({ modulo, alguno: claves, children }) {
+  const { moduloVisible } = useSesion();
+  if (!moduloVisible(modulo)) return <Navigate to="/" replace />;
+  return <ConPermiso alguno={claves}>{children}</ConPermiso>;
 }

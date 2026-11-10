@@ -1,6 +1,7 @@
 // Estado de la sesión para toda la aplicación
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, cuandoTermineLaSesion } from '../api.js';
+import { desconectar } from '../tiempoReal.js';
 
 const Contexto = createContext(null);
 
@@ -9,9 +10,11 @@ export function ProveedorSesion({ children }) {
   const [estado, setEstado] = useState({ cargando: true, datos: null, aviso: null });
 
   useEffect(() => {
-    // SIN_SESION al abrir la app sin haber entrado: no hay nada que avisar
-    cuandoTermineLaSesion((mensaje, codigo) => setEstado((e) => (
-      codigo === 'SIN_SESION' && !e.datos ? e : { cargando: false, datos: null, aviso: mensaje })));
+    cuandoTermineLaSesion((mensaje, codigo) => {
+      desconectar();
+      // SIN_SESION al abrir la app sin haber entrado: no hay nada que avisar
+      setEstado((e) => (codigo === 'SIN_SESION' && !e.datos ? e : { cargando: false, datos: null, aviso: mensaje }));
+    });
     api.get('/auth/sesion')
       .then((datos) => setEstado({ cargando: false, datos, aviso: null }))
       .catch(() => setEstado((e) => ({ cargando: false, datos: null, aviso: e.aviso }))); // conserva "Tu sesión terminó…"
@@ -31,6 +34,7 @@ export function ProveedorSesion({ children }) {
 
   const cerrarSesion = useCallback(async (aviso = null) => {
     await api.post('/auth/cerrar-sesion').catch(() => {});
+    desconectar();
     setEstado({ cargando: false, datos: null, aviso });
   }, []);
 
@@ -44,6 +48,8 @@ export function ProveedorSesion({ children }) {
   const valor = useMemo(() => ({
     ...estado,
     tienePermiso: (clave) => !!estado.datos?.permisos.some((p) => p.clave === clave),
+    // Módulos del cronograma que ya se revisaron (interruptor por fecha del servidor)
+    moduloVisible: (clave) => !!estado.datos?.modulos?.includes(clave),
     iniciarSesion, cambiarContrasena, cerrarSesion, refrescar,
   }), [estado, iniciarSesion, cambiarContrasena, cerrarSesion, refrescar]);
 

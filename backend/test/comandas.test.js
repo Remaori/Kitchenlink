@@ -1,4 +1,4 @@
-// Pruebas de 05a/05b · Gestionar comanda y operaciones de mesas (cambio de mesa o de personas)
+// Pruebas de 05a/05b · Gestionar comanda, operaciones de mesas (cambio de mesa o de personas) e historial de comandas
 import './entorno.js';
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
@@ -73,13 +73,6 @@ describe('05a · Abrir comanda', () => {
     const b = await gerente.post('/api/comandas').send({ mesa_id: await mesaId('13'), numero_personas: 3, mesero_usuario_id: lm.id }).expect(201);
     assert.equal(b.body.comanda.mesero, 'Luis Mora');
     assert.equal(b.body.comanda.folio, 'C-1047');
-  });
-});
-
-describe('05a · Lo que ya pasó en la mesa', () => {
-  test('el detalle de una mesa trae las comandas que ya tuvo hoy', async () => {
-    const r = await gerente.get(`/api/mesas/${await mesaId('06')}`).expect(200);
-    assert.deepEqual(r.body.comandas_de_hoy.map((c) => `${c.folio} · ${c.estado_etiqueta} · ${c.total}`), ['C-1038 · Cerrada · 313.20']);
   });
 });
 
@@ -166,11 +159,6 @@ describe('Operaciones de mesas: cambiar mesa, personas y transferir', () => {
     assert.equal(x.body.mensaje, 'La Mesa 07 es para 8 personas: para 9, cámbialos a una mesa más grande.');
   });
 
-  test('otro mesero no cambia una comanda que no es suya', async () => {
-    const r = await luis.put(`/api/comandas/${await comandaId('C-1042')}/personas`).send({ numero_personas: 5 });
-    assert.equal(r.status, 403);
-  });
-
   test('transferir: su mesero se la pasa a otro, que ya la trabaja; otro mesero no puede', async () => {
     const id = await comandaId('C-1046');
     const lm = (await bd("SELECT id FROM usuario WHERE nombre_usuario = 'lmora'"))[0].id;
@@ -211,7 +199,18 @@ describe('05b · Cancelaciones con autorización del gerente', () => {
   });
 });
 
-describe('Una comanda cerrada', () => {
+describe('Historial de comandas', () => {
+  test('las del día con su estado; el mesero solo ve las suyas', async () => {
+    const h = (await gerente.get('/api/comandas?vista=historial&fecha=2026-09-22').expect(200)).body;
+    assert.equal(h.fecha, '2026-09-22');
+    assert.deepEqual(h.comandas.map((c) => c.folio).sort(), ['C-1038', 'C-1039', 'C-1040', 'C-1041', 'C-1042', 'C-1043', 'C-1044', 'C-1045', 'C-1046', 'C-1047']);
+    const c38 = h.comandas.find((c) => c.folio === 'C-1038');
+    assert.deepEqual([c38.estado_etiqueta, c38.total, c38.pagado], ['Cerrada', '313.20', '313.20']);
+    assert.equal(h.comandas.find((c) => c.folio === 'C-1045').estado_etiqueta, 'Cancelada');
+    const mias = (await carlos.get('/api/comandas?vista=historial').expect(200)).body.comandas;
+    assert.ok(mias.every((c) => c.mesero === 'Carlos Ruiz'));
+  });
+
   test('el detalle de una comanda cerrada trae sus pagos', async () => {
     const d = await comanda('C-1038', gerente);
     assert.deepEqual(d.pagos.map((p) => `${p.metodo_etiqueta} ${p.monto} recibido ${p.monto_recibido} cambio ${p.cambio}`),

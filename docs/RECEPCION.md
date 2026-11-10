@@ -1,7 +1,7 @@
 # Recepción: reservaciones y lista de espera (pantallas 03a y 03b)
 
-Caso de uso **Gestión de reservaciones y tiempos de espera**. Permiso: «Gestionar reservaciones y lista de
-espera» (hostess y gerente).
+Tarea del cronograma: **Codificación de Gestión de reservaciones y tiempos de espera** (22–26 oct · se
+revisa el mié 28 oct). Permiso: «Gestionar reservaciones y lista de espera» (hostess y gerente).
 
 ```
 03a Reservaciones ── agenda del día (Hoy, 22 sep / otra fecha) · Ahora: 19:09
@@ -44,7 +44,8 @@ a esa hora), pero la mesa no se ve Reservada hasta confirmarla.
 faltan. Las pantallas cuentan con la hora del servidor, no con la de cada tablet.
 
 **El proceso de cada minuto** (`fn_revisar_reservaciones`, en `server.js`) marca "No se presentó" y aparta
-las mesas que entran en su ventana. Las pantallas de recepción se actualizan solas cada 30 s.
+las mesas que entran en su ventana; avisa a las pantallas en tiempo real. Corre desde la revisión del 28 oct
+(antes el módulo no existe, ver [CRONOGRAMA.md](CRONOGRAMA.md)).
 
 **Llegó tarde = lista de espera.** "Llegó tarde" crea su lugar en la lista con la reservación de origen
 (sale como "Venía con reservación").
@@ -55,7 +56,7 @@ momento. Las que no sirven aparecen deshabilitadas con el motivo.
 **Espera estimada**: la escribe la hostess (opcional), porque ella ve el salón; la pantalla descuenta lo
 que ya lleva esperando. La espera promedio de hoy sale de los grupos que ya se sentaron.
 
-**Los datos se revisan como datos** (como el número de mesa):
+**Los datos se revisan como datos** (antes de la revisión del 28 oct, por lo que pasó con el número de mesa):
 - **Nombre del cliente:** solo letras, espacios, punto, apóstrofo y guion, con al menos 2 letras ("12345" o
   "Mesa 4" no son nombres).
 - **Teléfono:** 10 dígitos, con espacios, guiones o paréntesis si se quiere, y +52 opcional. Se guarda siempre
@@ -65,10 +66,10 @@ que ya lleva esperando. La espera promedio de hoy sale de los grupos que ya se s
 - **Fecha:** que exista en el calendario (el 31 de febrero no) y hasta un año adelante. Antes, una fecha
   inexistente llegaba a la base y respondía "error del servidor".
 
-**Dos hostess reservan la misma mesa al mismo tiempo:** la base bloquea la fila de la mesa mientras revisa
-(`FOR UPDATE`): la segunda espera y recibe "La mesa 11 ya está apartada…".
+*Pregunta probable: "¿qué pasa si dos hostess reservan la misma mesa al mismo tiempo?"* La base bloquea la
+fila de la mesa mientras revisa (`FOR UPDATE`): la segunda espera y recibe "La mesa 11 ya está apartada…".
 
-## Pendiente
+## Pendiente de hablar en la revisión
 
 - **"Se ajustan en Configuración"**: el diseño no tiene pantalla de configuración. Los valores (tolerancia,
   duración, apartado, IVA, propina) están en la tabla `configuracion`.

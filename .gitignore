@@ -23,6 +23,9 @@ e2e/evidencias/
 # Certificados locales de HTTPS (mkcert)
 infra/nginx/certs/
 
+# Grafo de conocimiento que genera graphify en cada equipo
+graphify-out/
+
 # Sistema y editores
 .DS_Store
 Thumbs.db

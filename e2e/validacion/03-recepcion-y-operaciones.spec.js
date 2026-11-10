@@ -1,8 +1,8 @@
 // Validación · Gestión de reservaciones y tiempos de espera (03a, 03b) y
-// Operaciones de mesas (bloqueo en 04; cambiar mesa o personas en 05a)
+// Operaciones de mesas (bloqueo en 04; cambiar mesa o personas en 05a) · revisión del 28 oct
 //
-// Incluye datos que parecen válidos y no lo son: nombres con números, teléfonos sin
-// dígitos, "1e1" o "2.5" personas; y la tarjeta de una mesa bloqueada.
+// Incluye lo que se revisó para prevenir antes de esa revisión: nombres sin números,
+// teléfono de 10 dígitos, "1e1" o "2.5" no son personas y la tarjeta de una mesa bloqueada.
 // Sigue la base que dejaron los archivos anteriores; el reloj está en el 22 sep a las 19:09.
 import { BASE, casosEnOrden, captura, entrarComo, esperarTexto, p } from './comun.js';
 

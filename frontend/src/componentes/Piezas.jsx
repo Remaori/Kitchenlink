@@ -1,5 +1,5 @@
-// Piezas de las pantallas de operación: insignias de estado, fichas de filtro,
-// pestañas, interruptores y avisos. Colores y medidas del diseño.
+// Piezas de las pantallas de operación: insignias de estado, fichas de
+// filtro, pestañas, indicadores y avisos. Colores y medidas del diseño.
 import * as Ic from './Iconos.jsx';
 
 /** Insignia con punto: el texto y el tono vienen de etiqueta_estado de la base. */
@@ -31,7 +31,7 @@ export function Pestanas({ opciones, valor, alCambiar }) {
   );
 }
 
-/** Interruptor de dos o tres opciones ("Cocina | Barra") */
+/** Interruptor de dos o tres opciones ("Cocina | Barra", "1er tiempo | 2º | 3er") */
 export function Segmentos({ opciones, valor, alCambiar, etiqueta, chico }) {
   return (
     <div className={`segmentos${chico ? ' chico' : ''}`} role="group" aria-label={etiqueta}>
@@ -42,6 +42,15 @@ export function Segmentos({ opciones, valor, alCambiar, etiqueta, chico }) {
     </div>
   );
 }
+
+/** Tarjeta de número grande ("Total de mesas 18 · En el salón") */
+export const Indicador = ({ titulo, valor, detalle, tono = '' }) => (
+  <div className="indicador">
+    <span className="indicador-titulo">{titulo}</span>
+    <strong className={`indicador-valor ${tono}`}>{valor}</strong>
+    {detalle && <span className="indicador-detalle">{detalle}</span>}
+  </div>
+);
 
 /** Recuadro gris de explicación (los textos de ayuda del diseño) */
 export const Explicacion = ({ icono: Icono = Ic.IconoInfo, tono = '', children }) => (

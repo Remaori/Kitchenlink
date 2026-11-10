@@ -34,6 +34,7 @@ export default defineConfig({
       url: `${API}/api/salud`,
       env: {
         DB_NAME: BASE, PORT: new URL(API).port, RELOJ_INICIO: '2026-09-22T19:09:00-06:00', RELOJ_CORRE: 'false',
+        FECHA_REVISION: '2026-12-09', IMPRESORA_HOST: '',
       },
       timeout: 120_000,
       stdout: 'ignore',

@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../api.js';
+import { useSesion } from '../../sesion/ContextoSesion.jsx';
 import { useCambios } from '../../tiempoReal.js';
 import { contar, dinero, dineroCorto, hora, sinAcentos } from '../../formato.js';
 import { AvisoExito } from '../../componentes/Pagina.jsx';
@@ -27,6 +28,7 @@ const ESTADO = {
 export default function Comanda() {
   const { id } = useParams();
   const navegar = useNavigate();
+  const { moduloVisible } = useSesion();
   const [datos, setDatos] = useState(null);
   const [menu, setMenu] = useState(null);
   const [error, setError] = useState(null);
@@ -41,7 +43,7 @@ export default function Comanda() {
   const cargar = useCallback(() => api.get(`/comandas/${id}`).then((d) => { setDatos(d); setError(null); }).catch((e) => setError(e.message)), [id]);
   const cargarMenu = useCallback(() => api.get('/menu').then(setMenu).catch(() => {}), []);
   useEffect(() => { cargar(); cargarMenu(); }, [cargar, cargarMenu]);
-  useCambios(['comandas', 'produccion'], cargar, { respaldoMs: 5_000 });
+  useCambios(['comandas', 'produccion', 'caja'], cargar);
   useCambios(['menu'], cargarMenu);
   const quitarAviso = useCallback(() => setAviso(null), []);
   const listo = (texto, r) => { setDialogo(null); setAviso(texto); if (r?.comanda) setDatos(r); else cargar(); };
@@ -86,11 +88,11 @@ export default function Comanda() {
         </div>
         <div className="encabezado-acciones">
           <Insignia tono={tonoEstado} className="grande">{textoEstado}</Insignia>
-          {trabaja && (
+          {trabaja && moduloVisible('operaciones_mesas') && (
             <button className="boton boton-secundario" onClick={() => api.get('/mesas').then((m) => setDialogo({ tipo: 'mesa', mesas: m.mesas }))}>
               <Ic.IconoIntercambio width={17} height={17} />Cambiar mesa</button>
           )}
-          {trabaja && (
+          {trabaja && moduloVisible('operaciones_mesas') && (
             <button className="boton boton-secundario" onClick={() => setDialogo({ tipo: 'personas' })}><Ic.IconoPersonas width={17} height={17} />Personas</button>
           )}
           {(trabaja || puede.supervisar) && ['abierta', 'por_cobrar'].includes(c.estado) && (
@@ -245,7 +247,7 @@ function Linea({ l, morado, acciones, children }) {
   );
 }
 
-/** Pagos, cancelaciones y movimientos de la comanda */
+/** Pagos, cancelaciones y movimientos de la comanda (historial) */
 function Movimientos({ datos }) {
   return (
     <section className="tarjeta movimientos">

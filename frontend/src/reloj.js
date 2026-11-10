@@ -3,7 +3,7 @@
 // Cada respuesta de la API trae X-Ahora (la hora del servidor). Aquí se guarda
 // la diferencia con el reloj de este dispositivo: así "Esperando 15 min" o
 // "hace 4 min" salen igual en todas las tablets aunque alguna tenga la hora
-// mal, y también cuando el servidor fija la hora (RELOJ_INICIO, ver backend/src/reloj.js).
+// mal, y también con el reloj de demostración (22 sep, 19:09).
 import { useEffect, useState } from 'react';
 
 let desfase = 0;

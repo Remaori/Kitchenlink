@@ -46,4 +46,22 @@ export const api = {
   get: (ruta) => pedir('GET', ruta),
   post: (ruta, cuerpo) => pedir('POST', ruta, cuerpo ?? {}),
   put: (ruta, cuerpo) => pedir('PUT', ruta, cuerpo ?? {}),
+  borrar: (ruta) => pedir('DELETE', ruta),
 };
+
+/** Descarga un archivo de la API (CSV de reportes) con la sesión de la cookie. */
+export async function descargar(ruta, nombre) {
+  const r = await fetch(`/api${ruta}`, { credentials: 'same-origin' });
+  if (!r.ok) {
+    const datos = await r.json().catch(() => null);
+    throw new ErrorApi(r.status, datos);
+  }
+  const url = URL.createObjectURL(await r.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

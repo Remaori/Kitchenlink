@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../../api.js';
 import { useSesion } from '../../sesion/ContextoSesion.jsx';
+import { useCambios } from '../../tiempoReal.js';
 import { contar, dinero, duracion, fechaHora, sinAcentos } from '../../formato.js';
 import { AvisoExito, Encabezado } from '../../componentes/Pagina.jsx';
 import { Buscador, Cargando, Explicacion, Insignia, Pestanas, Segmentos } from '../../componentes/Piezas.jsx';
@@ -32,6 +33,7 @@ export default function Menu() {
 
   const cargar = useCallback(() => api.get('/menu').then((d) => { setDatos(d); setError(null); }).catch((e) => setError(e.message)), []);
   useEffect(() => { cargar(); }, [cargar]);
+  useCambios(['menu'], cargar);
   const quitarAviso = useCallback(() => setAviso(null), []);
 
   const categorias = datos?.categorias ?? [];
@@ -206,6 +208,7 @@ function Historial86() {
   const [error, setError] = useState(null);
   const cargar = useCallback(() => api.get('/menu/86').then((d) => { setFilas(d); setError(null); }).catch((e) => setError(e.message)), []);
   useEffect(() => { cargar(); }, [cargar]);
+  useCambios(['menu'], cargar);
   return (
     <>
       <Alerta>{error}</Alerta>

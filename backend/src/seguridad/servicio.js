@@ -50,7 +50,7 @@ async function abrirSesion(cliente, usuarioId, { ip, dispositivo }) {
      RETURNING id, emitida_en, expira_en`,
     [usuarioId, tk.hashJti(jti), ip ? String(ip).slice(0, 45) : null, describirDispositivo(dispositivo), config.sesionHoras]);
   // El JWT y la cookie vencen con la hora real del equipo (la fila usa el reloj de
-  // la aplicación, que en una demostración o en las pruebas puede estar en otra fecha).
+  // la aplicación, que en una demostración puede estar en otra fecha).
   const venceCookie = new Date(Date.now() + config.sesionHoras * 3_600_000);
   const token = tk.firmar({ usuarioId, sesionId: s.id, jti, expiraEn: venceCookie });
   return { token, sesionId: s.id, emitidaEn: s.emitida_en, expiraEn: s.expira_en, venceCookie };

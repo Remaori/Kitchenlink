@@ -1,4 +1,4 @@
-// 04 · Mesas (crear mesa y bloqueo) y 05a · Mis mesas (mesero)
+// 04 · Mesas (gerente, hostess, caja) y 05a · Mis mesas (mesero)
 //
 // El estado de la mesa lo mueven los triggers de comandas y reservaciones; a
 // mano solo se bloquea (con motivo) y se desbloquea (tg_mesa_reglas). Aquí se
@@ -35,7 +35,7 @@ const SQL_MAPA = `
                      WHERE d.comanda_id = v.comanda_id AND d.estado = 'en_preparacion'
                      ORDER BY e.enviado_en, d.id LIMIT 1) pr ON TRUE`;
 
-/** Las mesas del salón (v_mapa_mesas: solo las que están en servicio). */
+/** El mapa del salón y sus contadores (Ocupadas = Por atender + Comanda abierta + Por cobrar). */
 export async function mapa({ conBajas = false } = {}) {
   const [{ rows: mesas }, bajas] = await Promise.all([
     consulta(`${SQL_MAPA} ORDER BY v.numero`),
@@ -43,7 +43,15 @@ export async function mapa({ conBajas = false } = {}) {
       ? consulta('SELECT id, numero, capacidad, zona FROM mesa WHERE NOT activo ORDER BY numero').then((r) => r.rows)
       : Promise.resolve(undefined),
   ]);
-  return { mesas, ...(bajas ? { dadas_de_baja: bajas } : {}) };
+  const n = (...e) => mesas.filter((m) => e.includes(m.estado)).length;
+  return {
+    resumen: {
+      total: mesas.length, libres: n('libre'), ocupadas: n('por_atender', 'comanda_abierta', 'por_cobrar'),
+      reservadas: n('reservada'), bloqueadas: n('bloqueada'),
+    },
+    mesas,
+    ...(bajas ? { dadas_de_baja: bajas } : {}),
+  };
 }
 
 /** Una mesa con las comandas que ya tuvo hoy ("Comandas de hoy en esta mesa", 05a) */

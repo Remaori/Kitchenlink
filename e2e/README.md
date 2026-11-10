@@ -14,7 +14,10 @@ npm run reporte --prefix e2e         # el reporte de la última corrida, con cap
 |---|---|
 | `01-sesion.spec.js` | Entrar con usuario y contraseña; contraseña equivocada; un mesero sin «Usuarios y roles» ve «Sin acceso»; cerrar sesión; si la cookie venció, la siguiente acción regresa al inicio de sesión |
 | `02-usuarios.spec.js` | El gerente da de alta a una mesera (02b); ella entra con su temporal, crea su contraseña (01b) y queda Activa |
-| `03-servicio.spec.js` | Una mesa de principio a fin: el mesero abre la comanda y envía, a cocina le aparece la tarjeta sola, la prepara y la marca lista, y el mesero entrega y pide la cuenta. Nadie recarga la página |
+| `03-servicio.spec.js` | Una mesa de principio a fin: el mesero abre la comanda y envía, a cocina le aparece la tarjeta sola, la prepara y la marca lista, el mesero entrega y pide la cuenta, a caja le aparece en "Por cobrar", cobra en efectivo y el corte Z cuadra |
+
+En `03-servicio` nadie recarga la página y cada espera es de 5 s, menos que el respaldo de 20 a 30 s de las
+pantallas: si la tarjeta o la cuenta aparece, fue por el aviso en tiempo real.
 
 ## Pruebas de validación (con la ventana visible)
 
@@ -29,14 +32,14 @@ si no aparece en 5 s, el caso falla. Al terminar cada caso guardan su captura en
 o `PV-xx-falla.jpg`) y lo obtenido en `evidencias/<archivo>.json`. Van en orden: cada archivo sigue la base que
 dejó el anterior.
 
-| Archivo | Casos |
-|---|---|
-| `validacion/01-prueba-temprana.spec.js` | PV-01 a PV-20 · Iniciar sesión y Administrar roles. Es el script de la prueba temprana ([docs/PRUEBA_TEMPRANA_VALIDACION.md](../docs/PRUEBA_TEMPRANA_VALIDACION.md)); PV-03, 05, 08, 09 y 10 no se ven en pantalla y los revisa `backend/test/autenticacion.test.js` |
-| `validacion/02-menu-y-mesas.spec.js` | PV-21 a PV-32 · catálogo, producto con precio exacto, precio mal escrito, asignar y quitar 86 con su historial, el menú del mesero, crear mesa, número solo entero, "7" = Mesa 07, capacidad contra una reservación, baja y reactivación |
-| `validacion/03-recepcion-y-operaciones.spec.js` | PV-33 a PV-42 · agenda, nueva reservación, datos que no son (nombre con números, teléfono sin dígitos, "1e1" personas), hora que ya pasó, lista de espera, bloquear y desbloquear una mesa, cambiar personas y cambiar mesa |
+| Archivo | Casos | Revisión |
+|---|---|---|
+| `validacion/01-prueba-temprana.spec.js` | PV-01 a PV-20 · Iniciar sesión y Administrar roles. Es el script de la prueba del 8 oct ([docs/PRUEBA_TEMPRANA_VALIDACION.md](../docs/PRUEBA_TEMPRANA_VALIDACION.md)); PV-03, 05, 08, 09 y 10 no se ven en pantalla y los revisa `backend/test/autenticacion.test.js` | 14 oct |
+| `validacion/02-menu-y-mesas.spec.js` | PV-21 a PV-32 · catálogo, producto con precio exacto, precio mal escrito, asignar y quitar 86 con su historial, el menú del mesero, crear mesa, número solo entero, "7" = Mesa 07, capacidad contra una reservación, baja y reactivación | 21 oct |
+| `validacion/03-recepcion-y-operaciones.spec.js` | PV-33 a PV-42 · agenda, nueva reservación, datos que no son (nombre con números, teléfono sin dígitos, "1e1" personas), hora que ya pasó, lista de espera, bloquear y desbloquear una mesa, cambiar personas y cambiar mesa | 28 oct |
 
-El resultado y las capturas de PV-21 a PV-42 están en [docs/PRUEBAS_DE_VALIDACION.md](../docs/PRUEBAS_DE_VALIDACION.md).
-Usan la misma base, API y app compilada que las demás pruebas de pantalla (`validacion.config.js`). Ayudantes
+Usan la misma base, API y app compilada que las demás pruebas de pantalla (`validacion.config.js`), pero el
+menú respeta `FECHA_REVISION` de `backend/.env`: no muestran módulos que todavía no se revisan. Ayudantes
 compartidos (ventana, captura, entrar y salir): `validacion/comun.js`.
 
 ## Cómo funcionan
@@ -45,8 +48,8 @@ compartidos (ventana, captura, entrar y salir): `validacion/comun.js`.
   (`preparar-base.mjs`). La base de desarrollo no se toca.
 - **Puertos aparte.** La API de las pruebas escucha en `127.0.0.1:3100` y la app compilada en
   `localhost:4180`, así que se pueden correr con `npm run dev` encendido. Playwright las levanta y las apaga.
-- **A la hora de las pantallas.** El reloj de la API queda detenido el 22 de septiembre a las 19:09
-  (`RELOJ_INICIO`), la hora de los datos de demostración y del diseño.
+- **A la hora de las pantallas.** El reloj de la API queda detenido el 22 de septiembre a las 19:09, como
+  `npm run demo`, y se ven todos los módulos del cronograma.
 - **Navegador.** Usa el Edge de Windows, sin descargar nada. En otro equipo: `E2E_NAVEGADOR=chrome`, o
   `npx playwright install chromium` y `E2E_NAVEGADOR=chromium`.
 - **En orden.** Un solo navegador a la vez (`workers: 1`): las pruebas comparten la base, como un turno.

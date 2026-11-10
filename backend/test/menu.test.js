@@ -2,7 +2,7 @@
 import './entorno.js';
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { prepararBase, cerrarBase, entrar, bd, productoId, ultimaBitacora } from './ayudantes.js';
+import { prepararBase, cerrarBase, entrar, bd, productoId, ultimaBitacora, relojDePantallas } from './ayudantes.js';
 import { alMismoTiempo, estados } from './concurrencia.js';
 
 let gerente; let cocina; let mesero;
@@ -11,6 +11,7 @@ const categoriaId = async (nombre) => (await bd('SELECT id FROM categoria WHERE 
 
 before(async () => {
   await prepararBase();
+  relojDePantallas();
   ({ agente: gerente } = await entrar('lsaenz'));
   ({ agente: cocina } = await entrar('dbenitez'));
   ({ agente: mesero } = await entrar('cruiz'));

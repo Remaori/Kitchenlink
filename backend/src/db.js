@@ -26,7 +26,7 @@ export const pool = new pg.Pool({ ...opcionesConexion(), max: 10, idleTimeoutMil
 pool.on('error', (err) => console.error('[bd] conexión inactiva con error:', err.message));
 
 /**
- * Consulta suelta (sin transacción). Con el reloj de la aplicación fijado (RELOJ_INICIO),
+ * Consulta suelta (sin transacción). Con el reloj de demostración activo,
  * antes le dice a la base qué hora es (kitchenlink.ahora, ver reloj.js).
  */
 export async function consulta(texto, params) {

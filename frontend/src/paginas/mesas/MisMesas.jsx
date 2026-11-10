@@ -1,5 +1,6 @@
-// 05a · Mis mesas (mesero): el salón desde el mesero; sus mesas primero.
-//   Abrir comanda y continuar la que ya tiene. Operaciones de mesas: cambiar de mesa o de personas.
+// 05a · Mis mesas (mesero)
+//   28 oct · Operaciones de mesas: el salón desde el mesero, cambiar de mesa o de personas
+//   4 nov · Gestionar comanda: abrir comanda y continuar la que ya tiene
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api.js';
@@ -18,8 +19,9 @@ import { AbrirComanda, Contador } from '../comandas/AbrirComanda.jsx';
 const LEYENDA = [['comanda_abierta', 'Comanda abierta'], ['por_cobrar', 'Por cobrar'], ['por_atender', 'Por atender'], ['libre', 'Libre']];
 
 export default function MisMesas() {
-  const { datos: sesion } = useSesion();
+  const { datos: sesion, moduloVisible } = useSesion();
   const yo = sesion.usuario.id;
+  const comandas = moduloVisible('comandas');
   const navegar = useNavigate();
   const t = useAhora();
   const [datos, setDatos] = useState(null);
@@ -31,12 +33,12 @@ export default function MisMesas() {
 
   const cargar = useCallback(() => api.get('/mesas').then((d) => { setDatos(d); setError(null); }).catch((e) => setError(e.message)), []);
   useEffect(() => { cargar(); }, [cargar]);
-  useCambios(['mesas', 'comandas', 'produccion', 'reservaciones', 'espera'], cargar, { respaldoMs: 5_000 });
+  useCambios(['mesas', 'comandas', 'produccion', 'reservaciones', 'espera', 'caja'], cargar);
   const quitarAviso = useCallback(() => setAviso(null), []);
   const listo = (texto) => { setDialogo(null); setAviso(texto); cargar(); };
 
   const mesas = datos?.mesas ?? [];
-  // La mesa que cambia (cocina la dejó lista, la hostess sentó a alguien…) se ilumina un momento
+  // La mesa que cambia (cocina la dejó lista, caja la cobró, la hostess sentó a alguien…) se ilumina un momento
   const reciente = useRecientes(datos?.mesas, (m) => m.id,
     (m) => `${m.estado}|${m.comanda_id ?? ''}|${m.mesero_usuario_id ?? ''}|${m.platillos_listos}|${m.productos_sin_enviar}|${m.en_preparacion ?? ''}`);
   const mia = (m) => m.mesero_usuario_id === yo;
@@ -53,14 +55,14 @@ export default function MisMesas() {
 
   return (
     <>
-      <Encabezado titulo="Mis mesas" subtitulo="Toca una mesa para abrir su comanda o continuar la que ya tiene">
-        {listos > 0 ? (
+      <Encabezado titulo="Mis mesas" subtitulo={comandas ? 'Toca una mesa para abrir su comanda o continuar la que ya tiene' : 'Tus mesas y el salón en este momento'}>
+        {comandas && (listos > 0 ? (
           <button className="aviso-cocina listo" onClick={() => navegar(`/comandas/${conListos[0].comanda_id}`)}>
             <Ic.IconoCampana width={18} height={18} />{contar(listos, 'platillo listo', 'platillos listos')} por entregar · Mesa {conListos.map((m) => m.numero).join(', ')}
           </button>
         ) : (
           <span className="aviso-cocina"><Ic.IconoCampana width={18} height={18} />Sin platillos listos por entregar</span>
-        )}
+        ))}
       </Encabezado>
 
       <div className="contenido">
@@ -69,7 +71,7 @@ export default function MisMesas() {
         {!datos && !error && <Cargando texto="Cargando tus mesas…" />}
 
         {datos && (
-          <div className="mis-mesas">
+          <div className={`mis-mesas${comandas ? '' : ' sin-panel'}`}>
             <div>
               <div className="filtros">
                 <Fichas valor={filtro} alCambiar={setFiltro} etiqueta="Filtrar mesas" opciones={[
@@ -81,8 +83,8 @@ export default function MisMesas() {
               </div>
               <div className="rejilla-mis-mesas">
                 {visibles.map((m) => (
-                  <TarjetaMiMesa key={m.id} m={m} t={t} mia={mia(m)} otra={otra(m)} reciente={reciente(m)}
-                    elegida={seleccion?.id === m.id}
+                  <TarjetaMiMesa key={m.id} m={m} t={t} mia={mia(m)} otra={otra(m)} comandas={comandas} reciente={reciente(m)}
+                    elegida={comandas && seleccion?.id === m.id}
                     alAbrir={() => setElegida(m.id)}
                     alContinuar={() => navegar(`/comandas/${m.comanda_id}`)}
                     alCambiarMesa={() => setDialogo({ tipo: 'mesa', mesa: m })}
@@ -91,14 +93,14 @@ export default function MisMesas() {
               </div>
             </div>
 
-            {seleccion ? (
+            {comandas && (seleccion ? (
               <AbrirComanda mesa={seleccion} mesas={mesas} enDialogo={false} alCambiarMesa={setElegida} />
             ) : (
               <section className="tarjeta panel-lateral abrir-comanda">
                 <h2>Abrir comanda</h2>
                 <p className="tarjeta-sub">Toca una mesa libre o que sentó la hostess para abrir su comanda.</p>
               </section>
-            )}
+            ))}
           </div>
         )}
       </div>
@@ -111,7 +113,7 @@ export default function MisMesas() {
   );
 }
 
-function TarjetaMiMesa({ m, t, mia, otra, reciente, elegida, alAbrir, alContinuar, alCambiarMesa, alCambiarPersonas }) {
+function TarjetaMiMesa({ m, t, mia, otra, comandas, reciente, elegida, alAbrir, alContinuar, alCambiarMesa, alCambiarPersonas }) {
   const hace = (f) => `hace ${minutosDesde(f, t)} min`;
   let lineas = []; let insignia = m.estado_etiqueta; let boton = null; let aviso = null; let tonoAviso = '';
   if (otra) {
@@ -122,16 +124,16 @@ function TarjetaMiMesa({ m, t, mia, otra, reciente, elegida, alAbrir, alContinua
     else if (m.en_preparacion) { aviso = `${m.en_preparacion.replace(/ \d+ g$/, '')} en preparación · ${minutosDesde(m.en_preparacion_desde, t)} min`; tonoAviso = 'ambar'; }
     else if (m.productos_sin_enviar > 0) { aviso = `${contar(m.productos_sin_enviar, 'producto')} sin enviar`; tonoAviso = 'morado'; }
     else aviso = 'Todo enviado a cocina';
-    boton = <button className="boton boton-suave ancho" onClick={alContinuar}>Continuar comanda</button>;
+    if (comandas) boton = <button className="boton boton-suave ancho" onClick={alContinuar}>Continuar comanda</button>;
   } else if (m.estado === 'por_cobrar') {
     lineas = [`${m.folio} · abierta ${hace(m.abierta_en)}`, `Cuenta pedida ${hora(m.cuenta_pedida_en)} · ${dinero(m.total)}`];
-    boton = <button className="boton boton-secundario ancho" onClick={alContinuar}>Ver comanda</button>;
+    if (comandas) boton = <button className="boton boton-secundario ancho" onClick={alContinuar}>Ver comanda</button>;
   } else if (m.estado === 'por_atender') {
     lineas = [`Sentado por la hostess ${hace(m.sentada_en)}`, 'Todavía no tiene comanda'];
-    boton = <button className="boton boton-morado ancho" onClick={alAbrir}>Abrir comanda</button>;
+    if (comandas) boton = <button className="boton boton-morado ancho" onClick={alAbrir}>Abrir comanda</button>;
   } else if (m.estado === 'libre') {
     lineas = [`Libre desde las ${hora(m.libre_desde)}`, m.proxima_reservacion ? `Reservación ${hora(m.proxima_reservacion_hora)}: solo si terminan antes` : 'Para clientes sin reservación'];
-    boton = <button className="boton boton-secundario ancho" onClick={alAbrir}>Abrir comanda</button>;
+    if (comandas) boton = <button className="boton boton-secundario ancho" onClick={alAbrir}>Abrir comanda</button>;
   } else if (m.estado === 'reservada') {
     insignia = `Reservada ${hora(m.proxima_reservacion_hora)}`;
     lineas = [`Esperando a ${m.proxima_reservacion}`, `Se libera a las ${hora(m.se_libera_si_no_llega)} si no llega`, 'No se puede abrir comanda'];

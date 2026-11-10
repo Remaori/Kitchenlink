@@ -26,7 +26,7 @@ test.describe('01 · Iniciar sesión', () => {
   test('un mesero no ve «Usuarios y roles»; si abre la dirección, ve «Sin acceso»', async ({ page }) => {
     await entrarComo(page, 'lmora');
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Mis mesas' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Comandas' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Usuarios y roles' })).toHaveCount(0);
     await page.goto('/roles');
     await expect(page.getByRole('heading', { name: 'Sin acceso' })).toBeVisible();

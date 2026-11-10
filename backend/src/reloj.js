@@ -1,9 +1,9 @@
 // Reloj de la aplicación.
 //
-// Normalmente es la hora real. Con RELOJ_INICIO en backend/.env la aplicación
-// arranca en esa hora y el tiempo corre desde ahí: así los datos de demostración
-// (martes 22 de septiembre, 19:09) se ven como en el diseño y los minutos de
-// espera y tolerancias avanzan solos. Las pruebas lo fijan con fijarReloj().
+// Normalmente es la hora real. Con RELOJ_INICIO en backend/.env (demostración)
+// la aplicación arranca en esa hora y el tiempo corre desde ahí: así los datos
+// de las pantallas (martes 22 de septiembre, 19:09) se ven como en el diseño y
+// los minutos de espera, tolerancias y tiempos de cocina avanzan solos.
 //
 // La base usa el mismo reloj: fn_ahora() lee kitchenlink.ahora, que db.js fija
 // en cada consulta con la hora de aquí. Las sesiones (cookie y JWT) siempre
@@ -26,4 +26,10 @@ export const ahoraParaLaBase = () => (config.reloj ? ahora().toISOString() : '')
 export function fijarReloj(fecha, { corre = false } = {}) {
   config.reloj = fecha == null ? null : { inicio: new Date(fecha).getTime(), corre };
   arranque = Date.now();
+}
+
+/** Fecha de hoy (AAAA-MM-DD) en la zona horaria del restaurante, con la hora real. */
+export function hoyReal() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: config.zonaHoraria, year: 'numeric', month: '2-digit', day: '2-digit' })
+    .format(new Date());
 }

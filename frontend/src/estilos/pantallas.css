@@ -1,4 +1,4 @@
-/* KitchenLink · pantallas de operación: 03a, 03b, 04, 05a, 05b y 06.
+/* KitchenLink · pantallas de operación: 03a, 03b, 04, 05a, 05b, 06, 07, 08 y 10.
    Usa los colores y medidas de app.css (tomados del diseño en Figma). */
 
 /* ---------- Piezas comunes de operación ---------- */
@@ -26,6 +26,7 @@
 .agenda-vacia { padding: 18px 4px; color: var(--tenue); font-size: 13.5px; list-style: none; }
 .panel-lateral { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 16px; }
 .panel-lateral > h2 + .tarjeta-sub { margin-top: -12px; }
+
 .contador { display: inline-flex; align-items: center; gap: 16px; }
 .contador > span { font-size: 18px; font-weight: 600; min-width: 112px; text-align: center; }
 .contador-boton {
@@ -34,6 +35,7 @@
 }
 .contador-boton.mas { background: var(--morado-suave); border-color: var(--morado-suave); color: var(--morado); }
 .contador-boton:disabled { opacity: 0.4; cursor: not-allowed; }
+
 .caja-gris, .caja-morada { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; font-size: 14.5px; }
 .caja-gris { background: var(--superficie); }
 .caja-gris .enlace { margin-left: auto; }
@@ -41,9 +43,11 @@
 .caja-morada strong { display: block; font-weight: 500; }
 .caja-morada small { display: block; color: var(--morado); font-size: 13px; margin-top: 2px; }
 .avatar.blanco { background: var(--blanco); width: 36px; height: 36px; font-size: 12px; }
+
 .selector-fecha { position: relative; overflow: hidden; cursor: pointer; }
 .selector-fecha input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
 .selector-fecha input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+
 .leyenda-estados { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13.5px; color: var(--gris); margin: 4px 0 18px; }
 .leyenda-estados.derecha { margin: 0 0 0 auto; }
 .punto-estado { display: inline-flex; align-items: center; gap: 7px; }
@@ -55,6 +59,7 @@
 .punto-estado.por_cobrar::before { background: var(--ambar); }
 .punto-estado.bloqueada::before { background: var(--rojo); }
 .ambar { color: var(--ambar-tinta) !important; }
+
 .opciones-mesa { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 4px; }
 .opciones-mesa button {
   display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; text-align: left;
@@ -63,12 +68,19 @@
 .opciones-mesa button small { color: var(--tenue); font-size: 12px; }
 .opciones-mesa button.elegida { border-color: var(--morado); background: var(--morado-suave); }
 .opciones-mesa button:disabled { opacity: 0.45; cursor: not-allowed; }
+
 .totales { display: grid; grid-template-columns: 1fr auto; gap: 9px 12px; margin: 16px 0 0; font-size: 14px; }
 .totales dt { color: var(--gris); }
 .totales dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .totales .total { font-size: 17px; font-weight: 600; color: var(--tinta); }
 .totales dd.total { font-size: 22px; color: var(--morado); }
 .totales .tenue { color: var(--tenue); }
+.totales.caja { padding: 14px 18px; background: var(--superficie); border-radius: 10px; }
+
+.cambio { display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; margin-top: 14px; border-radius: 10px; background: var(--verde-suave); color: #067647; font-size: 14.5px; }
+.cambio strong { font-size: 20px; color: #0E9F5A; }
+.cambio.falta { background: var(--rojo-suave); color: var(--rojo-tinta); }
+.cambio.falta strong { color: var(--rojo-tinta); }
 
 /* ---------- 04 · Mesas ---------- */
 .mesas-filtros { justify-content: space-between; }
@@ -92,6 +104,8 @@
 .mesas-baja { margin-top: 22px; }
 .mesas-baja ul { list-style: none; padding: 0; margin: 12px 0 0; }
 .mesas-baja li { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--borde); font-size: 14px; }
+.detalle-mesa { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; align-items: flex-start; }
+.detalle-mesa p { margin: 0; }
 .dialogo-cuerpo .boton.ancho { margin-bottom: 10px; }
 .bloqueo { display: flex; gap: 10px; align-items: flex-end; margin-top: 8px; }
 .bloqueo .campo-form { flex: 1; }
@@ -108,6 +122,7 @@
 .barra-parametros > span.sin-borde svg { color: var(--tenue); }
 .barra-parametros small { margin-left: auto; color: var(--tenue); font-size: 13px; }
 .barra-parametros .promedio { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; color: var(--morado); font-weight: 500; }
+
 .recepcion-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
 .recepcion-rejilla.espera { grid-template-columns: minmax(0, 1fr) 400px; }
 .tarjeta.agenda { padding: 20px 22px; }
@@ -117,6 +132,7 @@
   display: grid; grid-template-columns: 64px minmax(0, 1fr) auto 150px; gap: 12px; align-items: center;
   padding: 14px 12px; border-bottom: 1px solid var(--borde);
 }
+.agenda-fila.resaltada { background: #FFF8EC; border-radius: 8px; border-bottom-color: transparent; }
 .agenda-fila.elegida { box-shadow: inset 3px 0 0 var(--morado); }
 .agenda-fila.apagada .agenda-hora, .agenda-fila.apagada .agenda-nombre { color: var(--tenue); font-weight: 400; }
 .agenda-hora { font-size: 17px; font-weight: 600; }
@@ -138,6 +154,7 @@ button.agenda-nombre:hover { color: var(--morado); }
 .aviso-apartado { display: flex; flex-direction: column; gap: 6px; margin-top: 18px; padding: 14px 16px; background: var(--morado-suave); border-radius: 10px; font-size: 13.5px; color: #3F3A5E; line-height: 1.45; }
 .aviso-apartado strong { display: flex; align-items: center; gap: 8px; color: var(--morado); font-weight: 600; font-size: 14px; }
 .botones-edicion { display: flex; justify-content: space-between; margin-top: 12px; }
+
 .espera-lista { list-style: none; margin: 0; padding: 0; container-type: inline-size; }
 .espera-lista li { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--borde); }
 .espera-lista li.elegido { background: var(--morado-suave); border-radius: 10px; border-bottom-color: transparent; }
@@ -180,6 +197,7 @@ button.agenda-nombre:hover { color: var(--morado); }
 }
 .aviso-cocina.listo { background: var(--verde-suave); color: #067647; font-weight: 500; cursor: pointer; }
 .mis-mesas { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; align-items: start; }
+.mis-mesas.sin-panel { grid-template-columns: minmax(0, 1fr); }
 .rejilla-mis-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
 .tarjeta-mi-mesa {
   display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
@@ -306,19 +324,129 @@ button.agenda-nombre:hover { color: var(--morado); }
 .se-aviso { display: flex; align-items: center; gap: 8px; margin: 0; color: #0E9F5A; font-size: 14px; }
 .tarjeta-envio .boton { height: 42px; margin-top: 4px; }
 
+/* ---------- 07 · Cobro ---------- */
+.cobro { display: grid; grid-template-columns: 290px minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+.cobro .tarjeta { padding: 18px; }
+.abrir-caja { margin-bottom: 20px; max-width: 640px; }
+.abrir-caja .rejilla-campos { margin: 14px 0 16px; }
+.lista-cuentas ul { list-style: none; margin: 0; padding: 0; }
+.lista-cuentas li button {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left;
+  padding: 11px 12px; border: 0; border-radius: 10px; background: none; cursor: pointer; color: var(--tinta);
+}
+.lista-cuentas li button.elegida { background: var(--morado-suave); }
+.lista-cuentas li button.elegida strong, .lista-cuentas li button.elegida .monto { color: var(--morado); }
+.lista-cuentas li strong { display: block; font-weight: 500; font-size: 15px; }
+.lista-cuentas li small { display: block; color: var(--gris); font-size: 13px; margin-top: 3px; }
+.lista-cuentas .monto { font-weight: 600; font-size: 15px; white-space: nowrap; }
+.lista-cuentas h3 { font-size: 14px !important; }
+.lista-cuentas h3 { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--borde); }
+.lista-cuentas ul.abiertas li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; color: var(--gris); }
+.lista-cuentas ul.abiertas strong, .lista-cuentas ul.abiertas .monto { color: var(--gris); font-weight: 500; }
+.lista-cuentas ul.abiertas small { color: var(--tenue); }
+.cobro-vacio { grid-column: span 2; }
+.cuenta .renglones { list-style: none; margin: 0; padding: 0; }
+.cuenta .renglones li { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--borde); }
+.cuenta .renglones .cantidad { height: 28px; border-radius: 7px; background: var(--superficie); color: var(--gris); font-size: 13px; font-weight: 600; display: grid; place-items: center; }
+.renglon-texto strong { display: block; font-weight: 500; font-size: 15px; }
+.renglon-texto small { display: block; color: var(--tenue); font-size: 13px; margin-top: 2px; }
+.cuenta .monto { font-weight: 600; }
+.pre-ticket { margin-top: 18px; padding: 16px 18px; border: 1px solid var(--borde); border-radius: 12px; }
+.pre-ticket h3 { display: flex; align-items: center; gap: 9px; }
+.pre-ticket h3 svg { color: var(--morado); }
+.pre-ticket .botones { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 10px; }
+.pre-ticket .boton { height: 42px; }
+.pre-ticket .texto-tenue { margin: 0; }
+.registrar-pago { display: flex; flex-direction: column; gap: 16px; }
+.registrar-pago > h2 + .tarjeta-sub { margin-top: -12px; }
+.registrar-pago .rejilla-campos { margin-top: 0; }
+.registrar-pago .boton-primario { margin-top: 0; }
+.registrar-pago .cambio { margin-top: 0; }
+.registrar-pago > .texto-tenue { margin: 0; }
+.total-a-cobrar { display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; background: var(--morado-suave); border-radius: 12px; color: var(--morado); }
+.total-a-cobrar span { font-size: 14px; }
+.total-a-cobrar strong { font-size: 32px; font-weight: 600; letter-spacing: -0.01em; }
+.total-a-cobrar small { font-size: 13.5px; }
+.metodos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.metodos button { height: 46px; border: 1px solid var(--borde); border-radius: 10px; background: var(--blanco); color: #374151; font-size: 14.5px; cursor: pointer; }
+.metodos button.activo { border: 2px solid var(--morado); background: var(--morado-suave); color: var(--morado); font-weight: 500; }
+
+/* ---------- 08 · Historial de ventas ---------- */
+.ventas-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 22px; align-items: start; }
+.vista-ticket { padding: 0; overflow: hidden; }
+.vista-ticket-encabezado { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--superficie); border-bottom: 1px solid var(--borde); }
+.vista-ticket > .boton, .vista-ticket > .alerta { margin: 0 20px 20px; width: calc(100% - 40px); }
+.ticket { display: flex; flex-direction: column; padding: 18px 20px; font-size: 13.5px; }
+.ticket > span { text-align: center; color: var(--gris); }
+.ticket-nombre { text-align: center; font-size: 16px; margin-bottom: 6px; }
+.ticket dl { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--borde); }
+.ticket dt { color: var(--gris); }
+.ticket dd { margin: 0; text-align: right; }
+.ticket dt.total { color: var(--tinta); font-weight: 700; font-size: 15px; }
+.ticket dd.total { color: var(--morado); font-weight: 700; font-size: 20px; }
+.ticket .tenue { color: var(--tenue); }
+.ticket ul { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px solid var(--borde); display: flex; flex-direction: column; gap: 7px; }
+.ticket ul li { display: flex; justify-content: space-between; }
+.ticket .gracias { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--borde); color: var(--gris); }
+.tabla tr.fila-total td { font-weight: 600; background: var(--superficie); }
+
+/* ---------- 10 · Supervisión y reportes ---------- */
+.reportes-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 22px; align-items: start; }
+.reportes-rejilla .tarjeta { padding: 20px 22px; }
+.columnas { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-rows: 230px auto; gap: 8px 10px; margin-top: 8px; }
+.columnas-eje { display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; color: var(--tenue); text-align: right; font-variant-numeric: tabular-nums; transform: translateY(-7px); height: calc(100% + 14px); }
+.columnas-area { position: relative; display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--borde); }
+.columnas-guia { position: absolute; left: 0; right: 0; height: 1px; background: #F0F0F3; }
+.columna { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; outline: none; cursor: default; }
+.columna-barra { position: relative; width: 100%; max-width: 24px; background: var(--morado); border-radius: 4px 4px 0 0; min-height: 0; transition: opacity 0.15s; }
+.columnas-area:hover .columna:not(.activa) .columna-barra { opacity: 0.55; }
+.columna-valor { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: var(--tinta); white-space: nowrap; }
+.columna-tooltip {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none;
+  display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; background: var(--tinta); color: var(--blanco);
+  border-radius: 8px; font-size: 13px; white-space: nowrap; box-shadow: 0 8px 20px rgba(17, 24, 39, 0.18);
+}
+.columna-tooltip small { color: #D1D5DB; }
+.columnas-etiquetas { grid-column: 2; display: flex; gap: 2px; }
+.columnas-etiquetas span { flex: 1; text-align: center; font-size: 12px; color: var(--tenue); white-space: nowrap; }
+.ver-tabla { margin-top: 12px; font-size: 13px; }
+.top-productos ul { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.top-productos li div { display: flex; justify-content: space-between; font-size: 15px; }
+.top-productos li div strong { font-weight: 500; }
+.top-productos li div span { font-weight: 600; }
+.top-productos li small { display: block; color: var(--tenue); font-size: 13px; margin: 2px 0 8px; }
+.medidor { display: block; height: 8px; border-radius: 4px; background: #EDE9FE; overflow: hidden; }
+.medidor span { display: block; height: 100%; border-radius: 4px; background: var(--morado); }
+.tabla.sencilla { font-size: 14px; }
+.tabla.sencilla th { background: none; padding: 8px 10px; border-bottom: 1px solid var(--borde); }
+.tabla.sencilla td { padding: 12px 10px; }
+.rotacion ul { list-style: none; margin: 10px 0 0; padding: 0; }
+.rotacion li { display: grid; grid-template-columns: 22px auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--borde); }
+.rotacion li svg { color: var(--tenue); }
+.rotacion li .texto-gris { text-align: right; }
+.indicadores.cuatro { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
 /* ---------- Tiempo real: lo que acaba de cambiar se ilumina un momento ---------- */
 @keyframes recien { from { background-color: var(--morado-suave); box-shadow: 0 0 0 3px var(--morado-borde); } }
 @keyframes recien-celda { from { background-color: var(--morado-suave); } }
 .recien { animation: recien 1.8s ease-out; }
 .tabla tr.recien { animation: none; }
 .tabla tr.recien td { animation: recien-celda 1.8s ease-out; }
+
 /* Dinero con cifras del mismo ancho: los totales no "brincan" al actualizarse */
-.precio, .linea-derecha > strong, .comandas-de-hoy li > span { font-variant-numeric: tabular-nums; }
+.monto, .precio, .total-a-cobrar strong, .cambio strong, .ticket dd, .linea-derecha > strong, .comandas-de-hoy li > span,
+.top-productos li div span { font-variant-numeric: tabular-nums; }
+
 @media (max-width: 1280px) {
+  .cobro { grid-template-columns: 300px minmax(0, 1fr); }
+  .cobro .registrar-pago { grid-column: 2; }
   .agregar-espera-campos { grid-template-columns: 1fr 1fr; }
+  /* En tablet, la tabla y la gráfica usan todo el ancho; el ticket y los productos pasan abajo */
+  .ventas-rejilla, .reportes-rejilla { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 1100px) {
-  .recepcion-rejilla, .recepcion-rejilla.espera, .mis-mesas, .contenido.comanda { grid-template-columns: minmax(0, 1fr); }
+  .recepcion-rejilla, .recepcion-rejilla.espera, .mis-mesas, .contenido.comanda, .cobro { grid-template-columns: minmax(0, 1fr); }
+  .cobro .registrar-pago { grid-column: auto; }
   .panel-columnas { grid-template-columns: minmax(0, 1fr); }
   .detalle-comanda, .panel-lateral { position: static; }
 }

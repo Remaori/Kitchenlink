@@ -51,6 +51,7 @@ export async function activar(usuario, temporal, nueva = 'Nueva2026x') {
  * La aplicación a la hora de las pantallas (martes 22 de septiembre, 19:09),
  * detenida, para que los minutos coincidan con el diseño. `hora` la mueve.
  */
+export const HORA_PANTALLAS = '2026-09-22T19:09:00-06:00';
 export const relojDePantallas = (hora = '19:09') => fijarReloj(`2026-09-22T${hora}:00-06:00`);
 
 export const idDe = async (nombreUsuario) => (await bd('SELECT id FROM usuario WHERE nombre_usuario = $1', [nombreUsuario]))[0].id;

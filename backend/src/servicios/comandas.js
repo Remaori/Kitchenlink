@@ -1,4 +1,4 @@
-// 05a · Mis mesas (abrir comanda) · 05b · Comanda
+// 05a · Mis mesas (abrir comanda) · 05b · Comanda · historial de comandas
 //
 // El ciclo de la comanda (pantalla 12) lo hace cumplir la base: una comanda
 // abierta por mesa; quien la abre queda como su mesero y solo él (o el
@@ -31,12 +31,21 @@ const SQL_LISTA = `
   LEFT JOIN reservacion r ON r.id = c.reservacion_id
   LEFT JOIN lista_espera l ON l.id = c.lista_espera_id`;
 
-/** Comandas abiertas o por cobrar. `meseroId` limita a las de ese mesero (el mesero ve las suyas). */
-export async function listar({ meseroId = null }) {
+/**
+ * Comandas abiertas (abierta o por cobrar) o el historial de un día.
+ * `meseroId` limita a las de ese mesero (el mesero ve las suyas).
+ */
+export async function listar({ vista = 'activas', fecha, meseroId = null }) {
+  if (fecha && !revisor().fecha('fecha', fecha)) fecha = null; // una fecha que no existe: la de hoy
+  const filtro = vista === 'historial'
+    ? 'c.abierta_en::date = COALESCE($2::date, fn_ahora()::date)'
+    : "c.estado IN ('abierta','por_cobrar') AND $2::date IS NULL";
   const { rows } = await consulta(
-    `${SQL_LISTA} WHERE c.estado IN ('abierta','por_cobrar') AND ($1::bigint IS NULL OR c.mesero_usuario_id = $1)
-     ORDER BY m.numero`, [meseroId]);
-  return { comandas: rows };
+    `${SQL_LISTA} WHERE ${filtro} AND ($1::bigint IS NULL OR c.mesero_usuario_id = $1)
+     ORDER BY ${vista === 'historial' ? 'c.abierta_en DESC' : 'm.numero'}`,
+    [meseroId, vista === 'historial' ? fecha : null]);
+  const { rows: [d] } = await consulta('SELECT COALESCE($1::date, fn_ahora()::date)::text AS fecha', [fecha]);
+  return { vista, fecha: d.fecha, comandas: rows };
 }
 
 /** 05b · La comanda completa: encabezado, productos por envío y lo "Sin enviar" */
@@ -237,7 +246,7 @@ export async function cambiarNota(id, cuerpo, actorId) {
   return detalle(id, actorId);
 }
 
-// ------------------------------------------------------- Operaciones de mesas
+// ------------------------------------------------- Operaciones de mesas (28 oct)
 
 /** "Cambiar mesa": solo a una mesa libre; la anterior se libera (y queda en bitácora) */
 export async function cambiarMesa(id, cuerpo, actorId) {

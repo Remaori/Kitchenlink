@@ -32,13 +32,29 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
   gerente.
 - **Panel de cocina y de barra:** tarjetas por envío en Por preparar, En preparación y Listo, con la nota de
   mesa, los minutos y un aviso cuando llega un envío nuevo. El mesero ve en Mis mesas lo que tiene listo por
-  entregar. Las pantallas de comanda, cocina y Mis mesas se refrescan solas cada 5 s.
+  entregar.
+- **Historial de comandas** (revisión del 11 nov): en Comandas, la pestaña "Historial del día" muestra las
+  comandas de cualquier día, abiertas, cerradas y canceladas, con lo cobrado y a qué hora terminaron. Nada se
+  borra: cada una conserva sus envíos, pagos, cancelaciones y movimientos. El mesero ve las suyas.
+- **Monitoreo de mesas** (revisión del 11 nov): 04 · Mesas suma los contadores (Total, Libres, Ocupadas,
+  Reservadas y Bloqueadas), los filtros, el estado de cada mesa en tiempo real y el detalle de cada tarjeta con
+  las comandas de hoy en esa mesa.
+- **Tiempo real** (Socket.IO): cuando cambia una comanda, una mesa, una reservación o el panel de cocina, las
+  pantallas abiertas se actualizan al instante, sin recargar. El aviso solo dice qué cambió y cada pantalla
+  vuelve a pedir sus datos con su sesión. Si se pierde la conexión, se refrescan solas cada 20 a 60 s.
+- **Cronograma en la aplicación:** cada módulo aparece el miércoles en que se revisa; antes sale como "pronto"
+  en el menú y su API responde que no existe. `npm run cronograma` dice qué se ve en cada fecha. El cobro (07),
+  las ventas y cortes (08) y los reportes (10) ya están en el código y aparecen en sus revisiones del 18 y del
+  25 nov.
+- **Reloj de demostración** (`npm run demo`): la aplicación arranca a la hora de los datos de demostración
+  (22 sep, 19:09), como las pantallas del diseño. `npm run demo:todo` muestra todos los módulos y
+  `npm run demo -- --fecha 2026-11-18` ensaya una revisión.
 - Los nombres de clientes solo aceptan letras, el teléfono pide 10 dígitos y se guarda con un solo formato, y
   una fecha que no existe se rechaza.
 - **Hora de la aplicación:** la da el servidor en cada respuesta, para que los minutos de espera y las
   tolerancias se vean igual en todas las tablets.
-- **Pruebas automáticas:** pasan de 71 a 149, incluidas peticiones al mismo tiempo en el menú, las mesas, la
-  recepción y las comandas.
+- **Pruebas automáticas:** pasan de 71 a 184, incluidas peticiones al mismo tiempo en el menú, las mesas, la
+  recepción y las comandas, el interruptor del cronograma y el tiempo real con dispositivos conectados.
 - **Pruebas de validación en pantalla** (`npm run e2e:validacion`): Microsoft Edge recorre solo 37 casos y
   guarda una captura de cada uno. Los resultados del menú, las mesas, la recepción y las operaciones de mesas,
   con sus capturas, están en `docs/PRUEBAS_DE_VALIDACION.md`.
@@ -80,6 +96,7 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 - El alta y la edición de usuarios aceptaban "123" como nombre y "+++++++" como teléfono. Ahora siguen las
   mismas reglas que recepción: solo letras, y 10 dígitos guardados como "55 1234 5678".
 - Con `NODE_ENV=production`, la cookie de sesión solo viaja por HTTPS aunque falte `COOKIE_SECURE=true`.
+- En Windows, detener `npm run dev` con Ctrl+C dejaba la API encendida y el puerto 3000 ocupado.
 
 ## [0.2.0] · 2026-10-14
 
