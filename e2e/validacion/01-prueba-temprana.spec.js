@@ -112,6 +112,7 @@ caso('PV-18', 'No se da de baja un rol con usuarios', async () => {
 });
 caso('PV-12', 'Nuevo rol', async () => {
   await p.getByRole('button', { name: 'Nuevo rol' }).click();
+  await p.getByRole('heading', { name: 'Nuevo rol' }).waitFor(); // el formulario se limpia al abrir; escribir antes se pierde
   await p.getByLabel('Nombre del rol').fill('Supervisor de piso');
   await p.getByLabel('Descripción').fill('Revisa el salón y los reportes del turno');
   await p.getByLabel('Ver el estado de las mesas').check();
@@ -122,6 +123,7 @@ caso('PV-12', 'Nuevo rol', async () => {
 });
 caso('PV-13', 'Nombre de rol repetido', async () => {
   await p.getByRole('button', { name: 'Nuevo rol' }).click();
+  await p.getByRole('heading', { name: 'Nuevo rol' }).waitFor();
   await p.getByLabel('Nombre del rol').fill('MESERO');
   await p.getByRole('button', { name: 'Crear rol' }).click();
   await esperarTexto('Ya existe el rol «Mesero».');

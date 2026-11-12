@@ -180,7 +180,7 @@ function FormularioReservacion({ fecha, configuracion: c, reservacion, alTermina
     const q = new URLSearchParams({ fecha: v.fecha, hora: v.hora, personas: v.numero_personas || 1, ...(editar ? { excepto: reservacion.id } : {}) });
     api.get(`/reservaciones/mesas?${q}`).then((m) => {
       setMesas(m);
-      const sirve = (x) => x.cabe && !x.choca_con;
+      const sirve = (x) => x.cabe && !x.choca_con && !x.ocupada_hasta;
       if (!m.some((x) => String(x.id) === v.mesa_id && sirve(x))) f.setValores((x) => ({ ...x, mesa_id: String(m.find(sirve)?.id ?? '') }));
     }).catch(() => setMesas([]));
   }, [v.fecha, v.hora, v.numero_personas]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -201,8 +201,9 @@ function FormularioReservacion({ fecha, configuracion: c, reservacion, alTermina
           <select id="mesa-reservacion" className="selector" value={v.mesa_id} onChange={f.campo('mesa_id')} aria-invalid={!!f.errores.mesa_id}>
             <option value="">Elige…</option>
             {mesas.map((m) => (
-              <option key={m.id} value={m.id} disabled={!m.cabe || !!m.choca_con}>
-                Mesa {m.numero}{!m.cabe ? ` · ${m.capacidad} lugares` : m.choca_con ? ` · apartada para ${m.choca_con}` : ''}
+              <option key={m.id} value={m.id} disabled={!m.cabe || !!m.choca_con || !!m.ocupada_hasta}>
+                Mesa {m.numero}{!m.cabe ? ` · ${m.capacidad} lugares` : m.choca_con ? ` · apartada para ${m.choca_con}`
+                  : m.ocupada_hasta ? ` · ocupada hasta las ${hora(m.ocupada_hasta)}` : ''}
               </option>
             ))}
           </select>

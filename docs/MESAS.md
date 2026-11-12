@@ -40,7 +40,9 @@ reservaciones (`tg_mesa_reglas`), y la base rechaza un estado que no esté respa
 muestra. "Ocupadas" = Por atender + Comanda abierta + Por cobrar.
 
 **El número de mesa es un entero del 1 al 999** (revisión del 21 oct): sin letras, signos ni decimales
-("T1", "-3", "+5" o "2.5" no). La base también lo exige (`ck_mesa_numero`). **"7" es la Mesa 07:** los números
+("T1", "-3", "+5" o "2.5" no). Desde la revisión del 11 nov el campo **solo deja escribir dígitos**: la letra,
+el signo o el punto ni siquiera entran. La API y la base lo siguen revisando (`ck_mesa_numero`), por si alguien
+se salta la pantalla. **"7" es la Mesa 07:** los números
 de un dígito se guardan con dos (como en el diseño) para que no existan la Mesa 7 y la Mesa 07 a la vez.
 
 **Antes del monitoreo, la tarjeta ya dice si la mesa está bloqueada.** Con las operaciones (28 oct) y sin el

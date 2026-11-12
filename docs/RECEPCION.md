@@ -22,7 +22,7 @@ revisa el mié 28 oct). Permiso: «Gestionar reservaciones y lista de espera» (
 | Método y ruta | Qué hace |
 |---|---|
 | `GET /api/reservaciones?fecha=AAAA-MM-DD` | Agenda del día, resumen y la configuración (tolerancia, duración, apartado) |
-| `GET /api/reservaciones/mesas?fecha&hora&personas` | Mesas para el formulario: cuáles caben y con qué reservación se empalman |
+| `GET /api/reservaciones/mesas?fecha&hora&personas` | Mesas para el formulario: cuáles caben, con qué reservación se empalman y si un grupo sentado todavía las ocupa (`ocupada_hasta`) |
 | `POST /api/reservaciones` · `PUT /api/reservaciones/:id` | `{ fecha, hora, numero_personas, mesa_id, nombre_cliente, telefono, solicitudes_especiales }` |
 | `POST /api/reservaciones/:id/confirmar` · `/llegada` · `/cancelar` | Cambios de estado |
 | `POST /api/reservaciones/:id/lista-espera` | Llegó tarde: entra a la lista de espera (`reservacion_origen_id`) |
@@ -35,6 +35,14 @@ revisa el mié 28 oct). Permiso: «Gestionar reservaciones y lista de espera» (
 otra en la misma mesa, la mesa se aparta 30 min antes y se libera sola si no llegan en 15 min, y una mesa
 apartada no se le da a la lista de espera. La pantalla muestra el mensaje de la base tal cual (por ejemplo
 "La mesa 04 está apartada para Roberto Díaz (19:00): las reservaciones tienen prioridad…").
+
+**Tampoco se empalma con quien ya está en la mesa** (revisión del 11 nov). Una mesa con un grupo sentado
+(Por atender, Comanda abierta o Por cobrar) se cuenta ocupada hasta 2 h (la duración de una reservación)
+después de que se sentó el grupo o se abrió la comanda, y al menos hasta ahora. Una reservación nueva, o una a
+la que se le cambia la hora o la mesa, no puede apartarla antes: "La mesa 08 está ocupada y se libera hacia las
+20:45: elige otra mesa u otra hora." (`fn_mesa_ocupada_hasta` y `tg_reservacion_reglas`). En el formulario
+sale deshabilitada con "ocupada hasta las 20:45". Las reservaciones que ya existían no se vuelven a revisar al
+confirmarlas, sentarlas o cancelarlas.
 
 **Una reservación nueva queda Por confirmar**, como dice la explicación de 03a ("pasa de Por confirmar a
 Confirmada y luego a Sentada"). Mientras está por confirmar ya ocupa su horario (nadie más reserva esa mesa
@@ -76,9 +84,9 @@ fila de la mesa mientras revisa (`FOR UPDATE`): la segunda espera y recibe "La m
 
 ## Pruebas automáticas (`npm test`)
 
-`backend/test/recepcion.test.js` — 18 pruebas: agenda de las 19:09 (6 reservaciones · 27 personas, estados,
+`backend/test/recepcion.test.js` — 19 pruebas: agenda de las 19:09 (6 reservaciones · 27 personas, estados,
 "Faltan 6 min"), otra fecha, mesas para el formulario, nueva reservación con su ventana, empalmes / hora
-pasada / no cabe, validaciones, datos que parecen válidos y no lo son (nombre con números, teléfono sin
+pasada / no cabe, una mesa ocupada que todavía no se libera (21:10 no, 21:15 sí), validaciones, datos que parecen válidos y no lo son (nombre con números, teléfono sin
 dígitos, 31 de febrero, "1e1" personas, una fecha a 9999), confirmar y cancelar, marcar llegada, permisos, lista de espera (orden,
 tiempos, "sin teléfono", promedio), agregar, asignar con prioridad de la reservación y tamaño, retirar, y
 el cliente que llega tarde (19:16) y pasa a la lista. Al mismo tiempo: dos hostess sientan a dos grupos en la

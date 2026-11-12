@@ -98,18 +98,24 @@ caso('PV-28', 'Crear mesa: nace Libre con número, capacidad y zona', async () =
   return 'Mesa 22 (4 personas, Terraza) aparece en el salón';
 });
 
-caso('PV-29', 'El número de mesa solo acepta enteros (revisión del 21 oct)', async () => {
+caso('PV-29', 'El número de mesa solo acepta enteros (revisiones del 21 oct y del 11 nov)', async () => {
   await p.getByRole('button', { name: 'Crear mesa' }).first().click();
-  const rechazados = [];
-  for (const numero of ['T1', '-3', '+5', '2.5', '0']) {
-    await dialogo().getByLabel('Número').fill(numero);
-    await enviarDialogo();
-    await dialogo().getByText('El número: solo números enteros del 1 al 999 (ej. 7 o 22).').waitFor();
-    rechazados.push(numero);
+  // Desde el 11 nov el campo solo deja escribir dígitos: de "T1", "-3", "+5" o "2.5" no entran la letra, el signo ni el punto
+  const quedaron = [];
+  for (const numero of ['T1', '-3', '+5', '2.5']) {
+    await dialogo().getByLabel('Número').fill('');
+    await dialogo().getByLabel('Número').pressSequentially(numero);
+    const valor = await dialogo().getByLabel('Número').inputValue();
+    if (/\D/.test(valor)) throw new Error(`el campo aceptó "${valor}"`);
+    quedaron.push(`"${numero}" → "${valor}"`);
   }
+  // El 0 sí se escribe y la validación lo rechaza: las mesas van del 1 al 999
+  await dialogo().getByLabel('Número').fill('0');
+  await enviarDialogo();
+  await dialogo().getByText('El número: solo números enteros del 1 al 999 (ej. 7 o 22).').waitFor();
   await captura('PV-29');
   await dialogo().getByRole('button', { name: 'Cancelar' }).click();
-  return `rechaza ${rechazados.map((n) => `"${n}"`).join(', ')} con el mensaje bajo el campo`;
+  return `el campo solo deja escribir dígitos (${quedaron.join(', ')}) y "0" se rechaza con el mensaje bajo el campo`;
 });
 
 caso('PV-30', '"7" es la Mesa 07: el número no se repite', async () => {

@@ -869,7 +869,7 @@ CREATE TRIGGER tg_producto_86 BEFORE INSERT OR UPDATE ON producto_86
 CREATE FUNCTION tg_reservacion_reglas() RETURNS trigger
 LANGUAGE plpgsql SET search_path = kitchenlink, public AS $$
 DECLARE
-    v_cap smallint; v_num text; v_choque record;
+    v_cap smallint; v_num text; v_choque record; v_ocupada_hasta timestamptz;
 BEGIN
     IF TG_OP = 'INSERT' OR NEW.fecha_hora IS DISTINCT FROM OLD.fecha_hora THEN
         NEW.apartado_desde   := NEW.fecha_hora - make_interval(mins => fn_config_num('reservacion.apartado_previo_min', 30)::int);
@@ -905,6 +905,17 @@ BEGIN
         IF FOUND THEN
             RAISE EXCEPTION 'La mesa % ya está apartada de % a % para %.', v_num,
                   to_char(v_choque.apartado_desde, 'HH24:MI'), to_char(v_choque.apartado_hasta, 'HH24:MI'), v_choque.nombre_cliente;
+        END IF;
+    END IF;
+
+    -- Tampoco se aparta una mesa con un grupo sentado antes de que termine su servicio (revisión del 11 nov).
+    -- Solo al reservar o al cambiar la hora o la mesa: confirmar, sentar o cancelar no la vuelven a revisar.
+    IF NEW.estado IN ('por_confirmar','confirmada')
+       AND (TG_OP = 'INSERT' OR NEW.fecha_hora IS DISTINCT FROM OLD.fecha_hora OR NEW.mesa_id IS DISTINCT FROM OLD.mesa_id) THEN
+        v_ocupada_hasta := fn_mesa_ocupada_hasta(NEW.mesa_id);
+        IF NEW.apartado_desde < v_ocupada_hasta THEN
+            RAISE EXCEPTION 'La mesa % está ocupada y se libera hacia las %: elige otra mesa u otra hora.', v_num,
+                  to_char(v_ocupada_hasta, 'HH24:MI');
         END IF;
     END IF;
 
@@ -1680,6 +1691,17 @@ LEFT JOIN LATERAL (SELECT r.nombre_cliente, r.fecha_hora, r.tolerancia_hasta FRO
                    ORDER BY r.fecha_hora LIMIT 1) rp ON TRUE
 WHERE m.activo
 ORDER BY m.numero;
+
+-- 03a · Hasta cuándo se cuenta ocupada una mesa con un grupo sentado (Por atender, Comanda abierta o Por
+-- cobrar): la duración de una reservación desde que se sentó el grupo o se abrió la comanda, y al menos hasta
+-- ahora. NULL si no está ocupada. Así una reservación nueva no se empalma con quien ya está en la mesa.
+CREATE FUNCTION fn_mesa_ocupada_hasta(p_mesa bigint) RETURNS timestamptz
+LANGUAGE sql STABLE SET search_path = kitchenlink, public AS $$
+    SELECT GREATEST(COALESCE(v.abierta_en, v.sentada_en, fn_ahora())
+                    + make_interval(mins => fn_config_num('reservacion.duracion_min', 120)::int), fn_ahora())
+    FROM v_mapa_mesas v
+    WHERE v.id = p_mesa AND v.estado IN ('por_atender', 'comanda_abierta', 'por_cobrar')
+$$;
 
 -- 03a · Agenda de reservaciones ("En tolerancia" se calcula aquí)
 CREATE VIEW v_reservaciones AS

@@ -53,7 +53,7 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
   una fecha que no existe se rechaza.
 - **Hora de la aplicación:** la da el servidor en cada respuesta, para que los minutos de espera y las
   tolerancias se vean igual en todas las tablets.
-- **Pruebas automáticas:** pasan de 71 a 184, incluidas peticiones al mismo tiempo en el menú, las mesas, la
+- **Pruebas automáticas:** pasan de 71 a 185, incluidas peticiones al mismo tiempo en el menú, las mesas, la
   recepción y las comandas, el interruptor del cronograma y el tiempo real con dispositivos conectados.
 - **Pruebas de validación en pantalla** (`npm run e2e:validacion`): Microsoft Edge recorre solo 37 casos y
   guarda una captura de cada uno. Los resultados del menú, las mesas, la recepción y las operaciones de mesas,
@@ -65,8 +65,13 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 
 ### Cambiado
 
+- **Reservaciones sin empalmes con la mesa ocupada** (revisión del 11 nov): una reservación ya no aparta una
+  mesa con un grupo sentado antes de que termine su servicio (2 h desde que se sentó o se abrió la comanda).
+  La base la rechaza ("La mesa 08 está ocupada y se libera hacia las 20:45: elige otra mesa u otra hora.") y
+  en el formulario esa mesa sale deshabilitada con hasta qué hora está ocupada.
 - **Número de mesa** (revisión del 21 oct): solo enteros del 1 al 999, sin letras ni signos; la base también
-  lo exige.
+  lo exige. Desde la revisión del 11 nov el campo solo deja escribir dígitos: las letras, los signos y el punto
+  ni siquiera entran.
 - **En tablet:** la columna de acciones de las tablas queda siempre a la vista (con una sombra cuando la
   tabla se desliza), los permisos de un rol se acomodan en dos columnas y los botones del encabezado ya no se
   parten en dos renglones.

@@ -59,7 +59,7 @@ caso('PV-36', 'Una reservación es para una hora futura', async () => {
 // ---------- 03b · Lista de espera ----------
 caso('PV-37', 'Lista de espera: el grupo entra al final y empieza a contar su espera', async () => {
   await p.goto(BASE + '/lista-espera');
-  await p.getByRole('heading', { name: 'Lista de espera' }).waitFor();
+  await p.getByRole('heading', { name: 'Lista de espera', exact: true }).waitFor();
   await espera().getByLabel('Nombre').fill('Carlos Peña');
   await espera().getByLabel('Personas').fill('2');
   await espera().getByRole('button', { name: 'Agregar', exact: true }).click();
@@ -99,8 +99,9 @@ caso('PV-40', 'Desbloquear: queda lista para sentar', async () => {
   await dialogo().getByLabel('Mesa', { exact: true }).selectOption({ label: 'Mesa 13 · Mantel manchado' });
   await dialogo().getByRole('button', { name: 'Desbloquear', exact: true }).click();
   await esperarTexto('La Mesa 13 se desbloqueó.');
+  // Con o sin el monitoreo (11 nov), la tarjeta deja de decir "Bloqueada"
   const tarjeta = p.getByRole('button', { name: /Mesa 13/ });
-  await tarjeta.getByText('Zona: Terraza').waitFor();
+  await tarjeta.getByText('Bloqueada', { exact: true }).waitFor({ state: 'detached' });
   return 'Mesa 13 vuelve a mostrarse como una mesa normal del salón';
 });
 

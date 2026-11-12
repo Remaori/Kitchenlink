@@ -89,7 +89,8 @@ export async function mesasParaReservar({ fecha, hora, personas, excepto }) {
   const { rows } = await consulta(`
     WITH p AS (SELECT ($1 || ' ' || $2)::timestamptz AS t)
     SELECT m.id, m.numero, m.capacidad, m.zona, (m.capacidad >= $3) AS cabe,
-           ch.nombre_cliente AS choca_con, ch.apartado_desde AS choca_desde, ch.apartado_hasta AS choca_hasta
+           ch.nombre_cliente AS choca_con, ch.apartado_desde AS choca_desde, ch.apartado_hasta AS choca_hasta,
+           oc.hasta AS ocupada_hasta
     FROM mesa m CROSS JOIN p
     LEFT JOIN LATERAL (
       SELECT r.nombre_cliente, r.apartado_desde, r.apartado_hasta FROM reservacion r
@@ -98,8 +99,12 @@ export async function mesasParaReservar({ fecha, hora, personas, excepto }) {
             && tstzrange(p.t - make_interval(mins => fn_config_num('reservacion.apartado_previo_min', 30)::int),
                          p.t + make_interval(mins => fn_config_num('reservacion.duracion_min', 120)::int))
       ORDER BY r.apartado_desde LIMIT 1) ch ON TRUE
+    -- Con un grupo sentado que todavía no termina cuando se apartaría la mesa (la base también lo rechaza)
+    LEFT JOIN LATERAL (
+      SELECT h.hasta FROM (SELECT fn_mesa_ocupada_hasta(m.id) AS hasta) h
+      WHERE h.hasta > p.t - make_interval(mins => fn_config_num('reservacion.apartado_previo_min', 30)::int)) oc ON TRUE
     WHERE m.activo
-    ORDER BY (m.capacidad >= $3 AND ch.nombre_cliente IS NULL) DESC, (m.estado = 'libre') DESC, m.capacidad, m.numero`,
+    ORDER BY (m.capacidad >= $3 AND ch.nombre_cliente IS NULL AND oc.hasta IS NULL) DESC, (m.estado = 'libre') DESC, m.capacidad, m.numero`,
   [fecha, hora, n, excepto ?? null]);
   return rows;
 }

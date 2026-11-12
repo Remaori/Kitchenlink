@@ -76,6 +76,23 @@ describe('03a · Nueva reservación', () => {
     assert.equal(c.body.mensaje, 'La mesa 14 es para 2 personas y la reservación es de 6.');
   });
 
+  test('una mesa con un grupo sentado no se aparta antes de que termine su servicio (revisión del 11 nov)', async () => {
+    // Mesa 08: la C-1042 se abrió a las 18:45, así que se cuenta ocupada hasta las 20:45 (la duración, 2 h)
+    const datos = { fecha: '2026-09-22', numero_personas: 4, mesa_id: await mesaId('08'), nombre_cliente: 'Familia Ochoa' };
+    const a = await hostess.post('/api/reservaciones').send({ ...datos, hora: '21:10' }).expect(409); // se apartaría a las 20:40
+    assert.equal(a.body.mensaje, 'La mesa 08 está ocupada y se libera hacia las 20:45: elige otra mesa u otra hora.');
+    const ocupada = async (hora) => (await hostess.get(`/api/reservaciones/mesas?fecha=2026-09-22&hora=${hora}&personas=4`).expect(200))
+      .body.find((x) => x.numero === '08').ocupada_hasta;
+    assert.ok(await ocupada('21:10'), 'el formulario la ofrece deshabilitada');
+    // Valor límite: a las 21:15 se aparta justo a las 20:45, cuando se libera
+    assert.equal(await ocupada('21:15'), null);
+    const b = await hostess.post('/api/reservaciones').send({ ...datos, hora: '21:15' }).expect(201);
+    await hostess.post(`/api/reservaciones/${b.body.id}/cancelar`).expect(200); // la agenda queda como estaba
+    // Una mesa libre no tiene esa restricción
+    assert.equal((await hostess.get('/api/reservaciones/mesas?fecha=2026-09-22&hora=21:10&personas=4').expect(200))
+      .body.find((x) => x.numero === '13').ocupada_hasta, null);
+  });
+
   test('datos incompletos: cada campo con su mensaje', async () => {
     const r = await hostess.post('/api/reservaciones').send({ fecha: '22/09/2026', hora: '9pm', telefono: 'abc' }).expect(400);
     assert.deepEqual(Object.keys(r.body.campos).sort(), ['fecha', 'hora', 'mesa_id', 'nombre_cliente', 'numero_personas', 'telefono']);
