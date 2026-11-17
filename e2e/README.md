@@ -14,7 +14,7 @@ npm run reporte --prefix e2e         # el reporte de la última corrida, con cap
 |---|---|
 | `01-sesion.spec.js` | Entrar con usuario y contraseña; contraseña equivocada; un mesero sin «Usuarios y roles» ve «Sin acceso»; cerrar sesión; si la cookie venció, la siguiente acción regresa al inicio de sesión |
 | `02-usuarios.spec.js` | El gerente da de alta a una mesera (02b); ella entra con su temporal, crea su contraseña (01b) y queda Activa |
-| `03-servicio.spec.js` | Una mesa de principio a fin: el mesero abre la comanda y envía, a cocina le aparece la tarjeta sola, la prepara y la marca lista, el mesero entrega y pide la cuenta, a caja le aparece en "Por cobrar", cobra en efectivo y el corte Z cuadra |
+| `03-servicio.spec.js` | Una mesa de principio a fin: el mesero abre la comanda y envía, a cocina le aparece la tarjeta sola, la prepara y la marca lista, el mesero entrega y pide la cuenta, a caja le aparece en "Por cobrar", cobra en efectivo |
 
 En `03-servicio` nadie recarga la página y cada espera es de 5 s, menos que el respaldo de 20 a 30 s de las
 pantallas: si la tarjeta o la cuenta aparece, fue por el aviso en tiempo real.
