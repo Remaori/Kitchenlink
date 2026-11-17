@@ -139,8 +139,7 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 |---|---|
 | `npm run dev` | API y aplicación en este equipo |
 | `npm run dev:red` | Igual, y la aplicación se abre desde otros equipos de la red local |
-| `npm run demo` · `npm run demo:todo` | Igual que `dev`, a la hora de los datos de demostración (22 sep, 19:09); `demo:todo` con todos los módulos |
-| `npm run cronograma [-- AAAA-MM-DD]` | Qué módulos se ven hoy o en esa revisión ([cronograma](docs/CRONOGRAMA.md)) |
+| `npm run demo` | Igual que `dev`, a la hora de los datos de demostración (22 sep, 19:09) ([reloj](docs/RELOJ_Y_TIEMPO_REAL.md)) |
 | `npm test` | Pruebas automáticas (usan la base `kitchenlink_pruebas`) |
 | `npm run e2e:validacion` | Pruebas de validación en Microsoft Edge, con una captura por caso |
 | `npm run e2e` | Pruebas de pantalla (inicio de sesión, alta de usuarios y una mesa de mesero a cocina) |
@@ -156,7 +155,7 @@ Los demás usuarios están en [database/README.md](database/README.md). Para una
 - `npm test`: 185 pruebas automáticas (node:test + supertest) sobre una base aparte. Cubren la conexión y los
   permisos mínimos, el inicio de sesión y las sesiones, los roles y los usuarios, el menú, las mesas, las
   reservaciones y la lista de espera, las comandas y el panel de cocina y barra, incluidas peticiones que
-  llegan al mismo tiempo, el cronograma y el tiempo real.
+  llegan al mismo tiempo, el reloj de demostración y el tiempo real.
 - `npm run db:conectividad`: 24 verificaciones de la conexión entre la API y PostgreSQL.
 - `npm run e2e:validacion`: las pruebas de validación en pantalla. Microsoft Edge recorre solo 37 casos como
   una persona (escribe, hace clic y espera el texto exacto del diseño) y guarda una captura por caso. Detalles
@@ -200,7 +199,7 @@ kitchenlink/
 - [Mesas](docs/MESAS.md): crear, editar, bloquear y dar de baja mesas; Mis mesas
 - [Recepción](docs/RECEPCION.md): reservaciones y lista de espera
 - [Comandas](docs/COMANDAS.md): abrir, capturar y enviar comandas; panel de cocina y barra; historial
-- [Cronograma](docs/CRONOGRAMA.md): qué módulo aparece en cada revisión, reloj de demostración y tiempo real
+- [Reloj y tiempo real](docs/RELOJ_Y_TIEMPO_REAL.md): el reloj de demostración y los avisos al instante entre pantallas
 - [Pruebas de validación](docs/PRUEBAS_DE_VALIDACION.md): menú, mesas, recepción y operaciones, con capturas
 - [Diagrama entidad-relación](docs/erd/)
 - [Cambios por versión](CHANGELOG.md) · [Cómo contribuir](CONTRIBUTING.md)

@@ -66,7 +66,7 @@ envío ("De este envío ya se entregó: Pasta Alfredo; 3× Limonada natural lo h
 ámbar a los 8 min y rojo a los 15. Los envíos nuevos se marcan y suenan.
 
 **Aviso al mesero**: al marcar "Listo", su pantalla 05a muestra "N platillos listos por entregar" al instante
-(Socket.IO, ver [CRONOGRAMA.md](CRONOGRAMA.md)).
+(Socket.IO, ver [RELOJ_Y_TIEMPO_REAL.md](RELOJ_Y_TIEMPO_REAL.md)).
 
 *Pregunta probable: "¿qué pasa si el mesero cambia de turno?"* Usa "Transferir": la comanda pasa a otro
 mesero, que desde ese momento la trabaja, y queda en la bitácora. El gerente también la puede transferir.

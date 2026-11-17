@@ -38,8 +38,7 @@ dejó el anterior.
 | `validacion/02-menu-y-mesas.spec.js` | PV-21 a PV-32 · catálogo, producto con precio exacto, precio mal escrito, asignar y quitar 86 con su historial, el menú del mesero, crear mesa, número solo entero, "7" = Mesa 07, capacidad contra una reservación, baja y reactivación | 21 oct |
 | `validacion/03-recepcion-y-operaciones.spec.js` | PV-33 a PV-42 · agenda, nueva reservación, datos que no son (nombre con números, teléfono sin dígitos, "1e1" personas), hora que ya pasó, lista de espera, bloquear y desbloquear una mesa, cambiar personas y cambiar mesa | 28 oct |
 
-Usan la misma base, API y app compilada que las demás pruebas de pantalla (`validacion.config.js`), pero el
-menú respeta `FECHA_REVISION` de `backend/.env`: no muestran módulos que todavía no se revisan. Ayudantes
+Usan la misma base, API y app compilada que las demás pruebas de pantalla (`validacion.config.js`). Ayudantes
 compartidos (ventana, captura, entrar y salir): `validacion/comun.js`.
 
 ## Cómo funcionan
@@ -49,7 +48,7 @@ compartidos (ventana, captura, entrar y salir): `validacion/comun.js`.
 - **Puertos aparte.** La API de las pruebas escucha en `127.0.0.1:3100` y la app compilada en
   `localhost:4180`, así que se pueden correr con `npm run dev` encendido. Playwright las levanta y las apaga.
 - **A la hora de las pantallas.** El reloj de la API queda detenido el 22 de septiembre a las 19:09, como
-  `npm run demo`, y se ven todos los módulos del cronograma.
+  `npm run demo`.
 - **Navegador.** Usa el Edge de Windows, sin descargar nada. En otro equipo: `E2E_NAVEGADOR=chrome`, o
   `npx playwright install chromium` y `E2E_NAVEGADOR=chromium`.
 - **En orden.** Un solo navegador a la vez (`workers: 1`): las pruebas comparten la base, como un turno.

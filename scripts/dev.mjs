@@ -2,7 +2,7 @@
 // npm run dev:red    igual, pero la app también se abre desde otros equipos de la red local
 //                    (http://<IP de este equipo>:5173).
 // npm run demo       igual que dev, con el reloj de demostración: la app arranca a la hora de los
-//                    datos de demostración (ver docs/CRONOGRAMA.md).
+//                    datos de demostración (ver docs/RELOJ_Y_TIEMPO_REAL.md).
 // npm run demo:todo  igual que demo, con todos los módulos del cronograma.
 //
 // Opciones, después de -- (solo valen para esa vez; el .env no cambia):

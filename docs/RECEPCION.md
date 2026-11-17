@@ -52,8 +52,8 @@ a esa hora), pero la mesa no se ve Reservada hasta confirmarla.
 faltan. Las pantallas cuentan con la hora del servidor, no con la de cada tablet.
 
 **El proceso de cada minuto** (`fn_revisar_reservaciones`, en `server.js`) marca "No se presentó" y aparta
-las mesas que entran en su ventana; avisa a las pantallas en tiempo real. Corre desde la revisión del 28 oct
-(antes el módulo no existe, ver [CRONOGRAMA.md](CRONOGRAMA.md)).
+las mesas que entran en su ventana; avisa a las pantallas en tiempo real (ver
+[RELOJ_Y_TIEMPO_REAL.md](RELOJ_Y_TIEMPO_REAL.md)).
 
 **Llegó tarde = lista de espera.** "Llegó tarde" crea su lugar en la lista con la reservación de origen
 (sale como "Venía con reservación").

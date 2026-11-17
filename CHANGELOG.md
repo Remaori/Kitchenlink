@@ -50,18 +50,14 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 - **Tiempo real** (Socket.IO): cuando cambia una comanda, una mesa, una reservación o el panel de cocina, las
   pantallas abiertas se actualizan al instante, sin recargar. El aviso solo dice qué cambió y cada pantalla
   vuelve a pedir sus datos con su sesión. Si se pierde la conexión, se refrescan solas cada 20 a 60 s.
-- **Cronograma en la aplicación:** cada módulo aparece el miércoles en que se revisa; antes sale como "pronto"
-  en el menú y su API responde que no existe. `npm run cronograma` dice qué se ve en cada fecha. Las ventas y
-  cortes (08) y los reportes (10) ya están en el código y aparecen en su revisión del 25 nov.
 - **Reloj de demostración** (`npm run demo`): la aplicación arranca a la hora de los datos de demostración
-  (22 sep, 19:09), como las pantallas del diseño. `npm run demo:todo` muestra todos los módulos y
-  `npm run demo -- --fecha 2026-11-18` ensaya una revisión.
+  (22 sep, 19:09), como las pantallas del diseño.
 - Los nombres de clientes solo aceptan letras, el teléfono pide 10 dígitos y se guarda con un solo formato, y
   una fecha que no existe se rechaza.
 - **Hora de la aplicación:** la da el servidor en cada respuesta, para que los minutos de espera y las
   tolerancias se vean igual en todas las tablets.
 - **Pruebas automáticas:** pasan de 71 a 185, incluidas peticiones al mismo tiempo en el menú, las mesas, la
-  recepción y las comandas, el interruptor del cronograma y el tiempo real con dispositivos conectados.
+  recepción y las comandas, el reloj de demostración y el tiempo real con dispositivos conectados.
 - **Pruebas de validación en pantalla** (`npm run e2e:validacion`): Microsoft Edge recorre solo 37 casos y
   guarda una captura de cada uno. Los resultados del menú, las mesas, la recepción y las operaciones de mesas,
   con sus capturas, están en `docs/PRUEBAS_DE_VALIDACION.md`.
