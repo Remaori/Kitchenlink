@@ -39,13 +39,20 @@ Los cambios importantes de cada versión de KitchenLink. El formato sigue
 - **Monitoreo de mesas** (revisión del 11 nov): 04 · Mesas suma los contadores (Total, Libres, Ocupadas,
   Reservadas y Bloqueadas), los filtros, el estado de cada mesa en tiempo real y el detalle de cada tarjeta con
   las comandas de hoy en esa mesa.
+- **Gestión de pagos y cobro** (revisión del 18 nov, pantalla 07):
+  - abrir caja con el fondo inicial y el turno (un corte abierto por cajera);
+  - las mesas que pidieron la cuenta, con su pre-ticket para imprimir o cancelar (la comanda vuelve a
+    Abierta y el mesero puede agregar);
+  - cobro en efectivo (con el cambio), tarjeta o transferencia (con su referencia). Varios pagos dividen la
+    cuenta; al cubrir el total se genera el ticket y la mesa queda libre;
+  - arqueo de caja sin cerrar el corte, y "Cuentas abiertas" para ver todas las mesas con comanda;
+  - impresión en la impresora térmica de la red (ESC/POS) o, sin ella, desde el navegador en tamaño de ticket.
 - **Tiempo real** (Socket.IO): cuando cambia una comanda, una mesa, una reservación o el panel de cocina, las
   pantallas abiertas se actualizan al instante, sin recargar. El aviso solo dice qué cambió y cada pantalla
   vuelve a pedir sus datos con su sesión. Si se pierde la conexión, se refrescan solas cada 20 a 60 s.
 - **Cronograma en la aplicación:** cada módulo aparece el miércoles en que se revisa; antes sale como "pronto"
-  en el menú y su API responde que no existe. `npm run cronograma` dice qué se ve en cada fecha. El cobro (07),
-  las ventas y cortes (08) y los reportes (10) ya están en el código y aparecen en sus revisiones del 18 y del
-  25 nov.
+  en el menú y su API responde que no existe. `npm run cronograma` dice qué se ve en cada fecha. Las ventas y
+  cortes (08) y los reportes (10) ya están en el código y aparecen en su revisión del 25 nov.
 - **Reloj de demostración** (`npm run demo`): la aplicación arranca a la hora de los datos de demostración
   (22 sep, 19:09), como las pantallas del diseño. `npm run demo:todo` muestra todos los módulos y
   `npm run demo -- --fecha 2026-11-18` ensaya una revisión.

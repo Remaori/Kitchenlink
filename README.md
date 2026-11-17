@@ -55,8 +55,15 @@ internet.
   de color y los envíos nuevos se marcan y suenan.
 - **Historial de comandas:** las comandas de cualquier día, abiertas, cerradas y canceladas, con sus envíos,
   pagos, cancelaciones y movimientos.
-- **Tiempo real:** comandas, cocina, mesas y recepción se actualizan al instante en todas las pantallas
+- **Tiempo real:** comandas, cocina, mesas, recepción y caja se actualizan al instante en todas las pantallas
   (Socket.IO), sin recargar.
+
+**Caja**
+
+- **Cobro:** la cajera abre caja con su fondo, ve las mesas que pidieron la cuenta con su pre-ticket y cobra en
+  efectivo (con el cambio), tarjeta o transferencia. Varios pagos dividen la cuenta; al cubrirla se genera el
+  ticket y la mesa queda libre. Si la mesa pide algo más, cancela el pre-ticket y el mesero puede agregar. El
+  arqueo cuenta el cajón sin cerrar el corte, y los tickets salen en la impresora térmica o en el navegador.
 
 **Modelo de datos**
 
@@ -166,8 +173,8 @@ kitchenlink/
 │   ├── src/
 │   │   ├── seguridad/  inicio de sesión, sesiones, contraseñas, permisos, roles y usuarios
 │   │   ├── rutas/      /api/salud, /api/usuarios, /api/roles, /api/menu, /api/mesas, /api/reservaciones,
-│   │   │               /api/lista-espera, /api/comandas, /api/produccion
-│   │   ├── servicios/  reglas del menú, las mesas, la recepción, las comandas y cocina y barra
+│   │   │               /api/lista-espera, /api/comandas, /api/produccion, /api/caja
+│   │   ├── servicios/  reglas del menú, las mesas, la recepción, las comandas, cocina y barra y el cobro
 │   │   ├── app.js      aplicación Express
 │   │   ├── db.js       conexión a PostgreSQL y transacciones con el usuario que opera
 │   │   └── server.js   punto de entrada
